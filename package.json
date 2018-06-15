@@ -1,0 +1,38 @@
+{
+  "name": "chartjs-scale-hierarchical",
+  "description": "Chart.js module for hierarchical categories",
+  "main": "build/Chart.Hierarchical.js",
+  "version": "1.0.0-alpha.0",
+  "author": {
+    "name": "Samuel Gratzl",
+    "email": "samuel.gratzl@datavisyn.io",
+    "url": "http://datavisyn.io"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/datavisyn/chartjs-scale-hierarchical.git"
+  },
+  "dependencies": {
+    "chart.js": "^2.7.2"
+  },
+  "devDependencies": {
+    "babel-core": "^6.26.0",
+    "babel-plugin-external-helpers": "^6.22.0",
+    "babel-preset-env": "^1.6.1",
+    "eslint": "3",
+    "package-preamble": "^0.0",
+    "rollup": "^0.41",
+    "rollup-plugin-babel": "^3.0.3",
+    "rollup-plugin-commonjs": "^8.2.6",
+    "rollup-plugin-node-resolve": "^3.0.0",
+    "uglify-es": "^3.2.0"
+  },
+  "scripts": {
+		"prepare": "npm run build:dev",
+		"prepublishOnly": "npm run build && npm run test",
+    "build:dev": "rollup -c -i src/index.js",
+    "build": "npm run build:dev && uglifyjs build/Chart.Hierarchical.js -c -m -o build/Chart.Hierarchical.min.js",
+    "test": "eslint src"
+  }
+}
