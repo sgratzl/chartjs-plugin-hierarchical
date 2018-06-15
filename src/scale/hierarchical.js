@@ -4,7 +4,8 @@ import * as Chart from 'chart.js';
 
 const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
 	// TOOD
-	levelPercentage: 0.75
+	levelPercentage: 0.75,
+	attributes: []
 });
 
 

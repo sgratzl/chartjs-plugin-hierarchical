@@ -3,38 +3,6 @@
 import * as Chart from 'chart.js';
 import {toNodes} from '../utils';
 
-
-function flatten(chart) {
-	const labels = chart.data.labels;
-
-	if (labels.every((d) => typeof d === 'string' || d.collapse !== false)) {
-		// nothing to do
-		return;
-	}
-	const datasets = chart.data.datasets;
-	datasets.forEach((dataset) => {
-		if (dataset.tree !== undefined) {
-			return;
-		}
-
-		const flat = [];
-		const pushFlat = (label, d) => {
-			if (typeof label === 'string'|| label.collapse !== false) {
-				flat.push(d);
-			} else {
-				const children = d.children || [];
-				(label.children || []).forEach((l, i) => {
-					pushFlat(l, children[i]);
-				});
-			}
-		};
-		labels.forEach((label, i) => pushFlat(label, dataset.data[i]));
-
-		dataset.tree = dataset.data;
-		dataset.data = flat;
-	});
-}
-
 function resolve(label, flat, dataTree) {
 	if (label.level === 0) {
 		return dataTree[label.relIndex];
@@ -63,6 +31,28 @@ const HierarchicalPlugin = {
 		chart.data.datasets.forEach((dataset) => {
 			dataset.tree = dataset.data.slice();
 			dataset.data = labels.map((l) => resolve(l, flat, dataset.tree));
+		});
+	},
+
+	afterInit(chart) {
+		if (!this._enabled(chart)) {
+			return;
+		}
+		this._updateAttributes(chart);
+	},
+
+	_updateAttributes(chart) {
+		const xScale = this._findXScale(chart);
+		if (!xScale) {
+			return;
+		}
+		const attributes = xScale.options.attributes;
+
+		const nodes = chart.data.labels;
+		attributes.forEach((attr) => {
+			chart.data.datasets.forEach((d) => {
+				d[attr] = nodes.map((d) => d[attr]);
+			});
 		});
 	},
 
@@ -111,6 +101,8 @@ const HierarchicalPlugin = {
 			const toAddValues = toAdd.map((d) => resolve(d, flatLabels, tree));
 			dataset.data.splice.apply(dataset.data, [index, count].concat(toAddValues));
 		});
+
+		this._updateAttributes(chart);
 
 		chart.update();
 	},
