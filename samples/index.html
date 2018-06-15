@@ -24,7 +24,6 @@
 			labels: ['A',
 				{
 					label: 'B1',
-					collapse: false,
 					children: ['B1.1', 'B1.2', 'B1.3']
 				},
 				{
@@ -34,7 +33,7 @@
 				'D'],
 			datasets: [{
 				label: 'Test',
-				data: [1, { y: 2, children: [3, 4, 5]}, { y: 6, children: [7,8,9,10] }, 11]
+				data: [1, { y: 2, children: [3, 4, 5]}, {y: 6, children: [7, 8, 9, 10]}, 11]
 			}]
 		};
 		const color = Chart.helpers.color;

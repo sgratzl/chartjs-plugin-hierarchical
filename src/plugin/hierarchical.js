@@ -60,6 +60,6 @@ const HierarchicalPlugin = {
 	}
 }
 
-Chart.pluginService.register(HierarchicalPlugin);
+// Chart.pluginService.register(HierarchicalPlugin);
 
 export default HierarchicalPlugin;

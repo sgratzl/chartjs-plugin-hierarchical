@@ -15,8 +15,9 @@ function asNode(label, parent) {
 		parent,
 		collapse: true,
 		level: parent ? parent.level + 1 : 0,
-		center: 0, // TODO
+		center: NaN,
 		width: 0,
+		hidden: false,
 		major: !Boolean(parent)
 	}, typeof label === 'string' ? {label} : label);
 
@@ -28,6 +29,12 @@ function asNode(label, parent) {
 const superClass = Chart.Scale;
 const _super = superClass.prototype;
 
+function prefix(arr, node) {
+	arr.push(node);
+	node.children.forEach((d) => prefix(arr, d));
+	return arr;
+}
+
 const HierarchicalScale = superClass.extend({
 	determineDataLimits() {
 		const data = this.chart.data;
@@ -35,19 +42,27 @@ const HierarchicalScale = superClass.extend({
 		const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
 
 		// build tree
-		const tree = this._tree = data.tree = labels.map((l) => asNode(l, undefined));
+		const tree = labels.map((l) => asNode(l, undefined));
 
-		// flat tree according to collapsed state
-		this._flatTree = [];
-		const push = (node) => {
-			if (node.collapse) {
-				this._flatTree.push(node);
-			} else {
-				node.children.forEach(push);
+		const flat = [];
+		tree.forEach((d) => prefix(flat, d));
+
+		flat.forEach((d) => {
+			d.hidden = (d.parent && !d.parent.hidden) || (!d.collapse && d.children.length > 0);
+		});
+
+		this._flat = flat;
+
+		// apply hidden
+		data.datasets.forEach((dataset, i) => {
+			const meta = this.chart.getDatasetMeta(i);
+			if (!this.chart.isDatasetVisible(i)) {
+				return;
 			}
-		};
-		tree.forEach(push);
-		data.flatTree = this._flatTree;
+			meta.data.forEach((d, j) => d.hidden = flat[j].hidden);
+		});
+
+		this._flatTree = flat.filter((d) => !d.hidden);
 
 		this.minIndex = 0;
 		this.maxIndex = this._flatTree.length;
@@ -109,7 +124,7 @@ const HierarchicalScale = superClass.extend({
 			}
 		}
 
-		const node = this._flatTree[index];
+		const node = this._flat[index];
 
 		const centerTick = this.options.offset;
 
@@ -118,29 +133,14 @@ const HierarchicalScale = superClass.extend({
 		return base + node.center - (centerTick ? 0 : node.width / 2);
 	},
 	getPixelForTick(index) {
-		return this.getPixelForValue(this.ticks[index], index + this.minIndex, null);
+
+		const node = this._flatTree[index];
+		const centerTick = this.options.offset;
+		const base = this.isHorizontal() ? this.left : this.top;
+		return base + node.center - (centerTick ? 0 : node.width / 2);
 	},
 	getValueForPixel(pixel) {
-		var me = this;
-		var offset = me.options.offset;
-		var value;
-		var offsetAmt = Math.max((me._ticks.length - (offset ? 0 : 1)), 1);
-		var horz = me.isHorizontal();
-		var valueDimension = (horz ? me.width : me.height) / offsetAmt;
-
-		pixel -= horz ? me.left : me.top;
-
-		if (offset) {
-			pixel -= (valueDimension / 2);
-		}
-
-		if (pixel <= 0) {
-			value = 0;
-		} else {
-			value = Math.round(pixel / valueDimension);
-		}
-
-		return value + me.minIndex;
+		return this._flatTree.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
 	},
 	getBasePixel() {
 		return this.bottom;
