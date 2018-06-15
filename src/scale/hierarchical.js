@@ -4,7 +4,7 @@ import * as Chart from 'chart.js';
 
 const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
 	// TOOD
-	levelPercentage: 0.3
+	levelPercentage: 0.75
 });
 
 
@@ -32,29 +32,40 @@ const HierarchicalScale = superClass.extend({
 		this.min = this._nodes[this.minIndex];
 		this.max = this._nodes[this.maxIndex];
 
-		// 	this.options.barThickness = 'flex';
-		// if (this.options.barThickness == null) {
-		// 	this.options.barThickness = 50;
-		// }
+		// this.options.barThickness = 'flex';
 	},
 
 	buildTicks() {
 		const hor = this.isHorizontal();
 		const total = hor ? this.width : this.height;
-
-		const countPerLevel = [];
-		this._nodes.forEach((node) => countPerLevel[node.level] = (countPerLevel[node.level] || 0) + 1);
+		const nodes = this._nodes;
+		// optimize such that the distance between two points
 		const ratio = this.options.levelPercentage;
-		const slices = countPerLevel.reduce((acc, count, level) => acc + count * Math.pow(ratio, level), 0);
+		const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2)];
 
-		const perSlice = total / slices;
+		const distances = [];
+		{
+			let prev = nodes[0];
+			distances.push(0.5);
+			for(let i = 1; i < nodes.length; ++i) {
+				const n = nodes[i];
+				distances.push(ratios[Math.min(prev.level, n.level)]);
+				prev = n;
+			}
+			distances.push(0.5);
+		}
 
-		let offset = 0;
-		this._nodes.forEach((node) => {
-			const slice = perSlice * Math.pow(ratio, node.level);
-			node.width = slice;
-			node.center = offset + slice / 2;
-			offset += slice;
+		const distance = distances.reduce((acc, s) => acc + s, 0);
+		const factor = total / distance;
+
+		let offset = distances[0] * factor;
+		nodes.forEach((node, i) => {
+			const previous = distances[i] * factor;
+			const next = distances[i + 1] * factor;
+			node.center = offset;
+			offset += next;
+
+			node.width = Math.min(next, previous) / 2;
 		});
 
 		return this.ticks = this._nodes;
