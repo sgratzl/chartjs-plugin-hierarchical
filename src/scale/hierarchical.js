@@ -4,7 +4,7 @@ import * as Chart from 'chart.js';
 
 const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
 	// TOOD
-	levelPercentage: 0.5
+	levelPercentage: 0.3
 });
 
 
@@ -32,6 +32,7 @@ const HierarchicalScale = superClass.extend({
 		this.min = this._nodes[this.minIndex];
 		this.max = this._nodes[this.maxIndex];
 
+		// 	this.options.barThickness = 'flex';
 		// if (this.options.barThickness == null) {
 		// 	this.options.barThickness = 50;
 		// }
