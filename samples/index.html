@@ -21,7 +21,17 @@
 	</div>
 	<script>
 		const data = {
-			labels: ['A', 'B', 'C', 'D'],
+			labels: ['A',
+				{
+					label: 'B1',
+					collapse: false,
+					children: ['B1.1', 'B1.2']
+				},
+				{
+					label: 'C1',
+					children: ['C1.1', 'C1.2', 'C1.3', 'C1.4']
+				},
+				'D'],
 			datasets: [{
 				label: 'Test',
 				data: [5, 10, 1, 2]
@@ -41,7 +51,19 @@
 					},
 					scales: {
 						xAxes: [{
-							type: 'hierarchical'
+							type: 'hierarchical',
+
+							// Specific to Bar Controller
+							categoryPercentage: 0.8,
+							barPercentage: 0.9,
+
+							// offset settings
+							offset: true,
+
+							// grid line settings
+							gridLines: {
+								offsetGridLines: true
+							}
 						}]
 					}
 				}
