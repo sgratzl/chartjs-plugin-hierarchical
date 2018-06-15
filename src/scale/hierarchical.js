@@ -31,10 +31,11 @@ const _super = superClass.prototype;
 const HierarchicalScale = superClass.extend({
 	determineDataLimits() {
 		const data = this.chart.data;
+
 		const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
 
 		// build tree
-		const tree = this._tree = labels.map((l) => asNode(l, undefined));
+		const tree = this._tree = data.tree = labels.map((l) => asNode(l, undefined));
 
 		// flat tree according to collapsed state
 		this._flatTree = [];
@@ -46,6 +47,7 @@ const HierarchicalScale = superClass.extend({
 			}
 		};
 		tree.forEach(push);
+		data.flatTree = this._flatTree;
 
 		this.minIndex = 0;
 		this.maxIndex = this._flatTree.length;
