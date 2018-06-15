@@ -41,8 +41,9 @@ function resolve(label, flat, dataTree) {
 	}
 
 	// TODO all levels
-	const p = flat[label.parent]
-	return dataTree[p.relIndex][label.relIndex];
+	const p = flat[label.parent];
+	const pData = dataTree[p.relIndex];
+	return pData && pData.children ? pData.children[label.relIndex] : NaN;
 }
 
 const HierarchicalPlugin = {
