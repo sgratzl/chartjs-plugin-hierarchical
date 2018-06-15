@@ -4,6 +4,7 @@ import * as Chart from 'chart.js';
 
 const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
 	// TOOD
+	levelPercentage: 0.5
 });
 
 
@@ -13,8 +14,9 @@ function asNode(label, parent) {
 		children: [],
 		parent,
 		collapse: true,
-		level: parent ? parent.level : 0,
-		centerPos: 0, // TODO
+		level: parent ? parent.level + 1 : 0,
+		center: 0, // TODO
+		width: 0,
 		major: !Boolean(parent)
 	}, typeof label === 'string' ? {label} : label);
 
@@ -32,7 +34,7 @@ const HierarchicalScale = superClass.extend({
 		const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
 
 		// build tree
-		const tree = this._tree = labels.map(asNode);
+		const tree = this._tree = labels.map((l) => asNode(l, undefined));
 
 		// flat tree according to collapsed state
 		this._flatTree = [];
@@ -52,6 +54,24 @@ const HierarchicalScale = superClass.extend({
 	},
 
 	buildTicks() {
+		const hor = this.isHorizontal();
+		const total = hor ? this.width : this.height;
+
+		const countPerLevel = [0, 0, 0, 0, 0];
+		this._flatTree.forEach((node) => countPerLevel[node.level] += 1);
+		const ratio = this.options.levelPercentage;
+		const slices = countPerLevel.reduce((acc, count, level) => acc + count * Math.pow(ratio, level), 0);
+
+		const perSlice = total / slices;
+
+		let offset = 0;
+		this._flatTree.forEach((node) => {
+			const slice = perSlice * Math.pow(ratio, node.level);
+			node.width = slice;
+			node.center = offset + slice / 2;
+			offset += slice;
+		});
+
 		return this.ticks = this._flatTree;
 	},
 
@@ -71,10 +91,7 @@ const HierarchicalScale = superClass.extend({
 
 	// Used to get data value locations.  Value can either be an index or a numerical value
 	getPixelForValue(value, index) {
-		var me = this;
-		var offset = me.options.offset;
-		// 1 is added because we need the length but we have the indexes
-		var offsetAmt = Math.max((me.maxIndex + 1 - me.minIndex - (offset ? 0 : 1)), 1);
+		const me = this;
 
 		// If value is a data object, then index is the index in the data array,
 		// not the index of the scale. We need to change that.
@@ -90,26 +107,13 @@ const HierarchicalScale = superClass.extend({
 			}
 		}
 
-		if (me.isHorizontal()) {
-			var valueWidth = me.width / offsetAmt;
-			var widthOffset = (valueWidth * (index - me.minIndex));
+		const node = this._flatTree[index];
 
-			if (offset) {
-				widthOffset += (valueWidth / 2);
-			}
+		const centerTick = this.options.offset;
 
-			return me.left + Math.round(widthOffset);
-		}
+		const base = this.isHorizontal() ? this.left : this.top;
 
-		// vertical
-		var valueHeight = me.height / offsetAmt;
-		var heightOffset = (valueHeight * (index - me.minIndex));
-
-		if (offset) {
-			heightOffset += (valueHeight / 2);
-		}
-
-		return me.top + Math.round(heightOffset);
+		return base + node.center - (centerTick ? 0 : node.width / 2);
 	},
 	getPixelForTick(index) {
 		return this.getPixelForValue(this.ticks[index], index + this.minIndex, null);

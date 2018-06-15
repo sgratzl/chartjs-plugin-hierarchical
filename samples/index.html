@@ -25,7 +25,7 @@
 				{
 					label: 'B1',
 					collapse: false,
-					children: ['B1.1', 'B1.2']
+					children: ['B1.1', 'B1.2', 'B1.3']
 				},
 				{
 					label: 'C1',
@@ -34,7 +34,7 @@
 				'D'],
 			datasets: [{
 				label: 'Test',
-				data: [5, 10, 1, 2]
+				data: [5, 10, 3, 2, 2, 1]
 			}]
 		};
 		const color = Chart.helpers.color;
@@ -52,11 +52,6 @@
 					scales: {
 						xAxes: [{
 							type: 'hierarchical',
-
-							// Specific to Bar Controller
-							categoryPercentage: 0.8,
-							barPercentage: 0.9,
-
 							// offset settings
 							offset: true,
 
@@ -64,6 +59,9 @@
 							gridLines: {
 								offsetGridLines: true
 							}
+						}],
+						yAxes: [{
+							min: 0
 						}]
 					}
 				}
