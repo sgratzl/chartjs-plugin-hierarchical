@@ -2,9 +2,13 @@
 
 import * as Chart from 'chart.js';
 
-const HierarchicalScale = {
+const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
 	// TOOD
-}
-Chart.scaleService.registerScaleType('hierarchical', HierarchicalScale, Chart.scaleService.getScaleDefaults('linear'));
+});
+
+const HierarchicalScale = Chart.scaleService.getScaleConstructor('category').extend({
+	// TOOD
+});
+Chart.scaleService.registerScaleType('hierarchical', HierarchicalScale, defaultConfig);
 
 export default HierarchicalScale;

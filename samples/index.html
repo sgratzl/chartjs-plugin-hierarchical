@@ -2,49 +2,54 @@
 <html>
 
 <head>
-    <title>Hierarchical Bar Chart</title>
-    <script src="../node_modules/chart.js/dist/Chart.bundle.js"></script>
-    <script src="../build/Chart.Hierarchical.js" type="text/javascript"></script>
-    <style>
-    canvas {
-        -moz-user-select: none;
-        -webkit-user-select: none;
-        -ms-user-select: none;
-    }
-    </style>
+	<title>Hierarchical Bar Chart</title>
+	<script src="../node_modules/chart.js/dist/Chart.bundle.js"></script>
+	<script src="../build/Chart.Hierarchical.js" type="text/javascript"></script>
+	<style>
+		canvas {
+			-moz-user-select: none;
+			-webkit-user-select: none;
+			-ms-user-select: none;
+		}
+
+	</style>
 </head>
 
 <body>
-    <div id="container" style="width: 75%;">
-        <canvas id="canvas"></canvas>
-    </div><script>
-				const data = {
-					label: ['A', 'B'],
-					datasets: [{
-						label: 'Test',
-						data: [5, 10]
-					}];
-				};
-        const color = Chart.helpers.color;
-        window.onload = () => {
-            const ctx = document.getElementById("canvas").getContext("2d");
-            window.myBar = new Chart(ctx, {
-                type: 'bar',
-                data: data,
-                options: {
-                    responsive: true,
-                    legend: {
-                        position: 'top',
-                    },
-                    title: {
-                        display: true,
-                        text: 'Chart.js Hierarchical Bar Chart'
-                    }
-                }
-            });
+	<div id="container" style="width: 75%;">
+		<canvas id="canvas"></canvas>
+	</div>
+	<script>
+		const data = {
+			labels: ['A', 'B', 'C', 'D'],
+			datasets: [{
+				label: 'Test',
+				data: [5, 10, 1, 2]
+			}]
+		};
+		const color = Chart.helpers.color;
+		window.onload = () => {
+			const ctx = document.getElementById("canvas").getContext("2d");
+			window.myBar = new Chart(ctx, {
+				type: 'bar',
+				data: data,
+				options: {
+					responsive: true,
+					title: {
+						display: true,
+						text: 'Chart.js Hierarchical Bar Chart'
+					},
+					scales: {
+						xAxes: [{
+							type: 'hierarchical'
+						}]
+					}
+				}
+			});
 
-        };
-    </script>
+		};
+
+	</script>
 </body>
 
 </html>
