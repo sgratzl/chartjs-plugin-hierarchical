@@ -1,6 +1,4 @@
 
-
-
 export function asNode(label, parent) {
 	const node = Object.assign({
 		label: '',
@@ -10,7 +8,7 @@ export function asNode(label, parent) {
 		center: NaN,
 		width: 0,
 		hidden: false,
-		major: !Boolean(parent)
+		major: !parent
 	}, typeof label === 'string' ? {label} : label);
 
 	node.children = node.children.map((d) => asNode(d, node));
@@ -24,7 +22,7 @@ function push(node, i, flat, parent) {
 	node.parent = parent ? parent.index : -1;
 	node.hidden = parent ? parent.collapse || !node.collapse : !node.collapse;
 	flat.push(node);
-	node.children.forEach((d, i) => push(d, i, flat, node));
+	node.children.forEach((d, j) => push(d, j, flat, node));
 }
 
 export function toNodes(labels) {
@@ -55,7 +53,7 @@ export function lastOfLevel(node, flat) {
 export function resolve(label, flat, dataTree) {
 	const parents = parentsOf(label, flat);
 
-	let dataItem = { children: dataTree };
+	let dataItem = {children: dataTree};
 	const dataParents = parents.map((p) => dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN);
 
 	return dataParents[dataParents.length - 1];

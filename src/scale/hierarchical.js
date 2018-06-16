@@ -36,7 +36,7 @@ const HierarchicalScale = Chart.Scale.extend({
 		{
 			let prev = nodes[0];
 			distances.push(0.5);
-			for(let i = 1; i < nodes.length; ++i) {
+			for (let i = 1; i < nodes.length; ++i) {
 				const n = nodes[i];
 				if (prev.level !== n.level) {
 					distances.push(ratios[Math.min(prev.level, n.level)]);
@@ -63,7 +63,8 @@ const HierarchicalScale = Chart.Scale.extend({
 			node.width = Math.min(next, previous) / 2;
 		});
 
-		return this.ticks = this._nodes;
+		this.ticks = this._nodes;
+		return this.ticks;
 	},
 
 	convertTicksToLabels(ticks) {

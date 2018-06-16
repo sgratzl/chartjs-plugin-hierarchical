@@ -50,7 +50,7 @@ const HierarchicalPlugin = {
 		const nodes = chart.data.labels;
 		attributes.forEach((attr) => {
 			chart.data.datasets.forEach((d) => {
-				d[attr] = nodes.map((d) => d[attr]);
+				d[attr] = nodes.map((n) => n[attr]);
 			});
 		});
 	},
@@ -134,7 +134,9 @@ const HierarchicalPlugin = {
 			d.hidden = true;
 			d.collapsed = true;
 		});
-		toAdd.forEach((d) => d.hidden = false);
+		toAdd.forEach((d) => {
+			d.hidden = false;
+		});
 
 		data.forEach((dataset) => {
 			const toAddData = toAdd.map((d) => resolve(d, flatLabels, dataset.tree));
@@ -146,6 +148,20 @@ const HierarchicalPlugin = {
 		chart.update();
 	},
 
+	_resolveElement(event, chart, xScale) {
+		const hor = xScale.isHorizontal();
+		let offset = hor ? xScale.top + xScale.options.padding : xScale.left - xScale.options.padding;
+		if ((hor && event.y <= offset) || (!hor && event.x > offset)) {
+			return null;
+		}
+
+		const elem = chart.getElementsAtEventForMode(event, 'index', {axis: hor ? 'x' : 'y'})[0];
+		if (!elem) {
+			return null;
+		}
+		return {offset, index: elem._index};
+	},
+
 	beforeEvent(chart, event) {
 		if (event.type !== 'click' || !this._enabled(chart)) {
 			return;
@@ -154,44 +170,41 @@ const HierarchicalPlugin = {
 		const xScale = this._findXScale(chart);
 		const hor = xScale.isHorizontal();
 
-
-		let offset = hor ? xScale.top + xScale.options.padding : xScale.left - xScale.options.padding;
-		if ((hor && event.y <= offset) || (!hor && event.x > offset)) {
-			return;
-		}
-
-		const elem = chart.getElementsAtEventForMode(event, 'index', {axis: hor ? 'x' : 'y'})[0];
+		const elem = this._resolveElement(event, chart, xScale);
 		if (!elem) {
 			return;
 		}
+		let offset = elem.offset;
 
-		const index = elem._index;
+		const index = elem.index;
 		const flat = chart.data.flatLabels;
 		const label = chart.data.labels[index];
 		const parents = parentsOf(label, flat);
 
+		const inRange = hor ? (o) => event.y >= o && event.y <= o + ROW : (o) => event.x <= o && event.x >= o - ROW;
+
 		for (let i = 1; i < parents.length; ++i) {
 			const parent = parents[i];
-			offset += hor ? ROW : -ROW;
 			// out of box
-			if (parent.relIndex !== 0 || (hor && (event.y <= offset - ROW || event.y >= offset)) || (!hor && (event.x >= offset + ROW || event.x <= offset))) {
-				continue;
+			if (parent.relIndex === 0 || inRange(offset)) {
+				// collapse its parent?
+				const pp = flat[parent.parent];
+				const count = countExpanded(pp);
+				pp.collapse = true;
+				this._splice(chart, index, count, [pp]);
+				return;
 			}
-			// collapse its parent?
-			const pp = flat[parent.parent];
-			const count = countExpanded(pp);
-			pp.collapse = true;
-			this._splice(chart, index, count, [pp]);
-			return;
+			offset += hor ? ROW : -ROW;
 		}
-		if (label.children.length > 0 && ((hor && event.y >= offset && event.y <= offset + ROW) || (!hor && event.x <= offset && event.x >= offset - ROW))) {
+
+		if (label.children.length > 0 && inRange(offset)) {
 			// expand
 			label.collapse = false;
 			this._splice(chart, index, 1, label.children);
 			return;
 		}
 	}
-}
+};
 
 Chart.pluginService.register(HierarchicalPlugin);
 
