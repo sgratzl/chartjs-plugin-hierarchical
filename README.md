@@ -23,22 +23,22 @@ The `hierarchical` axis scale has the following styling options
 
 ```typescript
 interface IHierarchicalScaleOptions {
-	/**
-	 * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
-	 * @default 0.75
-	 */
-	levelPercentage: number;
-	/**
-	 * padding of the first collapse to the start of the x-axis
-	 * @default 25
-	 */
-	padding: number;
-	/**
-	 * object of attributes that should be managed and extacted from the tree datastrutures such as `backgroundColor` for coloring individual bars
-	 * the object conainst the key and default value
-	 * @default {}
-	 */
-	attributes: {[attribute: string]: any};
+  /**
+   * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
+   * @default 0.75
+   */
+  levelPercentage: number;
+  /**
+   * padding of the first collapse to the start of the x-axis
+   * @default 25
+   */
+  padding: number;
+  /**
+   * object of attributes that should be managed and extacted from the tree datastrutures such as `backgroundColor` for coloring individual bars
+   * the object conainst the key and default value
+   * @default {}
+   */
+  attributes: {[attribute: string]: any};
 }
 ```
 
@@ -47,19 +47,19 @@ interface IHierarchicalScaleOptions {
 
 ```typescript
 interface ILabelNode {
-	/**
-	 * label
-	 */
-	label: string;
-	/**
-	 * defines whether this node is collapsed or expanded
-	 * @default true
-	 */
-	collapse?: boolean;
-	/**
-	 * list of children
-	 */
-	children?: ISubLabelNode[];
+  /**
+   * label
+   */
+  label: string;
+  /**
+   * defines whether this node is collapsed or expanded
+   * @default true
+   */
+  collapse?: boolean;
+  /**
+   * list of children
+   */
+  children?: ISubLabelNode[];
 }
 
 /**
@@ -68,14 +68,14 @@ interface ILabelNode {
 declare type ISubLabelNode = ILabelNode | string;
 
 interface IValueNode<T> {
-	/**
-	 * the actual value of this node
-	 */
-	value: T;
-	/**
-	 * list of children
-	 */
-	children?: ISubValueNode<T>[];
+  /**
+   * the actual value of this node
+   */
+  value: T;
+  /**
+   * list of children
+   */
+  children?: ISubValueNode<T>[];
 }
 
 /**
