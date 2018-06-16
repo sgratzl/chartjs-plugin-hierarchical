@@ -26,11 +26,13 @@
 				{
 					label: 'B1',
 					collapse: false,
-					children: ['B1.1',
-					{
-						label: 'B1.2',
-						children: ['B1.2.1', 'B1.2.2']
-					}, 'B1.3']
+					children: [
+						'B1.1',
+						{
+							label: 'B1.2',
+							children: ['B1.2.1', 'B1.2.2']
+						},
+						'B1.3']
 				},
 				{
 					label: 'C1',
@@ -44,10 +46,13 @@
 					1,
 					{
 						x: 2,
-						children: [3, {
-							x: 4,
-							children: [4.1, 4.2]
-						}, 5]
+						children: [
+							3,
+							{
+								x: 4,
+								children: [4.1, 4.2]
+							},
+							5]
 					},
 					{
 						x: 6,
@@ -70,6 +75,7 @@
 					},
 					layout: {
 						padding: {
+							// add more space at the left side for the hierarchy
 							left: 30
 						}
 					},
@@ -81,8 +87,9 @@
 						}],
 						yAxes: [{
 							type: 'hierarchical',
+							// tune padding setting
 							padding: 0,
-							// offset settings
+							// offset setings, for centering the categorical axis in the bar chart case
 							offset: true,
 
 							// grid line settings
