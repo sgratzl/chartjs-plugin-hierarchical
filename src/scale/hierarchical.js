@@ -38,7 +38,13 @@ const HierarchicalScale = Chart.Scale.extend({
 			distances.push(0.5);
 			for(let i = 1; i < nodes.length; ++i) {
 				const n = nodes[i];
-				distances.push(ratios[Math.min(prev.level, n.level)]);
+				if (prev.level !== n.level) {
+					distances.push(ratios[Math.min(prev.level, n.level)]);
+				} else if (prev.parent === n.parent) {
+					distances.push(ratios[n.level]);
+				} else { // different parent
+					distances.push(ratios[n.level - 1]);
+				}
 				prev = n;
 			}
 			distances.push(0.5);
