@@ -1,11 +1,47 @@
 'use strict';
 
 import * as Chart from 'chart.js';
+import {parentsOf} from '../utils';
 
 const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
+	/**
+	 * reduce the space between items at level X by this factor
+	 */
 	levelPercentage: 0.75,
+	/**
+	 * additional attributes to copy, e.g. backgroundColor
+	 * object where the key is the attribute and the value the default value if not explicity specified in the label tree
+	 */
+	attributes: {},
+
+	/**
+	 * top/left padding for showing the hierarchy marker
+	 */
 	padding: 25,
-	attributes: []
+	/**
+	 * size of the box to draw
+	 */
+	hierarchyBoxSize: 10,
+	/**
+	 * distance between two hierarhy indicators
+	 */
+	hierarchyBoxLineHeight: 15,
+	/**
+	 * color of the line indicator hierarchy children
+	 */
+	hierarchySpanColor: 'gray',
+	/**
+	 * storke width of the line
+	 */
+	hierarchySpanWidth: 2,
+	/**
+	 * color of the box to toggle collapse/expand
+	 */
+	hierarchyBoxColor: 'gray',
+	/**
+	 * stroke width of the toggle box
+	 */
+	hierarchyBoxWidth: 1
 });
 
 
@@ -14,8 +50,10 @@ const HierarchicalScale = Chart.Scale.extend({
 		const data = this.chart.data;
 		const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
 
+		// labels are already prepared by the plugin just use them as ticks
 		this._nodes = labels.slice();
 
+		// not really used
 		this.minIndex = 0;
 		this.maxIndex = this._nodes.length;
 		this.min = this._nodes[this.minIndex];
@@ -28,24 +66,38 @@ const HierarchicalScale = Chart.Scale.extend({
 		const hor = this.isHorizontal();
 		const total = hor ? this.width : this.height;
 		const nodes = this._nodes;
-		// optimize such that the distance between two points
+		const flat = this.chart.data.flatLabels;
+
+		// optimize such that the distance between two points on the same level is same
+		// creaiing a grouping effect of nodes
 		const ratio = this.options.levelPercentage;
-		const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2)];
+
+		// max 5 levels for now
+		const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4)];
 
 		const distances = [];
 		{
 			let prev = nodes[0];
-			distances.push(0.5);
+			let prevParents = parentsOf(prev, flat);
+			distances.push(0.5); // half top level distance before and after
+
 			for (let i = 1; i < nodes.length; ++i) {
 				const n = nodes[i];
-				if (prev.level !== n.level) {
-					distances.push(ratios[Math.min(prev.level, n.level)]);
-				} else if (prev.parent === n.parent) {
+				const parents = parentsOf(n, flat);
+				if (prev.parent === n.parent) {
+					// same parent -> can use the level distance
 					distances.push(ratios[n.level]);
-				} else { // different parent
-					distances.push(ratios[n.level - 1]);
+				} else {
+					// differnt level -> use the distance of the common parent
+					// find level of common parent
+					let common = 0;
+					while (parents[common] === prevParents[common]) {
+						common++;
+					}
+					distances.push(ratios[common]);
 				}
 				prev = n;
+				prevParents = parents;
 			}
 			distances.push(0.5);
 		}

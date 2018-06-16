@@ -38,10 +38,11 @@ interface IHierarchicalScaleOptions {
 	 */
 	padding: number;
 	/**
-	 * list of attributes that should be managed and extacted from the tree datastrutures such as `backgroundColor` for coloring individual bars
-	 * @default []
+	 * object of attributes that should be managed and extacted from the tree datastrutures such as `backgroundColor` for coloring individual bars
+	 * the object conainst the key and default value
+	 * @default {}
 	 */
-	attributes: string[];
+	attributes: {[attribute: string]: any};
 }
 ```
 
