@@ -35,3 +35,35 @@ export function toNodes(labels) {
 
 	return flat;
 }
+
+export function parentsOf(node, flat) {
+	const parents = [node];
+	while (parents[0].parent >= 0) {
+		parents.unshift(flat[parents[0].parent]);
+	}
+	return parents;
+}
+
+export function lastOfLevel(node, flat) {
+	let last = flat[node.index];
+	while (last && last.level >= node.level && (last.level !== node.level || last.parent === node.parent)) {
+		last = flat[last.index + 1];
+	}
+	return flat[(last ? last.index : flat.length) - 1];
+}
+
+export function resolve(label, flat, dataTree) {
+	const parents = parentsOf(label, flat);
+
+	let dataItem = { children: dataTree };
+	const dataParents = parents.map((p) => dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN);
+
+	return dataParents[dataParents.length - 1];
+}
+
+export function countExpanded(node) {
+	if (node.collapse) {
+		return 1;
+	}
+	return node.children.reduce((acc, d) => acc + countExpanded(d), 0);
+}
