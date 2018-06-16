@@ -3,16 +3,39 @@
 import * as Chart from 'chart.js';
 import {toNodes} from '../utils';
 
-function resolve(label, flat, dataTree) {
-	if (label.level === 0) {
-		return dataTree[label.relIndex];
+function parentsOf(node, flat) {
+	const parents = [node];
+	while (parents[0].parent >= 0) {
+		parents.unshift(flat[parents[0].parent]);
 	}
-
-	// TODO all levels
-	const p = flat[label.parent];
-	const pData = dataTree[p.relIndex];
-	return pData && pData.children ? pData.children[label.relIndex] : NaN;
+	return parents;
 }
+
+function lastOfLevel(node, flat) {
+	let last = flat[node.index];
+	while (last && last.level >= node.level && (last.level !== node.level || last.parent === node.parent)) {
+		last = flat[last.index + 1];
+	}
+	return flat[(last ? last.index : flat.length) - 1];
+}
+
+function resolve(label, flat, dataTree) {
+	const parents = parentsOf(label, flat);
+
+	let dataItem = { children: dataTree };
+	const dataParents = parents.map((p) => dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN);
+
+	return dataParents[dataParents.length - 1];
+}
+
+function countExpanded(node) {
+	if (node.collapse) {
+		return 1;
+	}
+	return node.children.reduce((acc, d) => acc + countExpanded(d), 0);
+}
+
+const ROW = 15;
 
 const HierarchicalPlugin = {
 	id: 'chartJsPluginHierarchical',
@@ -66,22 +89,35 @@ const HierarchicalPlugin = {
 			return;
 		}
 		const xScale = this._findXScale(chart);
+		const flat = chart.data.flatLabels;
 
 		// RENDER icons
 		const ctx = chart.ctx;
 
 		ctx.save();
+		ctx.translate(xScale.left, xScale.top + xScale.options.padding);
+		ctx.strokeStyle = 'gray';
+		ctx.fillStyle = 'gray';
 
-		const flat = chart.data.flatLabels;
 		chart.data.labels.forEach((tick) => {
-			const p = tick.parent >= 0 ? flat[tick.parent] : null;
-			if (p && p.relIndex === 0) {
-				// first child to collapse
-				ctx.fillText('-', xScale.left + tick.center - tick.width / 2, xScale.top + 5);
-			} else if (!p && tick.children.length > 0) {
-				ctx.fillText('+', xScale.left + tick.center - tick.width / 2, xScale.top + 5);
+			const center = tick.center;
+			let offset = 0;
+			const parents = parentsOf(tick, flat);
+			parents.slice(1).forEach((d) => {
+				if (d.relIndex === 0) {
+					const last = lastOfLevel(d, flat);
+					ctx.strokeRect(center - 5, offset + 0, 10, 10);
+					ctx.fillRect(center - 3, offset + 4, 6, 2);
+					ctx.fillRect(center + 5, offset + 5, last.center - center - 5, 1);
+					ctx.fillRect(last.center, offset + 2, 1, 3);
+				}
+				offset += ROW;
+			});
+			if (tick.children.length > 0) {
+				ctx.strokeRect(center - 5, offset + 0, 10, 10);
+				ctx.fillRect(center - 3, offset + 4, 6, 2);
+				ctx.fillRect(center - 1, offset + 2, 2, 6);
 			}
-			// TODO support all levels
 		});
 
 		ctx.restore();
@@ -93,13 +129,15 @@ const HierarchicalPlugin = {
 		const data = chart.data.datasets;
 
 		const removed = labels.splice.apply(labels, [index, count].concat(toAdd));
-		removed.forEach((d) => d.hidden = true);
+		removed.forEach((d) => {
+			d.hidden = true;
+			d.collapsed = true;
+		});
 		toAdd.forEach((d) => d.hidden = false);
 
 		data.forEach((dataset) => {
-			const tree = dataset.tree;
-			const toAddValues = toAdd.map((d) => resolve(d, flatLabels, tree));
-			dataset.data.splice.apply(dataset.data, [index, count].concat(toAddValues));
+			const toAddData = toAdd.map((d) => resolve(d, flatLabels, dataset.tree));
+			dataset.data.splice.apply(dataset.data, [index, count].concat(toAddData));
 		});
 
 		this._updateAttributes(chart);
@@ -114,7 +152,7 @@ const HierarchicalPlugin = {
 
 		const xScale = this._findXScale(chart);
 
-		if (xScale.top >= event.y || event.y >= xScale.bottom) {
+		if (event.y <= xScale.top + xScale.options.padding) {
 			return;
 		}
 
@@ -126,23 +164,26 @@ const HierarchicalPlugin = {
 		const index = elem._index;
 		const flat = chart.data.flatLabels;
 		const label = chart.data.labels[index];
-		// click
-		if (label.level === 0 && label.children.length === 0) {
-			return;
+		const parents = parentsOf(label, flat);
+
+		let offset = xScale.top + xScale.options.padding;
+		for (let i = 1; i < parents.length; ++i) {
+			const parent = parents[i];
+			if (event.y >= offset && event.y <= offset + ROW && parent.relIndex === 0) {
+				// collapse its parent?
+				const pp = flat[parent.parent];
+				const count = countExpanded(pp);
+				pp.collapse = true;
+				this._splice(chart, index, count, [pp]);
+				return;
+			}
+			offset += ROW;
 		}
-		if (label.level === 0 && label.children.length > 0) {
+		if (event.y >= offset && event.y <= offset + ROW && label.children.length > 0) {
 			// expand
 			label.collapse = false;
 			this._splice(chart, index, 1, label.children);
 			return;
-		}
-
-		const parent = flat[label.parent];
-		if (parent && label.relIndex === 0) {
-			// collapse
-			parent.collapse = true;
-			this._splice(chart, index, parent.children.length, [parent]);
-			return
 		}
 	}
 }

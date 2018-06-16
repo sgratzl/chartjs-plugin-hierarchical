@@ -3,27 +3,15 @@
 import * as Chart from 'chart.js';
 
 const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
-	// TOOD
 	levelPercentage: 0.75,
+	padding: 25,
 	attributes: []
 });
 
 
-
-const superClass = Chart.Scale;
-const _super = superClass.prototype;
-
-function prefix(arr, node) {
-	arr.push(node);
-	node.children.forEach((d) => prefix(arr, d));
-	return arr;
-}
-
-const HierarchicalScale = superClass.extend({
+const HierarchicalScale = Chart.Scale.extend({
 	determineDataLimits() {
 		const data = this.chart.data;
-
-
 		const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
 
 		this._nodes = labels.slice();
@@ -88,14 +76,12 @@ const HierarchicalScale = superClass.extend({
 
 	// Used to get data value locations.  Value can either be an index or a numerical value
 	getPixelForValue(value, index) {
-		const me = this;
-
 		// If value is a data object, then index is the index in the data array,
 		// not the index of the scale. We need to change that.
 		{
 			let valueCategory;
 			if (value !== undefined && value !== null) {
-				valueCategory = me.isHorizontal() ? value.x : value.y;
+				valueCategory = this.isHorizontal() ? value.x : value.y;
 			}
 			if (valueCategory !== undefined || (value !== undefined && isNaN(index))) {
 				value = valueCategory || value;
@@ -105,26 +91,28 @@ const HierarchicalScale = superClass.extend({
 		}
 
 		const node = this._nodes[index];
-
 		const centerTick = this.options.offset;
-
 		const base = this.isHorizontal() ? this.left : this.top;
 
 		return base + node.center - (centerTick ? 0 : node.width / 2);
 	},
+
 	getPixelForTick(index) {
 		const node = this._nodes[index];
 		const centerTick = this.options.offset;
 		const base = this.isHorizontal() ? this.left : this.top;
 		return base + node.center - (centerTick ? 0 : node.width / 2);
 	},
+
 	getValueForPixel(pixel) {
 		return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
 	},
+
 	getBasePixel() {
 		return this.bottom;
 	}
 });
+
 Chart.scaleService.registerScaleType('hierarchical', HierarchicalScale, defaultConfig);
 
 export default HierarchicalScale;

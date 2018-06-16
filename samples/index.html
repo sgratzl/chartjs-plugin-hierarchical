@@ -26,7 +26,11 @@
 				{
 					label: 'B1',
 					collapse: false,
-					children: ['B1.1', 'B1.2', 'B1.3']
+					children: ['B1.1',
+					{
+						label: 'B1.2',
+						children: ['B1.2.1', 'B1.2.2']
+					}, 'B1.3']
 				},
 				{
 					label: 'C1',
@@ -40,7 +44,10 @@
 					1,
 					{
 						y: 2,
-						children: [3, 4, 5]
+						children: [3, {
+							y: 4,
+							children: [4.1, 4.2]
+						}, 5]
 					},
 					{
 						y: 6,
@@ -61,6 +68,11 @@
 						display: true,
 						text: 'Chart.js Hierarchical Bar Chart'
 					},
+					layout: {
+						padding: {
+							bottom: 24
+						}
+					},
 					scales: {
 						xAxes: [{
 							type: 'hierarchical',
@@ -70,9 +82,6 @@
 							// grid line settings
 							gridLines: {
 								offsetGridLines: true
-							},
-							ticks: {
-								min: 'B2'
 							}
 						}],
 						yAxes: [{
