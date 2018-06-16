@@ -48,9 +48,19 @@ const HierarchicalPlugin = {
 		const attributes = xScale.options.attributes;
 
 		const nodes = chart.data.labels;
+		const flat = chart.data.flatLabels;
 		attributes.forEach((attr) => {
 			chart.data.datasets.forEach((d) => {
-				d[attr] = nodes.map((n) => n[attr]);
+				d[attr] = nodes.map((n) => {
+					while (n) {
+						if (n.hasOwnProperty(attr)) {
+							return n[attr];
+						}
+						// walk up the hierarchy
+						n = n.parent >= 0 ? flat[n.parent] : null;
+					}
+					return null;
+				});
 			});
 		});
 	},
