@@ -96,7 +96,12 @@ export function resolve(label, flat, dataTree) {
 		return dataItem;
 	});
 
-	return dataParents[dataParents.length - 1];
+	const value = dataParents[dataParents.length - 1];
+	// convert to value
+	if (typeof value !== 'number' && value.hasOwnProperty('value')) {
+		return value.value;
+	}
+	return value;
 }
 
 /**

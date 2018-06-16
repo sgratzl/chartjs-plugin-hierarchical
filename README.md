@@ -69,13 +69,9 @@ declare type ISubLabelNode = ILabelNode | string;
 
 interface IValueNode<T> {
 	/**
-	 * the actual value of this node, use y for regular bar charts
+	 * the actual value of this node
 	 */
-	y?: T;
-	/**
-	 * the actual value of this node, use x for horizontal bar charts
-	 */
-	x?: T;
+	value: T;
 	/**
 	 * list of children
 	 */
