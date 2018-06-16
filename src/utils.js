@@ -1,4 +1,10 @@
 
+/**
+ * bulids up recursivly the label tree
+ * @param {string|ILabelNode} label
+ * @param {ILabelNode|null} parent
+ * @returns the node itself
+ */
 export function asNode(label, parent) {
 	const node = Object.assign({
 		label: '',
@@ -8,7 +14,7 @@ export function asNode(label, parent) {
 		center: NaN,
 		width: 0,
 		hidden: false,
-		major: !parent
+		major: !parent // for ticks
 	}, typeof label === 'string' ? {label} : label);
 
 	node.children = node.children.map((d) => asNode(d, node));
@@ -16,15 +22,30 @@ export function asNode(label, parent) {
 	return node;
 }
 
+/**
+ * pushses a node into the given flat array and updates the index information to avoid parent links
+ *
+ * @param {ILabelNode} node
+ * @param {number} i relative index of this node to its parent
+ * @param {ILabelNode[]} flat flat array to push
+ * @param {ILabelNode|null} parent
+ */
 function push(node, i, flat, parent) {
 	node.relIndex = i;
-	node.index = flat.length;
+	node.index = flat.length; // absolute index
 	node.parent = parent ? parent.index : -1;
+	// node is hidden if parent is visible or not collapsed
 	node.hidden = parent ? parent.collapse || !node.collapse : !node.collapse;
+
 	flat.push(node);
+
 	node.children.forEach((d, j) => push(d, j, flat, node));
 }
 
+/**
+ * converts the given labels to a flat array of linked nodes
+ * @param {Partial<ILabelNode>|string} labels
+ */
 export function toNodes(labels) {
 	const nodes = labels.map((d) => asNode(d));
 
@@ -34,6 +55,11 @@ export function toNodes(labels) {
 	return flat;
 }
 
+/**
+ * computes the parents (including itself) of the given node
+ * @param {ILabelNode} node
+ * @param {ILabelNode[]} flat flatArray for lookup
+ */
 export function parentsOf(node, flat) {
 	const parents = [node];
 	while (parents[0].parent >= 0) {
@@ -42,6 +68,11 @@ export function parentsOf(node, flat) {
 	return parents;
 }
 
+/**
+ * based on the visibility of the nodes computes the last node in the same level that is visible also considering expanded children
+ * @param {ILabelNode} node
+ * @param {ILabelNode[]} flat flatArray for lookup
+ */
 export function lastOfLevel(node, flat) {
 	let last = flat[node.index];
 	while (last && last.level >= node.level && (last.level !== node.level || last.parent === node.parent)) {
@@ -50,15 +81,28 @@ export function lastOfLevel(node, flat) {
 	return flat[(last ? last.index : flat.length) - 1];
 }
 
+/**
+ * resolves for the given label node its value node
+ * @param {ILabelNode} label
+ * @param {ILabelNode[]} flat
+ * @param {(IValueNode|any)[]} dataTree
+ */
 export function resolve(label, flat, dataTree) {
 	const parents = parentsOf(label, flat);
 
 	let dataItem = {children: dataTree};
-	const dataParents = parents.map((p) => dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN);
+	const dataParents = parents.map((p) => {
+		dataItem = dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN;
+		return dataItem;
+	});
 
 	return dataParents[dataParents.length - 1];
 }
 
+/**
+ * counts the number of nodes that are visible when the given node is expanded
+ * @param {ILabelNode} node
+ */
 export function countExpanded(node) {
 	if (node.collapse) {
 		return 1;
