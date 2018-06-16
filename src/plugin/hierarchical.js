@@ -52,7 +52,9 @@ const HierarchicalPlugin = {
 		const labels = chart.data.labels = chart.data.flatLabels.filter((d) => !d.hidden);
 
 		chart.data.datasets.forEach((dataset) => {
-			dataset.tree = dataset.data.slice();
+			if (dataset.tree == null) {
+				dataset.tree = dataset.data.slice();
+			}
 			dataset.data = labels.map((l) => resolve(l, flat, dataset.tree));
 		});
 	},
