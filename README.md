@@ -3,11 +3,7 @@
 
 Chart.js module for adding a new categorical scale which mimics a hierarchical tree.
 
-![collapse](https://user-images.githubusercontent.com/4129778/41498041-683c5a6a-7163-11e8-87e7-bce88184a012.png)
-
-![collapse1](https://user-images.githubusercontent.com/4129778/41498040-6817dcee-7163-11e8-8713-b7167602b6c3.png)
-
-![collapse2](https://user-images.githubusercontent.com/4129778/41498039-67f6874c-7163-11e8-8336-4087c49ecb1c.png)
+![hierarchy](https://user-images.githubusercontent.com/4129778/41499042-81438f26-717a-11e8-8458-e50b08db5f32.gif)
 
 ## Install
 ```bash
