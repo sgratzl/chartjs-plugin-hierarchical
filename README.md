@@ -53,9 +53,9 @@ interface ILabelNode {
   label: string;
   /**
    * defines whether this node is collapsed or expanded
-   * @default true
+   * @default false
    */
-  collapse?: boolean;
+  expand?: boolean;
   /**
    * list of children
    */
