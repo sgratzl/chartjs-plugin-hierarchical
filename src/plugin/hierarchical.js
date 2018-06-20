@@ -273,7 +273,7 @@ const HierarchicalPlugin = {
     for (let i = 1; i < parents.length; ++i) {
       const parent = parents[i];
       // out of box
-      if (parent.relIndex === 0 || inRange(offset)) {
+      if (parent.relIndex === 0 && inRange(offset)) {
         // collapse its parent?
         const pp = flat[parent.parent];
         const count = countExpanded(pp);
