@@ -9,7 +9,7 @@ export function asNode(label, parent) {
   const node = Object.assign({
     label: '',
     children: [],
-    collapse: true,
+    expand: false,
     level: parent ? parent.level + 1 : 0,
     center: NaN,
     width: 0,
@@ -35,7 +35,7 @@ function push(node, i, flat, parent) {
   node.index = flat.length; // absolute index
   node.parent = parent ? parent.index : -1;
   // node is hidden if parent is visible or not collapsed
-  node.hidden = parent ? parent.collapse || !node.collapse : !node.collapse;
+  node.hidden = parent ? !parent.expand || node.expand : node.expand;
 
   flat.push(node);
 
@@ -109,7 +109,7 @@ export function resolve(label, flat, dataTree) {
  * @param {ILabelNode} node
  */
 export function countExpanded(node) {
-  if (node.collapse) {
+  if (!node.expand) {
     return 1;
   }
   return node.children.reduce((acc, d) => acc + countExpanded(d), 0);

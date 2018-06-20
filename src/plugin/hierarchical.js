@@ -41,8 +41,21 @@ const HierarchicalPlugin = {
     }
     // convert labels to nodes
     const flat = chart.data.flatLabels = toNodes(chart.data.labels);
-    // the real labels are the one not hidden in the tree
-    const labels = chart.data.labels = chart.data.flatLabels.filter((d) => !d.hidden);
+
+
+    const focus = flat.find((d) => d.expand === 'focus');
+    let labels;
+
+    if (focus) {
+      const count = countExpanded(focus);
+      labels = flat.slice(focus.index + 1, focus.index + 1 + count);
+    } else {
+      // the real labels are the one not hidden in the tree
+      labels = chart.data.labels = chart.data.flatLabels.filter((d) => !d.hidden);
+    }
+
+    chart.data.labels = labels;
+
     // convert the data tree to the flat visible counterpart
     chart.data.datasets.forEach((dataset) => {
       if (dataset.tree == null) {
@@ -217,7 +230,7 @@ const HierarchicalPlugin = {
     const removed = labels.splice.apply(labels, [index, count].concat(toAdd));
     removed.forEach((d) => {
       d.hidden = true;
-      d.collapsed = true;
+      d.expand = false;
     });
     toAdd.forEach((d) => {
       d.hidden = false;
@@ -235,27 +248,27 @@ const HierarchicalPlugin = {
 
   _collapse(chart, index, parent) {
     const count = countExpanded(parent);
-    parent.collapse = true;
+    parent.expand = false;
     this._expandCollapse(chart, index, count, [parent]);
   },
 
   _expand(chart, index, node) {
-    node.collapse = false;
+    node.expand = true;
     this._expandCollapse(chart, index, 1, node.children);
   },
 
   _zoomIn(chart, index, parent) {
     const count = countExpanded(parent);
-    parent.collapse = 'focus';
+    parent.expand = 'focus';
 
     const labels = chart.data.labels;
     labels.splice(0, index);
-    labels.splice(index + count, labels.length);
+    labels.splice(index + count - 1, labels.length);
 
     const data = chart.data.datasets;
     data.forEach((dataset) => {
       dataset.data.splice(0, index);
-      dataset.data.splice(index + count, dataset.data.length);
+      dataset.data.splice(index + count - 1, dataset.data.length);
     });
 
     this._updateAttributes(chart);
@@ -267,21 +280,21 @@ const HierarchicalPlugin = {
     const labels = chart.data.labels;
     const flatLabels = chart.data.flatLabels;
 
-    parent.collapse = false;
+    parent.expand = true;
     const nextLabels = flatLabels.filter((d) => !d.hidden);
     const index = nextLabels.indexOf(labels[0]);
     const count = labels.length;
 
-    labels.splice(labels.length, 0, nextLabels.slice(index + count));
-    labels.splice(0, 0, );
+    labels.splice.apply(labels, [labels.length, 0].concat(nextLabels.slice(index + count - 1)));
+    labels.splice.apply(labels, [0, 0].concat(nextLabels.slice(0, index)));
 
     const data = chart.data.datasets;
     data.forEach((dataset) => {
       const toAddBefore = nextLabels.slice(0, index).map((d) => resolve(d, flatLabels, dataset.tree));
-      const toAddAfter = nextLabels.slice(index + count).map((d) => resolve(d, flatLabels, dataset.tree));
+      const toAddAfter = nextLabels.slice(index + count - 1).map((d) => resolve(d, flatLabels, dataset.tree));
 
-      dataset.data.splice(labels.length, 0, toAddAfter);
-      dataset.data.splice(0, 0, toAddBefore);
+      dataset.data.splice.apply(labels, [labels.length, 0].concat(toAddAfter));
+      dataset.data.splice.apply(labels, [0, 0].concat(toAddBefore));
     });
 
 
@@ -333,6 +346,7 @@ const HierarchicalPlugin = {
         // collapse its parent?
         const pp = flat[parent.parent];
         this._collapse(chart, index, pp);
+        // this._zoomIn(chart, index, pp);
         return;
       }
       offset += hor ? boxRow : -boxRow;
@@ -341,6 +355,7 @@ const HierarchicalPlugin = {
     if (label.children.length > 0 && inRange(offset)) {
       // expand
       this._expand(chart, index, label);
+      // this._zoomOut(chart, label);
       return;
     }
   }
