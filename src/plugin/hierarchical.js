@@ -3,6 +3,22 @@
 import * as Chart from 'chart.js';
 import {toNodes, countExpanded, lastOfLevel, resolve, parentsOf} from '../utils';
 
+
+function parseFontOptions(options) {
+  const valueOrDefault = Chart.helpers.valueOrDefault;
+  const globalDefaults = Chart.defaults.global;
+  const size = valueOrDefault(options.fontSize, globalDefaults.defaultFontSize);
+  const style = valueOrDefault(options.fontStyle, globalDefaults.defaultFontStyle);
+  const family = valueOrDefault(options.fontFamily, globalDefaults.defaultFontFamily);
+
+  return {
+    size: size,
+    style: style,
+    family: family,
+    font: Chart.helpers.fontString(size, style, family)
+  };
+}
+
 const HierarchicalPlugin = {
   id: 'chartJsPluginHierarchical',
 
@@ -99,11 +115,20 @@ const HierarchicalPlugin = {
     const boxSpanColor = scale.options.hierarchySpanColor;
     const boxSpanWidth = scale.options.hierarchySpanWidth;
 
+    const scaleLabel = scale.options.scaleLabel;
+    const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.defaultFontColor);
+    const scaleLabelFont = parseFontOptions(scaleLabel);
+
     ctx.save();
     ctx.strokeStyle = boxColor;
     ctx.lineeWidth = boxWidth;
+    ctx.fillStyle = scaleLabelFontColor; // render in correct colour
+    ctx.font = scaleLabelFont.font;
+
 
     if (hor) {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
       ctx.translate(scale.left, scale.top + scale.options.padding);
 
       chart.data.labels.forEach((tick) => {
@@ -111,11 +136,14 @@ const HierarchicalPlugin = {
         let offset = 0;
         const parents = parentsOf(tick, flat);
 
-        parents.slice(1).forEach((d) => {
+        parents.slice(1).forEach((d, i) => {
           if (d.relIndex === 0) {
             const last = lastOfLevel(d, flat);
+            const next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
             ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
             ctx.strokeRect(center - 3, offset + 4, 6, 2);
+
+            ctx.fillText(parents[i].label, (next.center + center) / 2, offset + boxSize);
 
             // render helper indicator line
             ctx.strokeStyle = boxSpanColor;
@@ -133,11 +161,13 @@ const HierarchicalPlugin = {
 
         if (tick.children.length > 0) {
           ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-          ctx.strokeRect(center - 3, offset + 4, 6, 2);
-          ctx.strokeRect(center - 1, offset + 2, 2, 6);
+          ctx.fillRect(center - 3, offset + 4, 6, 2);
+          ctx.fillRect(center - 1, offset + 2, 2, 6);
         }
       });
     } else {
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'center';
       ctx.translate(scale.left - scale.options.padding, scale.top);
 
       chart.data.labels.forEach((tick) => {
@@ -145,11 +175,14 @@ const HierarchicalPlugin = {
         let offset = 0;
         const parents = parentsOf(tick, flat);
 
-        parents.slice(1).forEach((d) => {
+        parents.slice(1).forEach((d, i) => {
           if (d.relIndex === 0) {
             const last = lastOfLevel(d, flat);
+            const next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
             ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
             ctx.fillRect(offset - 8, center - 1, 6, 2);
+
+            ctx.fillText(parents[i].label, offset - boxSize, (next.center + center) / 2);
 
             // render helper indicator line
             ctx.strokeStyle = boxSpanColor;
@@ -168,8 +201,8 @@ const HierarchicalPlugin = {
         // render expand hint
         if (tick.children.length > 0) {
           ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
-          ctx.strokeRect(offset - 8, center - 1, 6, 2);
-          ctx.strokeRect(offset - 6, center - 3, 2, 6);
+          ctx.fillRect(offset - 8, center - 1, 6, 2);
+          ctx.fillRect(offset - 6, center - 3, 2, 6);
         }
       });
     }
