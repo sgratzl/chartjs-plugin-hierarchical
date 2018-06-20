@@ -65,7 +65,7 @@ const HierarchicalScale = Chart.Scale.extend({
   buildTicks() {
     const hor = this.isHorizontal();
     const total = hor ? this.width : this.height;
-    const nodes = this._nodes;
+    const nodes = this._nodes.slice(this.minIndex, this.maxIndex);
     const flat = this.chart.data.flatLabels;
 
     // optimize such that the distance between two points on the same level is same
@@ -115,7 +115,7 @@ const HierarchicalScale = Chart.Scale.extend({
       node.width = Math.min(next, previous) / 2;
     });
 
-    this.ticks = this._nodes;
+    this.ticks = nodes;
     return this.ticks;
   },
 
@@ -157,7 +157,7 @@ const HierarchicalScale = Chart.Scale.extend({
   },
 
   getPixelForTick(index) {
-    const node = this._nodes[index];
+    const node = this._nodes[index + this.minIndex];
     const centerTick = this.options.offset;
     const base = this.isHorizontal() ? this.left : this.top;
     return base + node.center - (centerTick ? 0 : node.width / 2);
