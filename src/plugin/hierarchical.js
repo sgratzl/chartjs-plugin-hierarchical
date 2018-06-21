@@ -47,8 +47,7 @@ const HierarchicalPlugin = {
     let labels;
 
     if (focus) {
-      const count = countExpanded(focus);
-      labels = flat.slice(focus.index + 1, focus.index + 1 + count);
+      labels = flat.slice(focus.index + 1).filter((d) => !d.hidden && parentsOf(d, flat).includes(focus));
     } else {
       // the real labels are the one not hidden in the tree
       labels = chart.data.labels = chart.data.flatLabels.filter((d) => !d.hidden);

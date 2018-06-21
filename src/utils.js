@@ -34,8 +34,8 @@ function push(node, i, flat, parent) {
   node.relIndex = i;
   node.index = flat.length; // absolute index
   node.parent = parent ? parent.index : -1;
-  // node is hidden if parent is visible or not collapsed
-  node.hidden = parent ? !parent.expand || node.expand : node.expand;
+  // node is hidden if parent is visible or not expanded
+  node.hidden = Boolean(parent ? parent.expand === false || node.expand : node.expand);
 
   flat.push(node);
 
