@@ -148,24 +148,35 @@ const HierarchicalPlugin = {
         const parents = parentsOf(tick, flat);
 
         parents.slice(1).forEach((d, i) => {
+          const pp = parents[i];
           if (d.relIndex === 0) {
             const last = lastOfLevel(d, flat);
             const next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
-            ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-            ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
 
-            ctx.fillText(parents[i].label, (next.center + center) / 2, offset + boxSize);
+            if (pp.expand !== 'focus') {
+              ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
+              ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
+            }
+            ctx.strokeRect(last.center - boxSize5, offset + 0, boxSize, boxSize);
+            ctx.fillRect(last.center - 2, offset + boxSize5 - 2, 4, 4);
+
+            ctx.fillText(pp.label, (next.center + center) / 2, offset + boxSize);
 
             // render helper indicator line
             ctx.strokeStyle = boxSpanColor;
             ctx.lineWidth = boxSpanWidth;
             ctx.beginPath();
-            ctx.moveTo(center + boxSize5, offset + boxSize5);
-            ctx.lineTo(last.center, offset + boxSize5);
-            ctx.lineTo(last.center, offset + boxSize1);
+            ctx.moveTo(last.center - boxSize5, offset + boxSize5);
+            if (pp.expand === 'focus') {
+              ctx.lineTo(center, offset + boxSize5);
+              ctx.lineTo(center, offset + boxSize1);
+            } else {
+              ctx.lineTo(center + boxSize5, offset + boxSize5);
+            }
             ctx.stroke();
             ctx.strokeStyle = boxColor;
             ctx.lineWidth = boxWidth;
+
           }
           offset += boxRow;
         });
@@ -199,8 +210,8 @@ const HierarchicalPlugin = {
             ctx.strokeStyle = boxSpanColor;
             ctx.lineWidth = boxSpanWidth;
             ctx.beginPath();
-            ctx.moveTo(offset - boxSize5, center + boxSize5);
-            ctx.lineTo(offset - boxSize5, last.center);
+            ctx.moveTo(offset - boxSize5, last.center - boxSize5);
+            ctx.lineTo(offset - boxSize5, center + boxSize5);
             ctx.lineTo(offset - boxSize1, last.center);
             ctx.stroke();
             ctx.strokeStyle = boxColor;
@@ -256,18 +267,19 @@ const HierarchicalPlugin = {
     node.expand = true;
   },
 
-  _zoomIn(chart, index, parent) {
+  _zoomIn(chart, lastIndex, parent) {
     const count = countExpanded(parent);
     parent.expand = 'focus';
+    const index = lastIndex - count + 1;
 
     const labels = chart.data.labels;
+    labels.splice(lastIndex + 1, labels.length);
     labels.splice(0, index);
-    labels.splice(index + count - 1, labels.length);
 
     const data = chart.data.datasets;
     data.forEach((dataset) => {
+      dataset.data.splice(lastIndex + 1, dataset.data.length);
       dataset.data.splice(0, index);
-      dataset.data.splice(index + count - 1, dataset.data.length);
     });
 
     this._updateAttributes(chart);
@@ -341,15 +353,20 @@ const HierarchicalPlugin = {
     for (let i = 1; i < parents.length; ++i) {
       const parent = parents[i];
       // out of box
-      if (parent.relIndex === 0 && inRange(offset) && (parent.children[0] === parents[i + 1] || i === parents.length - 1)) {
-        // collapse its parent?
+      if (inRange(offset) && (parent.children[0] === parents[i + 1] || i === parents.length - 1)) {
         const pp = flat[parent.parent];
-        if (pp.expand === 'focus') {
-          this._zoomOut(chart, pp);
-        } else {
+        if (parent.relIndex === 0 && pp.expand === true) {
           this._collapse(chart, index, pp);
+          return;
         }
-        return;
+        if (pp.children.length === parent.relIndex + 1) {
+          if (pp.expand === 'focus') {
+            this._zoomOut(chart, pp);
+          } else {
+            this._zoomIn(chart, index, pp);
+          }
+          return;
+        }
       }
       offset += hor ? boxRow : -boxRow;
     }
@@ -357,7 +374,6 @@ const HierarchicalPlugin = {
     if (label.children.length > 0 && inRange(offset)) {
       // expand
       this._expand(chart, index, label);
-      // this._zoomIn(chart, index, pp);
       return;
     }
   }
