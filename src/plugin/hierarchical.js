@@ -284,16 +284,16 @@ const HierarchicalPlugin = {
     const index = nextLabels.indexOf(labels[0]);
     const count = labels.length;
 
-    labels.splice.apply(labels, [labels.length, 0].concat(nextLabels.slice(index + count - 1)));
+    labels.splice.apply(labels, [labels.length, 0].concat(nextLabels.slice(index + count)));
     labels.splice.apply(labels, [0, 0].concat(nextLabels.slice(0, index)));
 
     const data = chart.data.datasets;
     data.forEach((dataset) => {
       const toAddBefore = nextLabels.slice(0, index).map((d) => resolve(d, flatLabels, dataset.tree));
-      const toAddAfter = nextLabels.slice(index + count - 1).map((d) => resolve(d, flatLabels, dataset.tree));
+      const toAddAfter = nextLabels.slice(index + count).map((d) => resolve(d, flatLabels, dataset.tree));
 
-      dataset.data.splice.apply(labels, [labels.length, 0].concat(toAddAfter));
-      dataset.data.splice.apply(labels, [0, 0].concat(toAddBefore));
+      dataset.data.splice.apply(dataset.data, [labels.length, 0].concat(toAddAfter));
+      dataset.data.splice.apply(dataset.data, [0, 0].concat(toAddBefore));
     });
 
 
@@ -344,8 +344,11 @@ const HierarchicalPlugin = {
       if (parent.relIndex === 0 && inRange(offset) && (parent.children[0] === parents[i + 1] || i === parents.length - 1)) {
         // collapse its parent?
         const pp = flat[parent.parent];
-        this._collapse(chart, index, pp);
-        // this._zoomIn(chart, index, pp);
+        if (pp.expand === 'focus') {
+          this._zoomOut(chart, pp);
+        } else {
+          this._collapse(chart, index, pp);
+        }
         return;
       }
       offset += hor ? boxRow : -boxRow;
@@ -354,7 +357,7 @@ const HierarchicalPlugin = {
     if (label.children.length > 0 && inRange(offset)) {
       // expand
       this._expand(chart, index, label);
-      // this._zoomOut(chart, label);
+      // this._zoomIn(chart, index, pp);
       return;
     }
   }
