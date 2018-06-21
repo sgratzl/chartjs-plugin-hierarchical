@@ -248,13 +248,13 @@ const HierarchicalPlugin = {
 
   _collapse(chart, index, parent) {
     const count = countExpanded(parent);
-    parent.expand = false;
     this._expandCollapse(chart, index, count, [parent]);
+    parent.expand = false;
   },
 
   _expand(chart, index, node) {
-    node.expand = true;
     this._expandCollapse(chart, index, 1, node.children);
+    node.expand = true;
   },
 
   _zoomIn(chart, index, parent) {
@@ -342,7 +342,7 @@ const HierarchicalPlugin = {
     for (let i = 1; i < parents.length; ++i) {
       const parent = parents[i];
       // out of box
-      if (parent.relIndex === 0 && inRange(offset)) {
+      if (parent.relIndex === 0 && inRange(offset) && (parent.children[0] === parents[i + 1] || i === parents.length - 1)) {
         // collapse its parent?
         const pp = flat[parent.parent];
         this._collapse(chart, index, pp);
