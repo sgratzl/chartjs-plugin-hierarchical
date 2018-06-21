@@ -198,21 +198,33 @@ const HierarchicalPlugin = {
         const parents = parentsOf(tick, flat);
 
         parents.slice(1).forEach((d, i) => {
+          const pp = parents[i];
           if (d.relIndex === 0) {
             const last = lastOfLevel(d, flat);
             const next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
-            ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
-            ctx.fillRect(offset - 8, center - 1, 6, 2);
 
-            ctx.fillText(parents[i].label, offset - boxSize, (next.center + center) / 2);
+            if (pp.expand !== 'focus') {
+              ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
+              ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
+            }
+            ctx.strokeRect(offset - boxSize, last.center - boxSize5, boxSize, boxSize);
+            ctx.fillRect(offset - boxSize5 - 2, last.center - 2, 4, 4);
+
+            ctx.fillText(pp.label, offset - boxSize, (next.center + center) / 2);
 
             // render helper indicator line
             ctx.strokeStyle = boxSpanColor;
             ctx.lineWidth = boxSpanWidth;
             ctx.beginPath();
+
             ctx.moveTo(offset - boxSize5, last.center - boxSize5);
-            ctx.lineTo(offset - boxSize5, center + boxSize5);
-            ctx.lineTo(offset - boxSize1, last.center);
+            if (pp.expand === 'focus') {
+              ctx.lineTo(offset - boxSize5, center);
+              ctx.lineTo(offset - boxSize1, center);
+            } else {
+              ctx.lineTo(offset - boxSize5, center + boxSize5);
+            }
+
             ctx.stroke();
             ctx.strokeStyle = boxColor;
             ctx.lineWidth = boxWidth;
@@ -223,8 +235,8 @@ const HierarchicalPlugin = {
         // render expand hint
         if (tick.children.length > 0) {
           ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
-          ctx.fillRect(offset - 8, center - 1, 6, 2);
-          ctx.fillRect(offset - 6, center - 3, 2, 6);
+          ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
+          ctx.fillRect(offset - boxSize5 - 1, center - boxSize5 + 2, 2, boxSize - 4);
         }
       });
     }
