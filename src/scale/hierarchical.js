@@ -21,11 +21,11 @@ const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('cat
   /**
    * size of the box to draw
    */
-  hierarchyBoxSize: 10,
+  hierarchyBoxSize: 14,
   /**
    * distance between two hierarhy indicators
    */
-  hierarchyBoxLineHeight: 15,
+  hierarchyBoxLineHeight: 22,
   /**
    * color of the line indicator hierarchy children
    */

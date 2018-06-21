@@ -152,7 +152,7 @@ const HierarchicalPlugin = {
             const last = lastOfLevel(d, flat);
             const next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
             ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-            ctx.strokeRect(center - 3, offset + 4, 6, 2);
+            ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
 
             ctx.fillText(parents[i].label, (next.center + center) / 2, offset + boxSize);
 
@@ -172,8 +172,8 @@ const HierarchicalPlugin = {
 
         if (tick.children.length > 0) {
           ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-          ctx.fillRect(center - 3, offset + 4, 6, 2);
-          ctx.fillRect(center - 1, offset + 2, 2, 6);
+          ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
+          ctx.fillRect(center - 1, offset + 2, 2, boxSize - 4);
         }
       });
     } else {
