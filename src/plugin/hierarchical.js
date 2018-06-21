@@ -371,12 +371,13 @@ const HierarchicalPlugin = {
           this._collapse(chart, index, pp);
           return;
         }
-        if (pp.children.length === parent.relIndex + 1) {
-          if (pp.expand === 'focus') {
-            this._zoomOut(chart, pp);
-          } else {
-            this._zoomIn(chart, index, pp);
-          }
+        const isLastIndex = pp.children.length === parent.relIndex + 1;
+
+        if (isLastIndex && pp.expand === 'focus') {
+          this._zoomOut(chart, pp);
+          return;
+        } else if (isLastIndex && pp.expand === true) {
+          this._zoomIn(chart, index, pp);
           return;
         }
       }
