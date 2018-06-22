@@ -3,7 +3,7 @@
 
 Chart.js module for adding a new categorical scale which mimics a hierarchical tree.
 
-![hierarchy](https://user-images.githubusercontent.com/4129778/41499042-81438f26-717a-11e8-8458-e50b08db5f32.gif)
+![hierarchy](https://user-images.githubusercontent.com/4129778/41763778-6722e04a-75ff-11e8-84ad-1b417fd25c65.gif)
 
 ## Install
 ```bash
@@ -52,10 +52,10 @@ interface ILabelNode {
    */
   label: string;
   /**
-   * defines whether this node is collapsed or expanded
+   * defines whether this node is collapsed (false) or expanded (true) or focussed ('focus')
    * @default false
    */
-  expand?: boolean;
+  expand?: boolean | 'focus';
   /**
    * list of children
    */
