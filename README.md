@@ -13,6 +13,8 @@ npm install --save chart.js chartjs-scale-hierarchical
 ## Usage
 see [Samples](https://github.com/datavisyn/chartjs-scale-hierarchical/tree/master/samples) on Github
 
+or at this [CodePen](https://codepen.io/sgratzl/pen/vrVXae)
+
 ## Scale
 
 a new scale type `hierarchical`.
