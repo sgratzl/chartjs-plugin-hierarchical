@@ -35,13 +35,13 @@ const HierarchicalPlugin = {
     return null;
   },
 
-  beforeInit(chart) {
-    if (!this._enabled(chart)) {
+  _check(chart) {
+    if (chart.data.flatLabels && chart.data._verify === JSON.stringify(chart.data.flatLabels)) {
       return;
     }
+
     // convert labels to nodes
     const flat = chart.data.flatLabels = toNodes(chart.data.labels);
-
 
     const focus = flat.find((d) => d.expand === 'focus');
     let labels;
@@ -54,6 +54,7 @@ const HierarchicalPlugin = {
     }
 
     chart.data.labels = labels;
+    this._updateVerifyCode(chart);
 
     // convert the data tree to the flat visible counterpart
     chart.data.datasets.forEach((dataset) => {
@@ -62,13 +63,12 @@ const HierarchicalPlugin = {
       }
       dataset.data = labels.map((l) => resolve(l, flat, dataset.tree));
     });
+
+    this._updateAttributes(chart);
   },
 
-  afterInit(chart) {
-    if (!this._enabled(chart)) {
-      return;
-    }
-    this._updateAttributes(chart);
+  _updateVerifyCode(chart) {
+    chart.data._verify = JSON.stringify(chart.data.flatLabels);
   },
 
   /**
@@ -103,6 +103,13 @@ const HierarchicalPlugin = {
   _findScale(chart) {
     const scales = Object.keys(chart.scales).map((d) => chart.scales[d]);
     return scales.find((d) => d.type === 'hierarchical');
+  },
+
+  beforeUpdate(chart) {
+    if (!this._enabled(chart)) {
+      return;
+    }
+    this._check(chart);
   },
 
   /**
@@ -263,6 +270,7 @@ const HierarchicalPlugin = {
       dataset.data.splice.apply(dataset.data, [index, count].concat(toAddData));
     });
 
+    this._updateVerifyCode(chart);
     this._updateAttributes(chart);
 
     chart.update();
@@ -294,6 +302,7 @@ const HierarchicalPlugin = {
       dataset.data.splice(0, index);
     });
 
+    this._updateVerifyCode(chart);
     this._updateAttributes(chart);
 
     chart.update();
@@ -320,7 +329,7 @@ const HierarchicalPlugin = {
       dataset.data.splice.apply(dataset.data, [0, 0].concat(toAddBefore));
     });
 
-
+    this._updateVerifyCode(chart);
     this._updateAttributes(chart);
 
     chart.update();

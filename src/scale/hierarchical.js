@@ -68,6 +68,11 @@ const HierarchicalScale = Chart.Scale.extend({
     const nodes = this._nodes.slice(this.minIndex, this.maxIndex);
     const flat = this.chart.data.flatLabels;
 
+    if (nodes.length === 0) {
+      this.ticks = [];
+      return this.ticks;
+    }
+
     // optimize such that the distance between two points on the same level is same
     // creaiing a grouping effect of nodes
     const ratio = this.options.levelPercentage;
