@@ -36,7 +36,7 @@ const HierarchicalPlugin = {
   },
 
   _check(chart) {
-    if (chart.data.flatLabels && chart.data._verify === JSON.stringify(chart.data.flatLabels)) {
+    if (chart.data.labels && chart.data._verify === JSON.stringify(chart.data.labels)) {
       return;
     }
 
@@ -68,7 +68,7 @@ const HierarchicalPlugin = {
   },
 
   _updateVerifyCode(chart) {
-    chart.data._verify = JSON.stringify(chart.data.flatLabels);
+    chart.data._verify = JSON.stringify(chart.data.labels);
   },
 
   /**
