@@ -4,7 +4,7 @@
   "main": "build/Chart.Hierarchical.js",
   "jsnext:main": "build/Chart.Hierarchical.js",
   "module": "build/Chart.Hierarchical.js",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "author": {
     "name": "Samuel Gratzl",
     "email": "samuel.gratzl@datavisyn.io",
