@@ -30,7 +30,8 @@ function generateCode(labels) {
     code += `(l=${label.label},e=${label.expand},c=[`;
     (label.children || []).forEach(encode);
     code += '])';
-  }
+  };
+
   labels.forEach(encode);
   return code;
 }
