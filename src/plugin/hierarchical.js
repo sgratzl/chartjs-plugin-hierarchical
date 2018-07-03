@@ -134,7 +134,7 @@ const HierarchicalPlugin = {
     const boxSpanWidth = scale.options.hierarchySpanWidth;
 
     const scaleLabel = scale.options.scaleLabel;
-    const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.defaultFontColor);
+    const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.global.defaultFontColor);
     const scaleLabelFont = parseFontOptions(scaleLabel);
 
     ctx.save();
