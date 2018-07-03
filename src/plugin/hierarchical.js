@@ -19,6 +19,22 @@ function parseFontOptions(options) {
   };
 }
 
+function generateCode(labels) {
+  // label, expand, children
+  let code = '';
+  const encode = (label) => {
+    if (typeof label === 'string') {
+      code += label;
+      return;
+    }
+    code += `(l=${label.label},e=${label.expand},c=[`;
+    (label.children || []).forEach(encode);
+    code += '])';
+  }
+  labels.forEach(encode);
+  return code;
+}
+
 const HierarchicalPlugin = {
   id: 'chartJsPluginHierarchical',
 
@@ -36,7 +52,7 @@ const HierarchicalPlugin = {
   },
 
   _check(chart) {
-    if (chart.data.labels && chart.data._verify === JSON.stringify(chart.data.labels)) {
+    if (chart.data.labels && chart.data._verify === generateCode(chart.data.labels)) {
       return;
     }
 
@@ -68,7 +84,7 @@ const HierarchicalPlugin = {
   },
 
   _updateVerifyCode(chart) {
-    chart.data._verify = JSON.stringify(chart.data.labels);
+    chart.data._verify = generateCode(chart.data.labels);
   },
 
   /**

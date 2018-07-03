@@ -120,7 +120,7 @@ const HierarchicalScale = Chart.Scale.extend({
       node.width = Math.min(next, previous) / 2;
     });
 
-    this.ticks = nodes;
+    this.ticks = nodes.map((d) => Object.assign({}, d)); // copy since mutated during auto skip
     return this.ticks;
   },
 
