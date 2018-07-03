@@ -1,9 +1,6 @@
 {
   "name": "chartjs-scale-hierarchical",
   "description": "Chart.js module for hierarchical categories",
-  "main": "build/Chart.Hierarchical.js",
-  "jsnext:main": "build/Chart.Hierarchical.js",
-  "module": "build/Chart.Hierarchical.js",
   "version": "1.0.2",
   "author": {
     "name": "Samuel Gratzl",
@@ -15,6 +12,9 @@
     "type": "git",
     "url": "https://github.com/datavisyn/chartjs-scale-hierarchical.git"
   },
+  "main": "build/Chart.Hierarchical.js",
+  "jsnext:main": "build/Chart.Hierarchical.js",
+  "module": "build/Chart.Hierarchical.js",
   "files": [
     "build",
     "src/**/*.js"
