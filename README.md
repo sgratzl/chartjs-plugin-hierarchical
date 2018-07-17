@@ -36,6 +36,12 @@ interface IHierarchicalScaleOptions {
    */
   padding: number;
   /**
+   * position of the hierarchy label in expanded levels, null to disable
+   * @default 'below'
+   */
+  hierarchyLabelPosition: 'below'|'above'|null;
+
+  /**
    * object of attributes that should be managed and extacted from the tree datastrutures such as `backgroundColor` for coloring individual bars
    * the object conainst the key and default value
    * @default {}

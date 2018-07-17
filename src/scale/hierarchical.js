@@ -19,6 +19,11 @@ const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('cat
    */
   padding: 25,
   /**
+   * position of the hierarchy label
+   * possible values: 'below', 'above', null to disable
+   */
+  hierarchyLabelPosition: 'below',
+  /**
    * size of the box to draw
    */
   hierarchyBoxSize: 14,

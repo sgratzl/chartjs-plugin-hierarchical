@@ -149,6 +149,7 @@ const HierarchicalPlugin = {
     const boxWidth = scale.options.hierarchyBoxWidth;
     const boxSpanColor = scale.options.hierarchySpanColor;
     const boxSpanWidth = scale.options.hierarchySpanWidth;
+    const renderLabel = scale.options.hierarchyLabelPosition;
 
     const scaleLabel = scale.options.scaleLabel;
     const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.global.defaultFontColor);
@@ -163,7 +164,7 @@ const HierarchicalPlugin = {
 
     if (hor) {
       ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
+      ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
       ctx.translate(scale.left, scale.top + scale.options.padding);
 
       chart.data.labels.forEach((tick) => {
@@ -184,7 +185,11 @@ const HierarchicalPlugin = {
             ctx.strokeRect(last.center - boxSize5, offset + 0, boxSize, boxSize);
             ctx.fillRect(last.center - 2, offset + boxSize5 - 2, 4, 4);
 
-            ctx.fillText(pp.label, (next.center + center) / 2, offset + boxSize);
+            if (renderLabel === 'below') {
+              ctx.fillText(pp.label, (next.center + center) / 2, offset + boxSize);
+            } else if (renderLabel === 'above') {
+              ctx.fillText(pp.label, (next.center + center) / 2, offset - boxSize);
+            }
 
             // render helper indicator line
             ctx.strokeStyle = boxSpanColor;
@@ -234,7 +239,9 @@ const HierarchicalPlugin = {
             ctx.strokeRect(offset - boxSize, last.center - boxSize5, boxSize, boxSize);
             ctx.fillRect(offset - boxSize5 - 2, last.center - 2, 4, 4);
 
-            ctx.fillText(pp.label, offset - boxSize, (next.center + center) / 2);
+            if (renderLabel) {
+              ctx.fillText(pp.label, offset - boxSize, (next.center + center) / 2);
+            }
 
             // render helper indicator line
             ctx.strokeStyle = boxSpanColor;
