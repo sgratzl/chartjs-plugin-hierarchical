@@ -176,14 +176,15 @@ const HierarchicalPlugin = {
           const pp = parents[i];
           if (d.relIndex === 0) {
             const last = lastOfLevel(d, flat);
-            const next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
+            let next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
+            const singleChild = !next;
+            next = next || d;
 
             if (pp.expand !== 'focus') {
+              // uncollapse button
               ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
               ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
             }
-            ctx.strokeRect(last.center - boxSize5, offset + 0, boxSize, boxSize);
-            ctx.fillRect(last.center - 2, offset + boxSize5 - 2, 4, 4);
 
             if (renderLabel === 'below') {
               ctx.fillText(pp.label, (next.center + center) / 2, offset + boxSize);
@@ -192,20 +193,25 @@ const HierarchicalPlugin = {
             }
 
             // render helper indicator line
-            ctx.strokeStyle = boxSpanColor;
-            ctx.lineWidth = boxSpanWidth;
-            ctx.beginPath();
-            ctx.moveTo(last.center - boxSize5, offset + boxSize5);
-            if (pp.expand === 'focus') {
-              ctx.lineTo(center, offset + boxSize5);
-              ctx.lineTo(center, offset + boxSize1);
-            } else {
-              ctx.lineTo(center + boxSize5, offset + boxSize5);
-            }
-            ctx.stroke();
-            ctx.strokeStyle = boxColor;
-            ctx.lineWidth = boxWidth;
+            if (!singleChild) {
+              // focus
+              ctx.strokeRect(last.center - boxSize5, offset + 0, boxSize, boxSize);
+              ctx.fillRect(last.center - 2, offset + boxSize5 - 2, 4, 4);
 
+              ctx.strokeStyle = boxSpanColor;
+              ctx.lineWidth = boxSpanWidth;
+              ctx.beginPath();
+              ctx.moveTo(last.center - boxSize5, offset + boxSize5);
+              if (pp.expand === 'focus') {
+                ctx.lineTo(center, offset + boxSize5);
+                ctx.lineTo(center, offset + boxSize1);
+              } else {
+                ctx.lineTo(center + boxSize5, offset + boxSize5);
+              }
+              ctx.stroke();
+              ctx.strokeStyle = boxColor;
+              ctx.lineWidth = boxWidth;
+            }
           }
           offset += boxRow;
         });
@@ -230,35 +236,43 @@ const HierarchicalPlugin = {
           const pp = parents[i];
           if (d.relIndex === 0) {
             const last = lastOfLevel(d, flat);
-            const next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
+            let next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
+            const singleChild = !next;
+            next = next || d;
 
             if (pp.expand !== 'focus') {
+              // uncollapse button
               ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
               ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
             }
-            ctx.strokeRect(offset - boxSize, last.center - boxSize5, boxSize, boxSize);
-            ctx.fillRect(offset - boxSize5 - 2, last.center - 2, 4, 4);
 
             if (renderLabel) {
               ctx.fillText(pp.label, offset - boxSize, (next.center + center) / 2);
             }
 
-            // render helper indicator line
-            ctx.strokeStyle = boxSpanColor;
-            ctx.lineWidth = boxSpanWidth;
-            ctx.beginPath();
+            if (!singleChild) {
+              // focus button
+              ctx.strokeRect(offset - boxSize, last.center - boxSize5, boxSize, boxSize);
+              ctx.fillRect(offset - boxSize5 - 2, last.center - 2, 4, 4);
 
-            ctx.moveTo(offset - boxSize5, last.center - boxSize5);
-            if (pp.expand === 'focus') {
-              ctx.lineTo(offset - boxSize5, center);
-              ctx.lineTo(offset - boxSize1, center);
-            } else {
-              ctx.lineTo(offset - boxSize5, center + boxSize5);
+              // render helper indicator line
+              ctx.strokeStyle = boxSpanColor;
+              ctx.lineWidth = boxSpanWidth;
+              ctx.beginPath();
+
+              ctx.moveTo(offset - boxSize5, last.center - boxSize5);
+              if (pp.expand === 'focus') {
+                // consider button locations
+                ctx.lineTo(offset - boxSize5, center);
+                ctx.lineTo(offset - boxSize1, center);
+              } else {
+                ctx.lineTo(offset - boxSize5, center + boxSize5);
+              }
+
+              ctx.stroke();
+              ctx.strokeStyle = boxColor;
+              ctx.lineWidth = boxWidth;
             }
-
-            ctx.stroke();
-            ctx.strokeStyle = boxColor;
-            ctx.lineWidth = boxWidth;
           }
           offset -= boxRow;
         });
