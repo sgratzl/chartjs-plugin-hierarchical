@@ -4,13 +4,15 @@ import commonjs from 'rollup-plugin-commonjs';
 import babel from 'rollup-plugin-babel';
 
 export default {
-  dest: 'build/Chart.Hierarchical.js',
-  format: 'umd',
-  external: ['chart.js'],
-  globals: {
-    'chart.js': 'Chart'
+  output: {
+    file: 'build/Chart.Hierarchical.js',
+    name: 'ChartHierarchical',
+    format: 'umd',
+    globals: {
+      'chart.js': 'Chart'
+    }
   },
-  moduleName: 'ChartHierarchical',
+  external: ['chart.js'],
   plugins: [
     resolve(),
     commonjs(),
