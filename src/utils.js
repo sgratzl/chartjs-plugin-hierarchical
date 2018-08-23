@@ -1,6 +1,6 @@
 
 /**
- * bulids up recursivly the label tree
+ * builds up recursivly the label tree
  * @param {string|ILabelNode} label
  * @param {ILabelNode|null} parent
  * @returns the node itself

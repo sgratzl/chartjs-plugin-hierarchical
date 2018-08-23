@@ -186,6 +186,7 @@ const HierarchicalPlugin = {
               ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
             }
 
+            // render group label
             if (renderLabel === 'below') {
               ctx.fillText(pp.label, (next.center + center) / 2, offset + boxSize);
             } else if (renderLabel === 'above') {
