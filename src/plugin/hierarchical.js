@@ -138,6 +138,7 @@ const HierarchicalPlugin = {
     }
     const scale = this._findScale(chart);
     const flat = chart.data.flatLabels;
+    const visible = chart.data.labels; // array of visible nodes
     const ctx = chart.ctx;
     const hor = scale.isHorizontal();
 
