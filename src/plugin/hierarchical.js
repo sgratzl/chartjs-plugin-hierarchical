@@ -145,42 +145,7 @@ const HierarchicalPlugin = {
     const ctx = chart.ctx;
     const hor = scale.isHorizontal();
 
-    const boxSize = scale.options.hierarchyBoxSize;
-    const boxSize05 = boxSize * 0.5;
-    const boxSize01 = boxSize * 0.1;
-    const boxRow = scale.options.hierarchyBoxLineHeight;
-    const boxColor = scale.options.hierarchyBoxColor;
-    const boxWidth = scale.options.hierarchyBoxWidth;
-    const boxSpanColor = scale.options.hierarchySpanColor;
-    const boxSpanWidth = scale.options.hierarchySpanWidth;
-    const renderLabel = scale.options.hierarchyLabelPosition;
-
-    const scaleLabel = scale.options.scaleLabel;
-    const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.global.defaultFontColor);
-    const scaleLabelFont = parseFontOptions(scaleLabel);
-
-    ctx.save();
-    ctx.strokeStyle = boxColor;
-    ctx.lineeWidth = boxWidth;
-    ctx.fillStyle = scaleLabelFontColor; // render in correct colour
-    ctx.font = scaleLabelFont.font;
-
-
-    const renderLevel = (node) => {
-      if (node.children.length === 0) {
-        return false;
-      }
-      const offset = node.level * boxRow;
-
-      if (!node.expand) {
-        if (visibles.has(node)) {
-          ctx.strokeRect(node.center - boxSize05, offset + 0, boxSize, boxSize);
-          ctx.fillRect(node.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
-          ctx.fillRect(node.center - 1, offset + 2, 2, boxSize - 4);
-        }
-        return false;
-      }
-
+    const spanLogic = (node) => {
       const firstChild = node.children[0];
       const lastChild = node.children[node.children.length - 1];
       const flatSubTree = flat.slice(firstChild.index, lastChild.index + 1);
@@ -199,22 +164,64 @@ const HierarchicalPlugin = {
 
       const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
       const hasFocusBox = rightLastVisible && node.children.length > 1;
+      const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
+      const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
 
-      {
-        // render group label
-        const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
-        const center = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
-        if (renderLabel === 'below') {
-          ctx.fillText(node.label, center, offset + boxSize);
-        } else if (renderLabel === 'above') {
-          ctx.fillText(node.label, center, offset - boxSize);
+      return {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible};
+    }
+
+    const boxSize = scale.options.hierarchyBoxSize;
+    const boxSize05 = boxSize * 0.5;
+    const boxSize01 = boxSize * 0.1;
+    const boxRow = scale.options.hierarchyBoxLineHeight;
+    const boxColor = scale.options.hierarchyBoxColor;
+    const boxWidth = scale.options.hierarchyBoxWidth;
+    const boxSpanColor = scale.options.hierarchySpanColor;
+    const boxSpanWidth = scale.options.hierarchySpanWidth;
+    const renderLabel = scale.options.hierarchyLabelPosition;
+
+    const scaleLabel = scale.options.scaleLabel;
+    const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.global.defaultFontColor);
+    const scaleLabelFont = parseFontOptions(scaleLabel);
+
+    ctx.save();
+    ctx.strokeStyle = boxColor;
+    ctx.lineWidth = boxWidth;
+    ctx.fillStyle = scaleLabelFontColor; // render in correct colour
+    ctx.font = scaleLabelFont.font;
+
+
+    const renderHorLevel = (node) => {
+      if (node.children.length === 0) {
+        return false;
+      }
+      const offset = node.level * boxRow;
+
+      if (!node.expand) {
+        if (visibles.has(node)) {
+          ctx.strokeRect(node.center - boxSize05, offset + 0, boxSize, boxSize);
+          ctx.fillRect(node.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
+          ctx.fillRect(node.center - 1, offset + 2, 2, boxSize - 4);
         }
+        return false;
+      }
+      const r = spanLogic(node);
+      if (!r) {
+        return false;
+      }
+      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+
+     // render group label
+      if (renderLabel === 'below') {
+        ctx.fillText(node.label, groupLabelCenter, offset + boxSize);
+      } else if (renderLabel === 'above') {
+        ctx.fillText(node.label, groupLabelCenter, offset - boxSize);
       }
 
       if (hasCollapseBox) {
-       // collapse button
-       ctx.strokeRect(leftVisible.center - boxSize05, offset + 0, boxSize, boxSize);
-       ctx.fillRect(leftVisible.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
+        // collapse button
+        ctx.strokeRect(leftVisible.center - boxSize05, offset + 0, boxSize, boxSize);
+        ctx.fillRect(leftVisible.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
       }
 
       if (hasFocusBox) {
@@ -223,33 +230,103 @@ const HierarchicalPlugin = {
         ctx.fillRect(rightVisible.center - 2, offset + boxSize05 - 2, 4, 4);
       }
 
-      // helper span line
-      ctx.strokeStyle = boxSpanColor;
-      ctx.lineWidth = boxSpanWidth;
-      ctx.beginPath();
+      if (leftVisible !== rightVisible) {
+        // helper span line
+        ctx.strokeStyle = boxSpanColor;
+        ctx.lineWidth = boxSpanWidth;
+        ctx.beginPath();
+        if (hasCollapseBox) {
+          // stitch to box
+          ctx.moveTo(leftVisible.center + boxSize05, offset + boxSize05);
+        } else if (leftFirstVisible) {
+          // add starting group hint
+          ctx.moveTo(leftVisible.center, offset + boxSize01);
+          ctx.lineTo(leftVisible.center, offset + boxSize05);
+        } else {
+          // just a line
+          ctx.moveTo(leftVisible.center, offset + boxSize05);
+        }
+
+        if (hasFocusBox) {
+          ctx.lineTo(rightVisible.center - boxSize05, offset + boxSize05);
+        } else if (rightLastVisible) {
+          ctx.lineTo(rightVisible.center, offset + boxSize05);
+          ctx.lineTo(rightVisible.center, offset + boxSize01);
+        } else {
+          ctx.lineTo(rightVisible.center, offset + boxSize05);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = boxColor;
+        ctx.lineWidth = boxWidth;
+      }
+
+      return true;
+    }
+
+    const renderVertLevel = (node) => {
+      if (node.children.length === 0) {
+        return false;
+      }
+      const offset = node.level * boxRow * -1;
+
+      if (!node.expand) {
+        if (visibles.has(node)) {
+          ctx.strokeRect(offset - boxSize, node.center - boxSize05, boxSize, boxSize);
+          ctx.fillRect(offset - boxSize + 2, node.center - 1, boxSize - 4, 2);
+          ctx.fillRect(offset - boxSize05 - 1, node.center - boxSize05 + 2, 2, boxSize - 4);
+        }
+        return false;
+      }
+      const r = spanLogic(node);
+      if (!r) {
+        return false;
+      }
+      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+
+      // render group label
+      ctx.fillText(node.label, offset - boxSize, groupLabelCenter);
+
       if (hasCollapseBox) {
-        // stitch to box
-        ctx.moveTo(leftVisible.center + boxSize05, offset + boxSize05);
-      } else if (leftFirstVisible) {
-        // add starting group hint
-        ctx.moveTo(leftVisible.center, offset + boxSize01);
-        ctx.lineTo(leftVisible.center, offset + boxSize05);
-      } else {
-        // just a line
-        ctx.moveTo(leftVisible.center, offset + boxSize05);
+        // collapse button
+        ctx.strokeRect(offset - boxSize, leftVisible.center - boxSize05, boxSize, boxSize);
+        ctx.fillRect(offset - boxSize + 2, leftVisible.center - 1, boxSize - 4, 2);
       }
 
       if (hasFocusBox) {
-        ctx.lineTo(rightVisible.center - boxSize05, offset + boxSize05);
-      } else if (rightLastVisible) {
-        ctx.lineTo(rightVisible.center, offset + boxSize05);
-        ctx.lineTo(rightVisible.center, offset + boxSize01);
-      } else {
-        ctx.lineTo(rightVisible.center, offset + boxSize05);
+        // focus
+        ctx.strokeRect(offset - boxSize, rightVisible.center - boxSize05, boxSize, boxSize);
+        ctx.fillRect(offset - boxSize05 - 2, rightVisible.center - 2, 4, 4);
       }
-      ctx.stroke();
-      ctx.strokeStyle = boxColor;
-      ctx.lineWidth = boxWidth;
+
+      if (leftVisible !== rightVisible) {
+        // helper span line
+        ctx.strokeStyle = boxSpanColor;
+        ctx.lineWidth = boxSpanWidth;
+        ctx.beginPath();
+        if (hasCollapseBox) {
+          // stitch to box
+          ctx.moveTo(offset - boxSize05, leftVisible.center + boxSize05);
+        } else if (leftFirstVisible) {
+          // add starting group hint
+          ctx.moveTo(offset - boxSize01, leftVisible.center);
+          ctx.lineTo(offset - boxSize05, leftVisible.center);
+        } else {
+          // just a line
+          ctx.lineTo(offset - boxSize05, leftVisible.center);
+        }
+
+        if (hasFocusBox) {
+          ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
+        } else if (rightLastVisible) {
+          ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
+          ctx.lineTo(offset - boxSize01, rightVisible.center - boxSize05);
+        } else {
+          ctx.lineTo(offset - boxSize05, rightVisible.center);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = boxColor;
+        ctx.lineWidth = boxWidth;
+      }
 
       return true;
     }
@@ -258,69 +335,13 @@ const HierarchicalPlugin = {
       ctx.textAlign = 'center';
       ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
       ctx.translate(scale.left, scale.top + scale.options.padding);
-      roots.forEach((n) => preOrderTraversal(n, renderLevel));
+      roots.forEach((n) => preOrderTraversal(n, renderHorLevel));
     } else {
       ctx.textAlign = 'right';
       ctx.textBaseline = 'center';
       ctx.translate(scale.left - scale.options.padding, scale.top);
 
-      visible.forEach((tick) => {
-        const center = tick.center;
-        let offset = 0;
-        const parents = parentsOf(tick, flat);
-
-        parents.slice(1).forEach((d, i) => {
-          const pp = parents[i];
-          if (d.relIndex === 0) {
-            const last = lastOfLevel(d, flat);
-            let next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
-            const singleChild = !next;
-            next = next || d;
-
-            if (pp.expand !== 'focus') {
-              // uncollapse button
-              ctx.strokeRect(offset - boxSize, center - boxSize05, boxSize, boxSize);
-              ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
-            }
-
-            if (renderLabel) {
-              ctx.fillText(pp.label, offset - boxSize, (next.center + center) / 2);
-            }
-
-            if (!singleChild) {
-              // focus button
-              ctx.strokeRect(offset - boxSize, last.center - boxSize05, boxSize, boxSize);
-              ctx.fillRect(offset - boxSize05 - 2, last.center - 2, 4, 4);
-
-              // render helper indicator line
-              ctx.strokeStyle = boxSpanColor;
-              ctx.lineWidth = boxSpanWidth;
-              ctx.beginPath();
-
-              ctx.moveTo(offset - boxSize05, last.center - boxSize05);
-              if (pp.expand === 'focus') {
-                // consider button locations
-                ctx.lineTo(offset - boxSize05, center);
-                ctx.lineTo(offset - boxSize01, center);
-              } else {
-                ctx.lineTo(offset - boxSize05, center + boxSize05);
-              }
-
-              ctx.stroke();
-              ctx.strokeStyle = boxColor;
-              ctx.lineWidth = boxWidth;
-            }
-          }
-          offset -= boxRow;
-        });
-
-        // render expand hint
-        if (tick.children.length > 0) {
-          ctx.strokeRect(offset - boxSize, center - boxSize05, boxSize, boxSize);
-          ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
-          ctx.fillRect(offset - boxSize05 - 1, center - boxSize05 + 2, 2, boxSize - 4);
-        }
-      });
+      roots.forEach((n) => preOrderTraversal(n, renderVertLevel));
     }
 
     ctx.restore();
