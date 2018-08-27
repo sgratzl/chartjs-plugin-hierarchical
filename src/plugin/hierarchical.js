@@ -138,13 +138,13 @@ const HierarchicalPlugin = {
     }
     const scale = this._findScale(chart);
     const flat = chart.data.flatLabels;
-    const visible = chart.data.labels; // array of visible nodes
+    const visible = chart.data.labels;
     const ctx = chart.ctx;
     const hor = scale.isHorizontal();
 
     const boxSize = scale.options.hierarchyBoxSize;
-    const boxSize5 = boxSize * 0.5;
-    const boxSize1 = boxSize * 0.1;
+    const boxSize05 = boxSize * 0.5;
+    const boxSize01 = boxSize * 0.1;
     const boxRow = scale.options.hierarchyBoxLineHeight;
     const boxColor = scale.options.hierarchyBoxColor;
     const boxWidth = scale.options.hierarchyBoxWidth;
@@ -162,53 +162,58 @@ const HierarchicalPlugin = {
     ctx.fillStyle = scaleLabelFontColor; // render in correct colour
     ctx.font = scaleLabelFont.font;
 
+    const colors = ['red', 'green', 'blue', 'yellow', 'orange', 'pink', 'steelblue'];
+    let actCol = 0;
+
 
     if (hor) {
       ctx.textAlign = 'center';
       ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
       ctx.translate(scale.left, scale.top + scale.options.padding);
 
-      chart.data.labels.forEach((tick) => {
+      visible.forEach((tick) => {
         const center = tick.center;
         let offset = 0;
         const parents = parentsOf(tick, flat);
 
-        parents.slice(1).forEach((d, i) => {
-          const pp = parents[i];
-          if (d.relIndex === 0) {
-            const last = lastOfLevel(d, flat);
-            let next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
+        parents.slice(1).forEach((child, i) => {
+          const parent = parents[i];
+          if (child.relIndex === 0 && tick.relIndex === 0) {
+             const last = lastOfLevel(child, flat);
+            let next = flat.slice(tick.index + 1, last.index + 1).find((n) => !n.hidden);
             const singleChild = !next;
-            next = next || d;
+            next = next || child;
 
-            if (pp.expand !== 'focus') {
-              // uncollapse button
-              ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-              ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
+            if (parent.expand !== 'focus') {
+              // collapse button
+              ctx.strokeStyle = colors[(actCol++) % colors.length];
+              console.log('collapse', child, colors[(actCol) % colors.length]);
+              ctx.strokeRect(center - boxSize05, offset + 0, boxSize, boxSize);
+              ctx.fillRect(center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
             }
 
             // render group label
             if (renderLabel === 'below') {
-              ctx.fillText(pp.label, (next.center + center) / 2, offset + boxSize);
+              ctx.fillText(parent.label, (next.center + center) / 2, offset + boxSize);
             } else if (renderLabel === 'above') {
-              ctx.fillText(pp.label, (next.center + center) / 2, offset - boxSize);
+              ctx.fillText(parent.label, (next.center + center) / 2, offset - boxSize);
             }
 
             // render helper indicator line
             if (!singleChild) {
               // focus
-              ctx.strokeRect(last.center - boxSize5, offset + 0, boxSize, boxSize);
-              ctx.fillRect(last.center - 2, offset + boxSize5 - 2, 4, 4);
+              ctx.strokeRect(last.center - boxSize05, offset + 0, boxSize, boxSize);
+              ctx.fillRect(last.center - 2, offset + boxSize05 - 2, 4, 4);
 
               ctx.strokeStyle = boxSpanColor;
               ctx.lineWidth = boxSpanWidth;
               ctx.beginPath();
-              ctx.moveTo(last.center - boxSize5, offset + boxSize5);
-              if (pp.expand === 'focus') {
-                ctx.lineTo(center, offset + boxSize5);
-                ctx.lineTo(center, offset + boxSize1);
+              ctx.moveTo(last.center - boxSize05, offset + boxSize05);
+              if (parent.expand === 'focus') {
+                ctx.lineTo(center, offset + boxSize05);
+                ctx.lineTo(center, offset + boxSize01);
               } else {
-                ctx.lineTo(center + boxSize5, offset + boxSize5);
+                ctx.lineTo(center + boxSize05, offset + boxSize05);
               }
               ctx.stroke();
               ctx.strokeStyle = boxColor;
@@ -218,9 +223,10 @@ const HierarchicalPlugin = {
           offset += boxRow;
         });
 
+        // expand box
         if (tick.children.length > 0) {
-          ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-          ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
+          ctx.strokeRect(center - boxSize05, offset + 0, boxSize, boxSize);
+          ctx.fillRect(center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
           ctx.fillRect(center - 1, offset + 2, 2, boxSize - 4);
         }
       });
@@ -229,7 +235,7 @@ const HierarchicalPlugin = {
       ctx.textBaseline = 'center';
       ctx.translate(scale.left - scale.options.padding, scale.top);
 
-      chart.data.labels.forEach((tick) => {
+      visible.forEach((tick) => {
         const center = tick.center;
         let offset = 0;
         const parents = parentsOf(tick, flat);
@@ -244,7 +250,7 @@ const HierarchicalPlugin = {
 
             if (pp.expand !== 'focus') {
               // uncollapse button
-              ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
+              ctx.strokeRect(offset - boxSize, center - boxSize05, boxSize, boxSize);
               ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
             }
 
@@ -254,21 +260,21 @@ const HierarchicalPlugin = {
 
             if (!singleChild) {
               // focus button
-              ctx.strokeRect(offset - boxSize, last.center - boxSize5, boxSize, boxSize);
-              ctx.fillRect(offset - boxSize5 - 2, last.center - 2, 4, 4);
+              ctx.strokeRect(offset - boxSize, last.center - boxSize05, boxSize, boxSize);
+              ctx.fillRect(offset - boxSize05 - 2, last.center - 2, 4, 4);
 
               // render helper indicator line
               ctx.strokeStyle = boxSpanColor;
               ctx.lineWidth = boxSpanWidth;
               ctx.beginPath();
 
-              ctx.moveTo(offset - boxSize5, last.center - boxSize5);
+              ctx.moveTo(offset - boxSize05, last.center - boxSize05);
               if (pp.expand === 'focus') {
                 // consider button locations
-                ctx.lineTo(offset - boxSize5, center);
-                ctx.lineTo(offset - boxSize1, center);
+                ctx.lineTo(offset - boxSize05, center);
+                ctx.lineTo(offset - boxSize01, center);
               } else {
-                ctx.lineTo(offset - boxSize5, center + boxSize5);
+                ctx.lineTo(offset - boxSize05, center + boxSize05);
               }
 
               ctx.stroke();
@@ -281,9 +287,9 @@ const HierarchicalPlugin = {
 
         // render expand hint
         if (tick.children.length > 0) {
-          ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
+          ctx.strokeRect(offset - boxSize, center - boxSize05, boxSize, boxSize);
           ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
-          ctx.fillRect(offset - boxSize5 - 1, center - boxSize5 + 2, 2, boxSize - 4);
+          ctx.fillRect(offset - boxSize05 - 1, center - boxSize05 + 2, 2, boxSize - 4);
         }
       });
     }

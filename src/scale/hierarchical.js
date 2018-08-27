@@ -30,7 +30,7 @@ const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('cat
   /**
    * distance between two hierarhy indicators
    */
-  hierarchyBoxLineHeight: 22,
+  hierarchyBoxLineHeight: 30,
   /**
    * color of the line indicator hierarchy children
    */
