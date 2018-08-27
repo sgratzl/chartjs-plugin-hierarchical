@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Chart from 'chart.js';
-import {toNodes, countExpanded, resolve, parentsOf, lastOfLevel, preOrderTraversal} from '../utils';
+import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal} from '../utils';
 
 
 function parseFontOptions(options) {
@@ -171,7 +171,7 @@ const HierarchicalPlugin = {
       const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
 
       return {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible};
-    }
+    };
 
     const boxSize = scale.options.hierarchyBoxSize;
     const boxSize05 = boxSize * 0.5;
@@ -264,7 +264,7 @@ const HierarchicalPlugin = {
       }
 
       return true;
-    }
+    };
 
     const renderVertLevel = (node) => {
       if (node.children.length === 0) {
@@ -332,7 +332,7 @@ const HierarchicalPlugin = {
       }
 
       return true;
-    }
+    };
 
     if (hor) {
       ctx.textAlign = 'center';

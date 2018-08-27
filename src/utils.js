@@ -95,13 +95,13 @@ export function lastOfLevel(node, flat) {
 /**
  * traverses the tree in pre order logic
  * @param {ILabelNode} node
- * @param {(node: ILabelNode) => void | false} callback return false to skip the traversal of children
+ * @param {(node: ILabelNode) => void | false} visit return false to skip the traversal of children
  */
-export function preOrderTraversal(node, callback) {
-  const goDeep = callback(node);
+export function preOrderTraversal(node, visit) {
+  const goDeep = visit(node);
   if (goDeep !== false) {
     for (const child of node.children) {
-      preOrderTraversal(child, callback);
+      preOrderTraversal(child, visit);
     }
   }
 }
