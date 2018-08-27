@@ -92,6 +92,11 @@ export function lastOfLevel(node, flat) {
   return rightMost(sibling);
 }
 
+/**
+ * traverses the tree in pre order logic
+ * @param {ILabelNode} node
+ * @param {(node: ILabelNode) => void | false} callback return false to skip the traversal of children
+ */
 export function preOrderTraversal(node, callback) {
   const goDeep = callback(node);
   if (goDeep !== false) {
