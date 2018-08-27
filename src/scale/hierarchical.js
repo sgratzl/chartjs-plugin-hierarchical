@@ -167,8 +167,12 @@ const HierarchicalScale = Chart.Scale.extend({
   },
 
   getPixelForTick(index) {
-    const node = this._nodes[index + this.minIndex];
+    if (index === 1 && this._nodes.length === 1) {
+      // cornercase in chartjs to determine tick with, hard coded 1
+      return this._nodes[0].width;
+    }
     const centerTick = this.options.offset;
+    const node = this._nodes[index + this.minIndex];
     const base = this.isHorizontal() ? this.left : this.top;
     return base + node.center - (centerTick ? 0 : node.width / 2);
   },
