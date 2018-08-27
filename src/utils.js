@@ -92,6 +92,15 @@ export function lastOfLevel(node, flat) {
   return rightMost(sibling);
 }
 
+export function preOrderTraversal(node, callback) {
+  const goDeep = callback(node);
+  if (goDeep !== false) {
+    for (const child of node.children) {
+      preOrderTraversal(child, callback);
+    }
+  }
+}
+
 /**
  * resolves for the given label node its value node
  * @param {ILabelNode} label

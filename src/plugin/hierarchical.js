@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Chart from 'chart.js';
-import {toNodes, countExpanded, lastOfLevel, resolve, parentsOf} from '../utils';
+import {toNodes, countExpanded, resolve, parentsOf, lastOfLevel, preOrderTraversal} from '../utils';
 
 
 function parseFontOptions(options) {
@@ -59,6 +59,7 @@ const HierarchicalPlugin = {
 
     // convert labels to nodes
     const flat = chart.data.flatLabels = toNodes(chart.data.labels);
+    chart.data.rootNodes = flat.filter((d) => d.parent === -1);
 
     const focus = flat.find((d) => d.expand === 'focus');
     let labels;
@@ -139,6 +140,8 @@ const HierarchicalPlugin = {
     const scale = this._findScale(chart);
     const flat = chart.data.flatLabels;
     const visible = chart.data.labels;
+    const roots = chart.data.rootNodes;
+    const visibles = new Set(visible);
     const ctx = chart.ctx;
     const hor = scale.isHorizontal();
 
@@ -162,74 +165,100 @@ const HierarchicalPlugin = {
     ctx.fillStyle = scaleLabelFontColor; // render in correct colour
     ctx.font = scaleLabelFont.font;
 
-    const colors = ['red', 'green', 'blue', 'yellow', 'orange', 'pink', 'steelblue'];
-    let actCol = 0;
 
+    const renderLevel = (node) => {
+      if (node.children.length === 0) {
+        return false;
+      }
+      const offset = node.level * boxRow;
+
+      if (!node.expand) {
+        if (visibles.has(node)) {
+          ctx.strokeRect(node.center - boxSize05, offset + 0, boxSize, boxSize);
+          ctx.fillRect(node.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
+          ctx.fillRect(node.center - 1, offset + 2, 2, boxSize - 4);
+        }
+        return false;
+      }
+
+      const firstChild = node.children[0];
+      const lastChild = node.children[node.children.length - 1];
+      const flatSubTree = flat.slice(firstChild.index, lastChild.index + 1);
+
+      const leftVisible = flatSubTree.find((d) => visibles.has(d));
+      const rightVisible = flatSubTree.reverse().find((d) => visibles.has(d));
+
+      if (!leftVisible || !rightVisible) {
+        return false;
+      }
+
+      const leftParents = parentsOf(leftVisible, flat);
+      const rightParents = parentsOf(rightVisible, flat);
+      const leftFirstVisible = leftParents[node.level + 1] === firstChild;
+      const rightLastVisible = rightParents[node.level + 1] === lastChild;
+
+      const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
+      const hasFocusBox = rightLastVisible && node.children.length > 1;
+
+      {
+        // render group label
+        const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
+        const center = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
+        if (renderLabel === 'below') {
+          ctx.fillText(node.label, center, offset + boxSize);
+        } else if (renderLabel === 'above') {
+          ctx.fillText(node.label, center, offset - boxSize);
+        }
+      }
+
+      if (hasCollapseBox) {
+       // collapse button
+       ctx.strokeRect(leftVisible.center - boxSize05, offset + 0, boxSize, boxSize);
+       ctx.fillRect(leftVisible.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
+      }
+
+      if (hasFocusBox) {
+        // focus
+        ctx.strokeRect(rightVisible.center - boxSize05, offset + 0, boxSize, boxSize);
+        ctx.fillRect(rightVisible.center - 2, offset + boxSize05 - 2, 4, 4);
+      }
+
+      // helper span line
+      ctx.strokeStyle = boxSpanColor;
+      ctx.lineWidth = boxSpanWidth;
+      ctx.beginPath();
+      if (hasCollapseBox) {
+        // stitch to box
+        ctx.moveTo(leftVisible.center + boxSize05, offset + boxSize05);
+      } else if (leftFirstVisible) {
+        // add starting group hint
+        ctx.moveTo(leftVisible.center, offset + boxSize01);
+        ctx.lineTo(leftVisible.center, offset + boxSize05);
+      } else {
+        // just a line
+        ctx.moveTo(leftVisible.center, offset + boxSize05);
+      }
+
+      if (hasFocusBox) {
+        ctx.lineTo(rightVisible.center - boxSize05, offset + boxSize05);
+      } else if (rightLastVisible) {
+        ctx.lineTo(rightVisible.center, offset + boxSize05);
+        ctx.lineTo(rightVisible.center, offset + boxSize01);
+      } else {
+        ctx.lineTo(rightVisible.center, offset + boxSize05);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = boxColor;
+      ctx.lineWidth = boxWidth;
+
+      return true;
+    }
 
     if (hor) {
       ctx.textAlign = 'center';
       ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
       ctx.translate(scale.left, scale.top + scale.options.padding);
-
-      visible.forEach((tick) => {
-        const center = tick.center;
-        let offset = 0;
-        const parents = parentsOf(tick, flat);
-
-        parents.slice(1).forEach((child, i) => {
-          const parent = parents[i];
-          if (child.relIndex === 0 && tick.relIndex === 0) {
-             const last = lastOfLevel(child, flat);
-            let next = flat.slice(tick.index + 1, last.index + 1).find((n) => !n.hidden);
-            const singleChild = !next;
-            next = next || child;
-
-            if (parent.expand !== 'focus') {
-              // collapse button
-              ctx.strokeStyle = colors[(actCol++) % colors.length];
-              console.log('collapse', child, colors[(actCol) % colors.length]);
-              ctx.strokeRect(center - boxSize05, offset + 0, boxSize, boxSize);
-              ctx.fillRect(center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
-            }
-
-            // render group label
-            if (renderLabel === 'below') {
-              ctx.fillText(parent.label, (next.center + center) / 2, offset + boxSize);
-            } else if (renderLabel === 'above') {
-              ctx.fillText(parent.label, (next.center + center) / 2, offset - boxSize);
-            }
-
-            // render helper indicator line
-            if (!singleChild) {
-              // focus
-              ctx.strokeRect(last.center - boxSize05, offset + 0, boxSize, boxSize);
-              ctx.fillRect(last.center - 2, offset + boxSize05 - 2, 4, 4);
-
-              ctx.strokeStyle = boxSpanColor;
-              ctx.lineWidth = boxSpanWidth;
-              ctx.beginPath();
-              ctx.moveTo(last.center - boxSize05, offset + boxSize05);
-              if (parent.expand === 'focus') {
-                ctx.lineTo(center, offset + boxSize05);
-                ctx.lineTo(center, offset + boxSize01);
-              } else {
-                ctx.lineTo(center + boxSize05, offset + boxSize05);
-              }
-              ctx.stroke();
-              ctx.strokeStyle = boxColor;
-              ctx.lineWidth = boxWidth;
-            }
-          }
-          offset += boxRow;
-        });
-
-        // expand box
-        if (tick.children.length > 0) {
-          ctx.strokeRect(center - boxSize05, offset + 0, boxSize, boxSize);
-          ctx.fillRect(center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
-          ctx.fillRect(center - 1, offset + 2, 2, boxSize - 4);
-        }
-      });
+      roots.forEach((n) => preOrderTraversal(n, renderLevel));
     } else {
       ctx.textAlign = 'right';
       ctx.textBaseline = 'center';
@@ -305,7 +334,6 @@ const HierarchicalPlugin = {
     const removed = labels.splice.apply(labels, [index, count].concat(toAdd));
     removed.forEach((d) => {
       d.hidden = true;
-      d.expand = false;
     });
     toAdd.forEach((d) => {
       d.hidden = false;
@@ -324,6 +352,10 @@ const HierarchicalPlugin = {
 
   _collapse(chart, index, parent) {
     const count = countExpanded(parent);
+    // collapse sub structures, too
+    parent.children.forEach((c) => preOrderTraversal(c, (d) => {
+      d.expand = false;
+    }));
     this._expandCollapse(chart, index, count, [parent]);
     parent.expand = false;
   },
