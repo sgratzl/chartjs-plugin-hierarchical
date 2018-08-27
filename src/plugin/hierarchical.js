@@ -159,11 +159,14 @@ const HierarchicalPlugin = {
 
       const leftParents = parentsOf(leftVisible, flat);
       const rightParents = parentsOf(rightVisible, flat);
+      // is the left visible one also a child of my first child = whole starting range is visible?
       const leftFirstVisible = leftParents[node.level + 1] === firstChild;
+      // is the right visible one also my last child = whole end range is visible?
       const rightLastVisible = rightParents[node.level + 1] === lastChild;
 
       const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
       const hasFocusBox = rightLastVisible && node.children.length > 1;
+      // the next visible after the left one
       const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
       const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
 
@@ -187,9 +190,8 @@ const HierarchicalPlugin = {
     ctx.save();
     ctx.strokeStyle = boxColor;
     ctx.lineWidth = boxWidth;
-    ctx.fillStyle = scaleLabelFontColor; // render in correct colour
+    ctx.fillStyle = scaleLabelFontColor; // render in correct color
     ctx.font = scaleLabelFont.font;
-
 
     const renderHorLevel = (node) => {
       if (node.children.length === 0) {
@@ -199,6 +201,7 @@ const HierarchicalPlugin = {
 
       if (!node.expand) {
         if (visibles.has(node)) {
+          // expand button
           ctx.strokeRect(node.center - boxSize05, offset + 0, boxSize, boxSize);
           ctx.fillRect(node.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
           ctx.fillRect(node.center - 1, offset + 2, 2, boxSize - 4);
@@ -211,7 +214,7 @@ const HierarchicalPlugin = {
       }
       const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
 
-     // render group label
+      // render group label
       if (renderLabel === 'below') {
         ctx.fillText(node.label, groupLabelCenter, offset + boxSize);
       } else if (renderLabel === 'above') {
@@ -225,7 +228,7 @@ const HierarchicalPlugin = {
       }
 
       if (hasFocusBox) {
-        // focus
+        // focus button
         ctx.strokeRect(rightVisible.center - boxSize05, offset + 0, boxSize, boxSize);
         ctx.fillRect(rightVisible.center - 2, offset + boxSize05 - 2, 4, 4);
       }
