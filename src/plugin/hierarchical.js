@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Chart from 'chart.js';
-import {toNodes, countExpanded, lastOfLevel, resolve, parentsOf} from '../utils';
+import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal} from '../utils';
 
 
 function parseFontOptions(options) {
@@ -59,6 +59,7 @@ const HierarchicalPlugin = {
 
     // convert labels to nodes
     const flat = chart.data.flatLabels = toNodes(chart.data.labels);
+    chart.data.rootNodes = flat.filter((d) => d.parent === -1);
 
     const focus = flat.find((d) => d.expand === 'focus');
     let labels;
@@ -138,12 +139,43 @@ const HierarchicalPlugin = {
     }
     const scale = this._findScale(chart);
     const flat = chart.data.flatLabels;
+    const visible = chart.data.labels;
+    const roots = chart.data.rootNodes;
+    const visibles = new Set(visible);
     const ctx = chart.ctx;
     const hor = scale.isHorizontal();
 
+    const spanLogic = (node) => {
+      const firstChild = node.children[0];
+      const lastChild = node.children[node.children.length - 1];
+      const flatSubTree = flat.slice(firstChild.index, lastChild.index + 1);
+
+      const leftVisible = flatSubTree.find((d) => visibles.has(d));
+      const rightVisible = flatSubTree.reverse().find((d) => visibles.has(d));
+
+      if (!leftVisible || !rightVisible) {
+        return false;
+      }
+
+      const leftParents = parentsOf(leftVisible, flat);
+      const rightParents = parentsOf(rightVisible, flat);
+      // is the left visible one also a child of my first child = whole starting range is visible?
+      const leftFirstVisible = leftParents[node.level + 1] === firstChild;
+      // is the right visible one also my last child = whole end range is visible?
+      const rightLastVisible = rightParents[node.level + 1] === lastChild;
+
+      const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
+      const hasFocusBox = rightLastVisible && node.children.length > 1;
+      // the next visible after the left one
+      const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
+      const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
+
+      return {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible};
+    };
+
     const boxSize = scale.options.hierarchyBoxSize;
-    const boxSize5 = boxSize * 0.5;
-    const boxSize1 = boxSize * 0.1;
+    const boxSize05 = boxSize * 0.5;
+    const boxSize01 = boxSize * 0.1;
     const boxRow = scale.options.hierarchyBoxLineHeight;
     const boxColor = scale.options.hierarchyBoxColor;
     const boxWidth = scale.options.hierarchyBoxWidth;
@@ -157,133 +189,162 @@ const HierarchicalPlugin = {
 
     ctx.save();
     ctx.strokeStyle = boxColor;
-    ctx.lineeWidth = boxWidth;
-    ctx.fillStyle = scaleLabelFontColor; // render in correct colour
+    ctx.lineWidth = boxWidth;
+    ctx.fillStyle = scaleLabelFontColor; // render in correct color
     ctx.font = scaleLabelFont.font;
 
+    const renderHorLevel = (node) => {
+      if (node.children.length === 0) {
+        return false;
+      }
+      const offset = node.level * boxRow;
+
+      if (!node.expand) {
+        if (visibles.has(node)) {
+          // expand button
+          ctx.strokeRect(node.center - boxSize05, offset + 0, boxSize, boxSize);
+          ctx.fillRect(node.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
+          ctx.fillRect(node.center - 1, offset + 2, 2, boxSize - 4);
+        }
+        return false;
+      }
+      const r = spanLogic(node);
+      if (!r) {
+        return false;
+      }
+      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+
+      // render group label
+      if (renderLabel === 'below') {
+        ctx.fillText(node.label, groupLabelCenter, offset + boxSize);
+      } else if (renderLabel === 'above') {
+        ctx.fillText(node.label, groupLabelCenter, offset - boxSize);
+      }
+
+      if (hasCollapseBox) {
+        // collapse button
+        ctx.strokeRect(leftVisible.center - boxSize05, offset + 0, boxSize, boxSize);
+        ctx.fillRect(leftVisible.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
+      }
+
+      if (hasFocusBox) {
+        // focus button
+        ctx.strokeRect(rightVisible.center - boxSize05, offset + 0, boxSize, boxSize);
+        ctx.fillRect(rightVisible.center - 2, offset + boxSize05 - 2, 4, 4);
+      }
+
+      if (leftVisible !== rightVisible) {
+        // helper span line
+        ctx.strokeStyle = boxSpanColor;
+        ctx.lineWidth = boxSpanWidth;
+        ctx.beginPath();
+        if (hasCollapseBox) {
+          // stitch to box
+          ctx.moveTo(leftVisible.center + boxSize05, offset + boxSize05);
+        } else if (leftFirstVisible) {
+          // add starting group hint
+          ctx.moveTo(leftVisible.center, offset + boxSize01);
+          ctx.lineTo(leftVisible.center, offset + boxSize05);
+        } else {
+          // just a line
+          ctx.moveTo(leftVisible.center, offset + boxSize05);
+        }
+
+        if (hasFocusBox) {
+          ctx.lineTo(rightVisible.center - boxSize05, offset + boxSize05);
+        } else if (rightLastVisible) {
+          ctx.lineTo(rightVisible.center, offset + boxSize05);
+          ctx.lineTo(rightVisible.center, offset + boxSize01);
+        } else {
+          ctx.lineTo(rightVisible.center, offset + boxSize05);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = boxColor;
+        ctx.lineWidth = boxWidth;
+      }
+
+      return true;
+    };
+
+    const renderVertLevel = (node) => {
+      if (node.children.length === 0) {
+        return false;
+      }
+      const offset = node.level * boxRow * -1;
+
+      if (!node.expand) {
+        if (visibles.has(node)) {
+          ctx.strokeRect(offset - boxSize, node.center - boxSize05, boxSize, boxSize);
+          ctx.fillRect(offset - boxSize + 2, node.center - 1, boxSize - 4, 2);
+          ctx.fillRect(offset - boxSize05 - 1, node.center - boxSize05 + 2, 2, boxSize - 4);
+        }
+        return false;
+      }
+      const r = spanLogic(node);
+      if (!r) {
+        return false;
+      }
+      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+
+      // render group label
+      ctx.fillText(node.label, offset - boxSize, groupLabelCenter);
+
+      if (hasCollapseBox) {
+        // collapse button
+        ctx.strokeRect(offset - boxSize, leftVisible.center - boxSize05, boxSize, boxSize);
+        ctx.fillRect(offset - boxSize + 2, leftVisible.center - 1, boxSize - 4, 2);
+      }
+
+      if (hasFocusBox) {
+        // focus
+        ctx.strokeRect(offset - boxSize, rightVisible.center - boxSize05, boxSize, boxSize);
+        ctx.fillRect(offset - boxSize05 - 2, rightVisible.center - 2, 4, 4);
+      }
+
+      if (leftVisible !== rightVisible) {
+        // helper span line
+        ctx.strokeStyle = boxSpanColor;
+        ctx.lineWidth = boxSpanWidth;
+        ctx.beginPath();
+        if (hasCollapseBox) {
+          // stitch to box
+          ctx.moveTo(offset - boxSize05, leftVisible.center + boxSize05);
+        } else if (leftFirstVisible) {
+          // add starting group hint
+          ctx.moveTo(offset - boxSize01, leftVisible.center);
+          ctx.lineTo(offset - boxSize05, leftVisible.center);
+        } else {
+          // just a line
+          ctx.lineTo(offset - boxSize05, leftVisible.center);
+        }
+
+        if (hasFocusBox) {
+          ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
+        } else if (rightLastVisible) {
+          ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
+          ctx.lineTo(offset - boxSize01, rightVisible.center - boxSize05);
+        } else {
+          ctx.lineTo(offset - boxSize05, rightVisible.center);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = boxColor;
+        ctx.lineWidth = boxWidth;
+      }
+
+      return true;
+    };
 
     if (hor) {
       ctx.textAlign = 'center';
       ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
       ctx.translate(scale.left, scale.top + scale.options.padding);
-
-      chart.data.labels.forEach((tick) => {
-        const center = tick.center;
-        let offset = 0;
-        const parents = parentsOf(tick, flat);
-
-        parents.slice(1).forEach((d, i) => {
-          const pp = parents[i];
-          if (d.relIndex === 0) {
-            const last = lastOfLevel(d, flat);
-            let next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
-            const singleChild = !next;
-            next = next || d;
-
-            if (pp.expand !== 'focus') {
-              // uncollapse button
-              ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-              ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
-            }
-
-            if (renderLabel === 'below') {
-              ctx.fillText(pp.label, (next.center + center) / 2, offset + boxSize);
-            } else if (renderLabel === 'above') {
-              ctx.fillText(pp.label, (next.center + center) / 2, offset - boxSize);
-            }
-
-            // render helper indicator line
-            if (!singleChild) {
-              // focus
-              ctx.strokeRect(last.center - boxSize5, offset + 0, boxSize, boxSize);
-              ctx.fillRect(last.center - 2, offset + boxSize5 - 2, 4, 4);
-
-              ctx.strokeStyle = boxSpanColor;
-              ctx.lineWidth = boxSpanWidth;
-              ctx.beginPath();
-              ctx.moveTo(last.center - boxSize5, offset + boxSize5);
-              if (pp.expand === 'focus') {
-                ctx.lineTo(center, offset + boxSize5);
-                ctx.lineTo(center, offset + boxSize1);
-              } else {
-                ctx.lineTo(center + boxSize5, offset + boxSize5);
-              }
-              ctx.stroke();
-              ctx.strokeStyle = boxColor;
-              ctx.lineWidth = boxWidth;
-            }
-          }
-          offset += boxRow;
-        });
-
-        if (tick.children.length > 0) {
-          ctx.strokeRect(center - boxSize5, offset + 0, boxSize, boxSize);
-          ctx.fillRect(center - boxSize5 + 2, offset + boxSize5 - 1, boxSize - 4, 2);
-          ctx.fillRect(center - 1, offset + 2, 2, boxSize - 4);
-        }
-      });
+      roots.forEach((n) => preOrderTraversal(n, renderHorLevel));
     } else {
       ctx.textAlign = 'right';
       ctx.textBaseline = 'center';
       ctx.translate(scale.left - scale.options.padding, scale.top);
 
-      chart.data.labels.forEach((tick) => {
-        const center = tick.center;
-        let offset = 0;
-        const parents = parentsOf(tick, flat);
-
-        parents.slice(1).forEach((d, i) => {
-          const pp = parents[i];
-          if (d.relIndex === 0) {
-            const last = lastOfLevel(d, flat);
-            let next = flat.slice(d.index + 1, last.index + 1).find((n) => !n.hidden);
-            const singleChild = !next;
-            next = next || d;
-
-            if (pp.expand !== 'focus') {
-              // uncollapse button
-              ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
-              ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
-            }
-
-            if (renderLabel) {
-              ctx.fillText(pp.label, offset - boxSize, (next.center + center) / 2);
-            }
-
-            if (!singleChild) {
-              // focus button
-              ctx.strokeRect(offset - boxSize, last.center - boxSize5, boxSize, boxSize);
-              ctx.fillRect(offset - boxSize5 - 2, last.center - 2, 4, 4);
-
-              // render helper indicator line
-              ctx.strokeStyle = boxSpanColor;
-              ctx.lineWidth = boxSpanWidth;
-              ctx.beginPath();
-
-              ctx.moveTo(offset - boxSize5, last.center - boxSize5);
-              if (pp.expand === 'focus') {
-                // consider button locations
-                ctx.lineTo(offset - boxSize5, center);
-                ctx.lineTo(offset - boxSize1, center);
-              } else {
-                ctx.lineTo(offset - boxSize5, center + boxSize5);
-              }
-
-              ctx.stroke();
-              ctx.strokeStyle = boxColor;
-              ctx.lineWidth = boxWidth;
-            }
-          }
-          offset -= boxRow;
-        });
-
-        // render expand hint
-        if (tick.children.length > 0) {
-          ctx.strokeRect(offset - boxSize, center - boxSize5, boxSize, boxSize);
-          ctx.fillRect(offset - boxSize + 2, center - 1, boxSize - 4, 2);
-          ctx.fillRect(offset - boxSize5 - 1, center - boxSize5 + 2, 2, boxSize - 4);
-        }
-      });
+      roots.forEach((n) => preOrderTraversal(n, renderVertLevel));
     }
 
     ctx.restore();
@@ -297,7 +358,6 @@ const HierarchicalPlugin = {
     const removed = labels.splice.apply(labels, [index, count].concat(toAdd));
     removed.forEach((d) => {
       d.hidden = true;
-      d.expand = false;
     });
     toAdd.forEach((d) => {
       d.hidden = false;
@@ -316,6 +376,10 @@ const HierarchicalPlugin = {
 
   _collapse(chart, index, parent) {
     const count = countExpanded(parent);
+    // collapse sub structures, too
+    parent.children.forEach((c) => preOrderTraversal(c, (d) => {
+      d.expand = false;
+    }));
     this._expandCollapse(chart, index, count, [parent]);
     parent.expand = false;
   },

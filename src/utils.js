@@ -1,6 +1,6 @@
 
 /**
- * bulids up recursivly the label tree
+ * builds up recursivly the label tree
  * @param {string|ILabelNode} label
  * @param {ILabelNode|null} parent
  * @returns the node itself
@@ -68,17 +68,42 @@ export function parentsOf(node, flat) {
   return parents;
 }
 
+
+function rightMost(node) {
+  if (!node.expand || node.children.length === 0) {
+    return node;
+  }
+  return rightMost(node.children[node.children.length - 1]);
+}
+
+
 /**
  * based on the visibility of the nodes computes the last node in the same level that is visible also considering expanded children
  * @param {ILabelNode} node
  * @param {ILabelNode[]} flat flatArray for lookup
  */
 export function lastOfLevel(node, flat) {
-  let last = flat[node.index];
-  while (last && last.level >= node.level && (last.level !== node.level || last.parent === node.parent)) {
-    last = flat[last.index + 1];
+  if (node.parent > -1) {
+    const parent = flat[node.parent];
+    return rightMost(parent.children[parent.children.length - 1]);
   }
-  return flat[(last ? last.index : flat.length) - 1];
+  // top level search last top level sibling
+  const sibling = flat.slice().reverse().find((d) => d.parent === -1);
+  return rightMost(sibling);
+}
+
+/**
+ * traverses the tree in pre order logic
+ * @param {ILabelNode} node
+ * @param {(node: ILabelNode) => void | false} visit return false to skip the traversal of children
+ */
+export function preOrderTraversal(node, visit) {
+  const goDeep = visit(node);
+  if (goDeep !== false) {
+    for (const child of node.children) {
+      preOrderTraversal(child, visit);
+    }
+  }
 }
 
 /**
