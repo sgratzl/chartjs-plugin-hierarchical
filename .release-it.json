@@ -1,6 +1,8 @@
 {
   "scripts": {
-    "beforeStage": "npm run build"
+    "beforeStart": "npm test",
+    "beforeStage": "npm run build",
+    "afterRelease": "echo Successfully released ${name} v${version} to ${repo.repository}."
   },
   "git": {
     "tagName": "v%s"
