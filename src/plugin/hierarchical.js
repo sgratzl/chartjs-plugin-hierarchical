@@ -459,8 +459,6 @@ const HierarchicalPlugin = {
       const node = parents[i];
       const isParentOfFirstChild = node.children[0] === parents[i + 1] || i === parents.length - 1;
 
-      console.log(node.label, 'in range');
-
       const parent = flat[node.parent];
 
       // first child of expanded parent

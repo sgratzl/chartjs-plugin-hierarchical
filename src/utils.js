@@ -147,9 +147,8 @@ export function flatChildren(node, flat) {
     // not the last child
     const nextSibling = flat[node.parent].children[node.relIndex + 1];
     return flat.slice(firstChild.index, nextSibling.index);
-  } else {
-    return flat.slice(firstChild.index); // till end
   }
+  return flat.slice(firstChild.index); // till end
 }
 
 /**

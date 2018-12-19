@@ -13,8 +13,7 @@
     "url": "https://github.com/datavisyn/chartjs-scale-hierarchical.git"
   },
   "main": "build/Chart.Hierarchical.js",
-  "jsnext:main": "build/Chart.Hierarchical.js",
-  "module": "build/Chart.Hierarchical.js",
+  "module": "build/Chart.Hierarchical.mjs",
   "files": [
     "build",
     "src/**/*.js"
@@ -28,8 +27,6 @@
     "babel-jest": "^23.6.0",
     "eslint": "^5.10.0",
     "jest": "^23.6.0",
-    "package-preamble": "^0.1.0",
-    "regenerator-runtime": "^0.13.1",
     "release-it": "^9.2.0",
     "rimraf": "^2.6.2",
     "rollup": "^0.68.0",
