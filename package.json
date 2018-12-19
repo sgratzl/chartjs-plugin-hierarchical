@@ -13,6 +13,7 @@
     "url": "https://github.com/datavisyn/chartjs-scale-hierarchical.git"
   },
   "main": "build/Chart.Hierarchical.js",
+  "unpkg": "build/Chart.Hierarchical.min.js",
   "module": "build/Chart.Hierarchical.mjs",
   "files": [
     "build",
