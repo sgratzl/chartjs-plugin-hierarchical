@@ -8,6 +8,6 @@
   },
   "github": {
     "release": true,
-    "assets": ["build/*.js"]
+    "assets": ["build/*.js", "build/*.mjs"]
   }
 }
