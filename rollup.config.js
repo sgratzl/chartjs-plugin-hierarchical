@@ -3,7 +3,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonjs from 'rollup-plugin-commonjs';
 import babel from 'rollup-plugin-babel';
 
-export default {
+export default [{
   output: {
     file: 'build/Chart.Hierarchical.js',
     name: 'ChartHierarchical',
@@ -18,4 +18,19 @@ export default {
     commonjs(),
     babel()
   ]
-};
+}, {
+  output: {
+    file: 'build/Chart.Hierarchical.mjs',
+    name: 'ChartHierarchical',
+    format: 'esm',
+    globals: {
+      'chart.js': 'Chart'
+    }
+  },
+  external: ['chart.js'],
+  plugins: [
+    resolve(),
+    commonjs(),
+    babel()
+  ]
+}];

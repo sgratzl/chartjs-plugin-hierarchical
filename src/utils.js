@@ -1,4 +1,3 @@
-
 /**
  * builds up recursivly the label tree
  * @param {string|ILabelNode} label
@@ -15,7 +14,9 @@ export function asNode(label, parent) {
     width: 0,
     hidden: false,
     major: !parent // for ticks
-  }, typeof label === 'string' ? {label} : label);
+  }, typeof label === 'string' ? {
+    label
+  } : label);
 
   node.children = node.children.map((d) => asNode(d, node));
 
@@ -69,6 +70,10 @@ export function parentsOf(node, flat) {
 }
 
 
+/**
+ * computes the right most grand child of expanded nodes
+ * @param {ILabelNode} node
+ */
 function rightMost(node) {
   if (!node.expand || node.children.length === 0) {
     return node;
@@ -115,7 +120,9 @@ export function preOrderTraversal(node, visit) {
 export function resolve(label, flat, dataTree) {
   const parents = parentsOf(label, flat);
 
-  let dataItem = {children: dataTree};
+  let dataItem = {
+    children: dataTree
+  };
   const dataParents = parents.map((p) => {
     dataItem = dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN;
     return dataItem;
@@ -138,4 +145,79 @@ export function countExpanded(node) {
     return 1;
   }
   return node.children.reduce((acc, d) => acc + countExpanded(d), 0);
+}
+
+
+export function flatChildren(node, flat) {
+  if (node.children.length === 0) {
+    return [];
+  }
+  const firstChild = node.children[0];
+  if (node.parent >= 0 && node.relIndex < flat[node.parent].children.length - 1) {
+    // not the last child and have parent, fast track using sibling
+    const nextSibling = flat[node.parent].children[node.relIndex + 1];
+    return flat.slice(firstChild.index, nextSibling.index);
+  }
+  // find sibling or next in the hierarchy up
+  const nextSibling = flat.slice(firstChild.index + 1).find((d) => d.level < node.level || (d.parent === node.parent && d.relIndex === node.relIndex + 1));
+  if (nextSibling) {
+    return flat.slice(firstChild.index, nextSibling.index);
+  }
+  // no sibling found = till end
+  return flat.slice(firstChild.index);
+}
+
+export function determineVisible(flat) {
+  const focus = flat.find((d) => d.expand === 'focus');
+
+  if (focus) {
+    return flat.slice(focus.index + 1).filter((d) => !d.hidden && parentsOf(d, flat).includes(focus));
+  }
+  // the real labels are the one not hidden in the tree
+  return flat.filter((d) => !d.hidden);
+}
+
+/**
+ *
+ * @param {ILabelNode} node
+ * @param {ILabelNode[]} flat
+ * @param {Set<ILabelNode>} visibles
+ */
+export function spanLogic(node, flat, visibles) {
+  if (node.children.length === 0 || !node.expand) {
+    return false;
+  }
+  const firstChild = node.children[0];
+  const lastChild = node.children[node.children.length - 1];
+  const flatSubTree = flatChildren(node, flat);
+
+  const leftVisible = flatSubTree.find((d) => visibles.has(d));
+  const rightVisible = flatSubTree.slice().reverse().find((d) => visibles.has(d));
+
+  if (!leftVisible || !rightVisible) {
+    return false;
+  }
+
+  const leftParents = parentsOf(leftVisible, flat);
+  const rightParents = parentsOf(rightVisible, flat);
+  // is the left visible one also a child of my first child = whole starting range is visible?
+  const leftFirstVisible = leftParents[node.level + 1] === firstChild;
+  // is the right visible one also my last child = whole end range is visible?
+  const rightLastVisible = rightParents[node.level + 1] === lastChild;
+
+  const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
+  const hasFocusBox = leftFirstVisible && rightLastVisible && node.children.length > 1;
+  // the next visible after the left one
+  const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
+  const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
+
+  return {
+    hasCollapseBox,
+    hasFocusBox,
+    leftVisible,
+    rightVisible,
+    groupLabelCenter,
+    leftFirstVisible,
+    rightLastVisible
+  };
 }

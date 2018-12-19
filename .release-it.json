@@ -1,0 +1,13 @@
+{
+  "buildCommand": "npm run build",
+  "src": {
+    "tagName": "v%s"
+  },
+  "npm": {
+    "publish": true
+  },
+  "github": {
+    "release": true,
+    "assets": ["build/*.js", "build/*.mjs"]
+  }
+}

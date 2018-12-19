@@ -1,12 +1,26 @@
 'use strict';
 
-import * as Chart from 'chart.js';
-import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal} from '../utils';
+import {
+  helpers,
+  defaults,
+  pluginService
+} from 'chart.js';
+import {
+  toNodes,
+  countExpanded,
+  resolve,
+  parentsOf,
+  preOrderTraversal,
+  lastOfLevel,
+  spanLogic,
+  determineVisible,
+  flatChildren
+} from '../utils';
 
 
 function parseFontOptions(options) {
-  const valueOrDefault = Chart.helpers.valueOrDefault;
-  const globalDefaults = Chart.defaults.global;
+  const valueOrDefault = helpers.valueOrDefault;
+  const globalDefaults = defaults.global;
   const size = valueOrDefault(options.fontSize, globalDefaults.defaultFontSize);
   const style = valueOrDefault(options.fontStyle, globalDefaults.defaultFontStyle);
   const family = valueOrDefault(options.fontFamily, globalDefaults.defaultFontFamily);
@@ -15,7 +29,7 @@ function parseFontOptions(options) {
     size: size,
     style: style,
     family: family,
-    font: Chart.helpers.fontString(size, style, family)
+    font: helpers.fontString(size, style, family)
   };
 }
 
@@ -61,15 +75,7 @@ const HierarchicalPlugin = {
     const flat = chart.data.flatLabels = toNodes(chart.data.labels);
     chart.data.rootNodes = flat.filter((d) => d.parent === -1);
 
-    const focus = flat.find((d) => d.expand === 'focus');
-    let labels;
-
-    if (focus) {
-      labels = flat.slice(focus.index + 1).filter((d) => !d.hidden && parentsOf(d, flat).includes(focus));
-    } else {
-      // the real labels are the one not hidden in the tree
-      labels = chart.data.labels = chart.data.flatLabels.filter((d) => !d.hidden);
-    }
+    const labels = chart.data.labels = determineVisible(flat);
 
     chart.data.labels = labels;
     this._updateVerifyCode(chart);
@@ -145,34 +151,6 @@ const HierarchicalPlugin = {
     const ctx = chart.ctx;
     const hor = scale.isHorizontal();
 
-    const spanLogic = (node) => {
-      const firstChild = node.children[0];
-      const lastChild = node.children[node.children.length - 1];
-      const flatSubTree = flat.slice(firstChild.index, lastChild.index + 1);
-
-      const leftVisible = flatSubTree.find((d) => visibles.has(d));
-      const rightVisible = flatSubTree.reverse().find((d) => visibles.has(d));
-
-      if (!leftVisible || !rightVisible) {
-        return false;
-      }
-
-      const leftParents = parentsOf(leftVisible, flat);
-      const rightParents = parentsOf(rightVisible, flat);
-      // is the left visible one also a child of my first child = whole starting range is visible?
-      const leftFirstVisible = leftParents[node.level + 1] === firstChild;
-      // is the right visible one also my last child = whole end range is visible?
-      const rightLastVisible = rightParents[node.level + 1] === lastChild;
-
-      const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
-      const hasFocusBox = rightLastVisible && node.children.length > 1;
-      // the next visible after the left one
-      const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
-      const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
-
-      return {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible};
-    };
-
     const boxSize = scale.options.hierarchyBoxSize;
     const boxSize05 = boxSize * 0.5;
     const boxSize01 = boxSize * 0.1;
@@ -184,7 +162,7 @@ const HierarchicalPlugin = {
     const renderLabel = scale.options.hierarchyLabelPosition;
 
     const scaleLabel = scale.options.scaleLabel;
-    const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.global.defaultFontColor);
+    const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.global.defaultFontColor);
     const scaleLabelFont = parseFontOptions(scaleLabel);
 
     ctx.save();
@@ -208,11 +186,19 @@ const HierarchicalPlugin = {
         }
         return false;
       }
-      const r = spanLogic(node);
+      const r = spanLogic(node, flat, visibles);
       if (!r) {
         return false;
       }
-      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+      const {
+        hasFocusBox,
+        hasCollapseBox,
+        leftVisible,
+        rightVisible,
+        leftFirstVisible,
+        rightLastVisible,
+        groupLabelCenter
+      } = r;
 
       // render group label
       if (renderLabel === 'below') {
@@ -280,11 +266,19 @@ const HierarchicalPlugin = {
         }
         return false;
       }
-      const r = spanLogic(node);
+      const r = spanLogic(node, flat, visibles);
       if (!r) {
         return false;
       }
-      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+      const {
+        hasFocusBox,
+        hasCollapseBox,
+        leftVisible,
+        rightVisible,
+        leftFirstVisible,
+        rightLastVisible,
+        groupLabelCenter
+      } = r;
 
       // render group label
       ctx.fillText(node.label, offset - boxSize, groupLabelCenter);
@@ -389,9 +383,16 @@ const HierarchicalPlugin = {
     node.expand = true;
   },
 
-  _zoomIn(chart, lastIndex, parent) {
+  _zoomIn(chart, lastIndex, parent, flat) {
     const count = countExpanded(parent);
+    // reset others
+    flat.forEach((d) => {
+      if (d.expand === 'focus') {
+        d.expand = true;
+      }
+    });
     parent.expand = 'focus';
+
     const index = lastIndex - count + 1;
 
     const labels = chart.data.labels;
@@ -444,11 +445,16 @@ const HierarchicalPlugin = {
       return null;
     }
 
-    const elem = chart.getElementsAtEventForMode(event, 'index', {axis: hor ? 'x' : 'y'})[0];
+    const elem = chart.getElementsAtEventForMode(event, 'index', {
+      axis: hor ? 'x' : 'y'
+    })[0];
     if (!elem) {
       return null;
     }
-    return {offset, index: elem._index};
+    return {
+      offset,
+      index: elem._index
+    };
   },
 
   beforeEvent(chart, event) {
@@ -473,26 +479,32 @@ const HierarchicalPlugin = {
 
     const inRange = hor ? (o) => event.y >= o && event.y <= o + boxRow : (o) => event.x <= o && event.x >= o - boxRow;
 
-    for (let i = 1; i < parents.length; ++i) {
-      const parent = parents[i];
-      // out of box
-      if (inRange(offset) && (parent.children[0] === parents[i + 1] || i === parents.length - 1)) {
-        const pp = flat[parent.parent];
-        if (parent.relIndex === 0 && pp.expand === true) {
-          this._collapse(chart, index, pp);
-          return;
-        }
-        const isLastIndex = pp.children.length === parent.relIndex + 1;
-
-        if (isLastIndex && pp.expand === 'focus') {
-          this._zoomOut(chart, pp);
-          return;
-        } else if (isLastIndex && pp.expand === true) {
-          this._zoomIn(chart, index, pp);
-          return;
-        }
+    for (let i = 1; i < parents.length; ++i, offset += hor ? boxRow : -boxRow) {
+      if (!inRange(offset)) {
+        continue;
       }
-      offset += hor ? boxRow : -boxRow;
+      const node = parents[i];
+      const isParentOfFirstChild = node.children[0] === parents[i + 1] || i === parents.length - 1;
+
+      const parent = flat[node.parent];
+
+      // first child of expanded parent
+      if (isParentOfFirstChild && node.relIndex === 0 && parent.expand === true) {
+        this._collapse(chart, index, parent);
+        return;
+      }
+      const isLastChildOfParent = lastOfLevel(node, flat) === label; // leaf = current node
+
+      // last index of focussed parent
+      if (isLastChildOfParent && parent.expand === 'focus') {
+        this._zoomOut(chart, parent);
+        return;
+      }
+      // last index of expanded parent
+      if (isLastChildOfParent && parent.expand === true && flatChildren(parent, flat).every((d) => d.expand !== 'focus')) {
+        this._zoomIn(chart, index, parent, flat);
+        return;
+      }
     }
 
     if (label.children.length > 0 && inRange(offset)) {
@@ -503,6 +515,6 @@ const HierarchicalPlugin = {
   }
 };
 
-Chart.pluginService.register(HierarchicalPlugin);
+pluginService.register(HierarchicalPlugin);
 
 export default HierarchicalPlugin;
