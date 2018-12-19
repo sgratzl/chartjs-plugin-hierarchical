@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Chart from 'chart.js';
-import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, flatChildren, lastOfLevel} from '../utils';
+import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, lastOfLevel} from '../utils';
 
 
 function parseFontOptions(options) {
@@ -145,34 +145,6 @@ const HierarchicalPlugin = {
     const ctx = chart.ctx;
     const hor = scale.isHorizontal();
 
-    const spanLogic = (node) => {
-      const firstChild = node.children[0];
-      const lastChild = node.children[node.children.length - 1];
-      const flatSubTree = flatChildren(node, flat);
-
-      const leftVisible = flatSubTree.find((d) => visibles.has(d));
-      const rightVisible = flatSubTree.slice().reverse().find((d) => visibles.has(d));
-
-      if (!leftVisible || !rightVisible) {
-        return false;
-      }
-
-      const leftParents = parentsOf(leftVisible, flat);
-      const rightParents = parentsOf(rightVisible, flat);
-      // is the left visible one also a child of my first child = whole starting range is visible?
-      const leftFirstVisible = leftParents[node.level + 1] === firstChild;
-      // is the right visible one also my last child = whole end range is visible?
-      const rightLastVisible = rightParents[node.level + 1] === lastChild;
-
-      const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
-      const hasFocusBox = leftFirstVisible && rightLastVisible && node.children.length > 1;
-      // the next visible after the left one
-      const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
-      const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
-
-      return {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible};
-    };
-
     const boxSize = scale.options.hierarchyBoxSize;
     const boxSize05 = boxSize * 0.5;
     const boxSize01 = boxSize * 0.1;
@@ -208,7 +180,7 @@ const HierarchicalPlugin = {
         }
         return false;
       }
-      const r = spanLogic(node);
+      const r = spanLogic(node, flat, visibles);
       if (!r) {
         return false;
       }
@@ -280,7 +252,7 @@ const HierarchicalPlugin = {
         }
         return false;
       }
-      const r = spanLogic(node);
+      const r = spanLogic(node, flat, visibles);
       if (!r) {
         return false;
       }

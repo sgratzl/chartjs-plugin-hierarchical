@@ -151,3 +151,32 @@ export function flatChildren(node, flat) {
     return flat.slice(firstChild.index); // till end
   }
 }
+
+
+export function spanLogic(node, flat, visibles) {
+  const firstChild = node.children[0];
+  const lastChild = node.children[node.children.length - 1];
+  const flatSubTree = flatChildren(node, flat);
+
+  const leftVisible = flatSubTree.find((d) => visibles.has(d));
+  const rightVisible = flatSubTree.slice().reverse().find((d) => visibles.has(d));
+
+  if (!leftVisible || !rightVisible) {
+    return false;
+  }
+
+  const leftParents = parentsOf(leftVisible, flat);
+  const rightParents = parentsOf(rightVisible, flat);
+  // is the left visible one also a child of my first child = whole starting range is visible?
+  const leftFirstVisible = leftParents[node.level + 1] === firstChild;
+  // is the right visible one also my last child = whole end range is visible?
+  const rightLastVisible = rightParents[node.level + 1] === lastChild;
+
+  const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
+  const hasFocusBox = leftFirstVisible && rightLastVisible && node.children.length > 1;
+  // the next visible after the left one
+  const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
+  const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
+
+  return {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible};
+}
