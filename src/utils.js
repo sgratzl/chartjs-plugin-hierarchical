@@ -146,13 +146,22 @@ export function countExpanded(node) {
 
 
 export function flatChildren(node, flat) {
+  if (node.children.length === 0) {
+    return [];
+  }
   const firstChild = node.children[0];
   if (node.parent >= 0 && node.relIndex < flat[node.parent].children.length - 1) {
-    // not the last child
+    // not the last child and have parent, fast track using sibling
     const nextSibling = flat[node.parent].children[node.relIndex + 1];
     return flat.slice(firstChild.index, nextSibling.index);
   }
-  return flat.slice(firstChild.index); // till end
+  // find sibling
+  const nextSibling = flat.slice(firstChild.index + 1).find((d) => d.parent === node.parent && d.relIndex === node.relIndex + 1);
+  if (nextSibling) {
+    return flat.slice(firstChild.index, nextSibling.index);
+  }
+  // no sibling found = till end
+  return flat.slice(firstChild.index);
 }
 
 /**
@@ -162,6 +171,9 @@ export function flatChildren(node, flat) {
  * @param {Set<ILabelNode>} visibles
  */
 export function spanLogic(node, flat, visibles) {
+  if (node.children.length === 0 || !node.expand) {
+    return false;
+  }
   const firstChild = node.children[0];
   const lastChild = node.children[node.children.length - 1];
   const flatSubTree = flatChildren(node, flat);
