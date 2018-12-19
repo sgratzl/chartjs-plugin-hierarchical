@@ -1,6 +1,8 @@
 {
-  "buildCommand": "npm run build",
-  "src": {
+  "scripts": {
+    "beforeStage": "npm run build"
+  },
+  "git": {
     "tagName": "v%s"
   },
   "npm": {
