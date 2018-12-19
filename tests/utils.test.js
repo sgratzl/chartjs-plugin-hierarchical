@@ -153,6 +153,14 @@ describe('flatChildren', () => {
     const children = flatChildren(a, flat);
     expect(children).toEqual(flat.slice(1, 1 + 4));
   });
+
+  test('ab nested', () => {
+    const {flat, root} = setupNodes([{ label: 'a', children: ['aa', { label: 'ab', children: ['aba', 'abb']}] }, 'b', 'c']);
+
+    const ab = root[0].children[1];
+    const children = flatChildren(ab, flat);
+    expect(children).toEqual(ab.children);
+  });
 });
 
 describe('countExpanded', () => {

@@ -1,4 +1,3 @@
-
 /**
  * builds up recursivly the label tree
  * @param {string|ILabelNode} label
@@ -15,7 +14,9 @@ export function asNode(label, parent) {
     width: 0,
     hidden: false,
     major: !parent // for ticks
-  }, typeof label === 'string' ? {label} : label);
+  }, typeof label === 'string' ? {
+    label
+  } : label);
 
   node.children = node.children.map((d) => asNode(d, node));
 
@@ -119,7 +120,9 @@ export function preOrderTraversal(node, visit) {
 export function resolve(label, flat, dataTree) {
   const parents = parentsOf(label, flat);
 
-  let dataItem = {children: dataTree};
+  let dataItem = {
+    children: dataTree
+  };
   const dataParents = parents.map((p) => {
     dataItem = dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN;
     return dataItem;
@@ -155,8 +158,8 @@ export function flatChildren(node, flat) {
     const nextSibling = flat[node.parent].children[node.relIndex + 1];
     return flat.slice(firstChild.index, nextSibling.index);
   }
-  // find sibling
-  const nextSibling = flat.slice(firstChild.index + 1).find((d) => d.parent === node.parent && d.relIndex === node.relIndex + 1);
+  // find sibling or next in the hierarchy up
+  const nextSibling = flat.slice(firstChild.index + 1).find((d) => d.level < node.level || (d.parent === node.parent && d.relIndex === node.relIndex + 1));
   if (nextSibling) {
     return flat.slice(firstChild.index, nextSibling.index);
   }
@@ -208,5 +211,13 @@ export function spanLogic(node, flat, visibles) {
   const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
   const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
 
-  return {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible};
+  return {
+    hasCollapseBox,
+    hasFocusBox,
+    leftVisible,
+    rightVisible,
+    groupLabelCenter,
+    leftFirstVisible,
+    rightLastVisible
+  };
 }

@@ -1,7 +1,21 @@
 'use strict';
 
-import {helpers, defaults, pluginService} from 'chart.js';
-import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, lastOfLevel, spanLogic, determineVisible} from '../utils';
+import {
+  helpers,
+  defaults,
+  pluginService
+} from 'chart.js';
+import {
+  toNodes,
+  countExpanded,
+  resolve,
+  parentsOf,
+  preOrderTraversal,
+  lastOfLevel,
+  spanLogic,
+  determineVisible,
+  flatChildren
+} from '../utils';
 
 
 function parseFontOptions(options) {
@@ -176,7 +190,15 @@ const HierarchicalPlugin = {
       if (!r) {
         return false;
       }
-      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+      const {
+        hasFocusBox,
+        hasCollapseBox,
+        leftVisible,
+        rightVisible,
+        leftFirstVisible,
+        rightLastVisible,
+        groupLabelCenter
+      } = r;
 
       // render group label
       if (renderLabel === 'below') {
@@ -248,7 +270,15 @@ const HierarchicalPlugin = {
       if (!r) {
         return false;
       }
-      const {hasFocusBox, hasCollapseBox, leftVisible, rightVisible, leftFirstVisible, rightLastVisible, groupLabelCenter} = r;
+      const {
+        hasFocusBox,
+        hasCollapseBox,
+        leftVisible,
+        rightVisible,
+        leftFirstVisible,
+        rightLastVisible,
+        groupLabelCenter
+      } = r;
 
       // render group label
       ctx.fillText(node.label, offset - boxSize, groupLabelCenter);
@@ -415,11 +445,16 @@ const HierarchicalPlugin = {
       return null;
     }
 
-    const elem = chart.getElementsAtEventForMode(event, 'index', {axis: hor ? 'x' : 'y'})[0];
+    const elem = chart.getElementsAtEventForMode(event, 'index', {
+      axis: hor ? 'x' : 'y'
+    })[0];
     if (!elem) {
       return null;
     }
-    return {offset, index: elem._index};
+    return {
+      offset,
+      index: elem._index
+    };
   },
 
   beforeEvent(chart, event) {
@@ -466,7 +501,7 @@ const HierarchicalPlugin = {
         return;
       }
       // last index of expanded parent
-      if (isLastChildOfParent && parent.expand === true) {
+      if (isLastChildOfParent && parent.expand === true && flatChildren(parent, flat).every((d) => d.expand !== 'focus')) {
         this._zoomIn(chart, index, parent, flat);
         return;
       }
