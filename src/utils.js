@@ -164,6 +164,16 @@ export function flatChildren(node, flat) {
   return flat.slice(firstChild.index);
 }
 
+export function determineVisible(flat) {
+  const focus = flat.find((d) => d.expand === 'focus');
+
+  if (focus) {
+    return flat.slice(focus.index + 1).filter((d) => !d.hidden && parentsOf(d, flat).includes(focus));
+  }
+  // the real labels are the one not hidden in the tree
+  return flat.filter((d) => !d.hidden);
+}
+
 /**
  *
  * @param {ILabelNode} node

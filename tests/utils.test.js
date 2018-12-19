@@ -1,5 +1,5 @@
 
-import {asNode, toNodes, parentsOf, lastOfLevel, countExpanded, spanLogic, flatChildren} from '../src/utils';
+import {asNode, toNodes, parentsOf, lastOfLevel, countExpanded, spanLogic, flatChildren, determineVisible} from '../src/utils';
 
 function nodeTest(n, label, options = {}) {
   const {childCount, level, hidden} = Object.assign({
@@ -28,7 +28,7 @@ function treeNodeTest(n, parent, relIndex, index) {
 function setupNodes(def) {
   const flat = toNodes(def);
   const root = flat.filter((d) => d.parent === -1);
-  const visible = new Set(flat.filter((d) => !d.hidden));
+  const visible = new Set(determineVisible(flat));
   return {flat, root, visible};
 }
 
@@ -242,6 +242,99 @@ describe('spanLogic', () => {
     expect(hasCollapseBox).toBe(true);
     expect(hasFocusBox).toBe(true);
     expect(groupLabelCenter).toBe((aa.center + ab.center) / 2);
+    expect(leftFirstVisible).toBe(true);
+    expect(rightLastVisible).toBe(true);
+  });
+
+  test('root level visible a (aa,ab,ac) expanded', () => {
+    // aa ab ac b c
+    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', 'ac'], expand: true}, 'b', 'c']);
+
+    const a = root[0];
+    const aa = a.children[0];
+    const ab = a.children[1];
+    const ac = a.children[2];
+
+    const r = spanLogic(a, flat, visible);
+    expect(r).not.toBe(false);
+
+    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    expect(leftVisible).toBe(aa);
+    expect(rightVisible).toBe(ac);
+
+    expect(hasCollapseBox).toBe(true);
+    expect(hasFocusBox).toBe(true);
+    expect(groupLabelCenter).toBe((aa.center + ab.center) / 2);
+    expect(leftFirstVisible).toBe(true);
+    expect(rightLastVisible).toBe(true);
+  });
+
+  test('root level visible a (aa,ab,ac) focus', () => {
+    // aa ab ac
+    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', 'ac'], expand: 'focus'}, 'b', 'c']);
+
+    const a = root[0];
+    const aa = a.children[0];
+    const ab = a.children[1];
+    const ac = a.children[2];
+
+    const r = spanLogic(a, flat, visible);
+    expect(r).not.toBe(false);
+
+    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    expect(leftVisible).toBe(aa);
+    expect(rightVisible).toBe(ac);
+
+    expect(hasCollapseBox).toBe(false); // since focussed
+    expect(hasFocusBox).toBe(true);
+    expect(groupLabelCenter).toBe((aa.center + ab.center) / 2);
+    expect(leftFirstVisible).toBe(true);
+    expect(rightLastVisible).toBe(true);
+  });
+
+  test('root level visible ac (aa,ab,(aca, acb)) focus', () => {
+    // aca acb
+    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', {label: 'ac', children: ['aca', 'acb'], expand: 'focus'}], expand: true}, 'b', 'c']);
+
+    const a = root[0];
+    const aa = a.children[0];
+    const ab = a.children[1];
+    const ac = a.children[2];
+    const aca = ac.children[0];
+    const acb = ac.children[1];
+
+    const r = spanLogic(a, flat, visible);
+    expect(r).not.toBe(false);
+
+    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    expect(leftVisible).toBe(aca);
+    expect(rightVisible).toBe(acb);
+
+    expect(hasCollapseBox).toBe(false); // since focussed
+    expect(hasFocusBox).toBe(false);
+    expect(groupLabelCenter).toBe((aa.center + ab.center) / 2);
+    expect(leftFirstVisible).toBe(false);
+    expect(rightLastVisible).toBe(true);
+  });
+
+  test('root level visible c (ca,cb) expand', () => {
+    // aa ab ac b c
+    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', 'ac']}, 'b', {label: 'c', children: ['ca', 'cb'], expand: true}]);
+
+    const c = root[2];
+    const ca = c.children[0];
+    const cb = c.children[1];
+
+    const r = spanLogic(c, flat, visible);
+    expect(r).not.toBe(false);
+
+    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    expect(leftVisible).toBe(ca);
+    expect(rightVisible).toBe(cb);
+
+    expect(hasCollapseBox).toBe(true);
+    expect(hasFocusBox).toBe(true);
+    expect(groupLabelCenter).toBe((ca.center + cb.center) / 2);
     expect(leftFirstVisible).toBe(true);
     expect(rightLastVisible).toBe(true);
   });

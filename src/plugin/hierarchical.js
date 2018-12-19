@@ -1,7 +1,7 @@
 'use strict';
 
 import {helpers, defaults, pluginService} from 'chart.js';
-import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, lastOfLevel, spanLogic} from '../utils';
+import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, lastOfLevel, spanLogic, determineVisible} from '../utils';
 
 
 function parseFontOptions(options) {
@@ -61,15 +61,7 @@ const HierarchicalPlugin = {
     const flat = chart.data.flatLabels = toNodes(chart.data.labels);
     chart.data.rootNodes = flat.filter((d) => d.parent === -1);
 
-    const focus = flat.find((d) => d.expand === 'focus');
-    let labels;
-
-    if (focus) {
-      labels = flat.slice(focus.index + 1).filter((d) => !d.hidden && parentsOf(d, flat).includes(focus));
-    } else {
-      // the real labels are the one not hidden in the tree
-      labels = chart.data.labels = chart.data.flatLabels.filter((d) => !d.hidden);
-    }
+    const labels = chart.data.labels = determineVisible(flat);
 
     chart.data.labels = labels;
     this._updateVerifyCode(chart);
