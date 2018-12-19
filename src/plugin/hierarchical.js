@@ -1,12 +1,12 @@
 'use strict';
 
-import * as Chart from 'chart.js';
+import {helpers, defaults, pluginService} from 'chart.js';
 import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, lastOfLevel, spanLogic} from '../utils';
 
 
 function parseFontOptions(options) {
-  const valueOrDefault = Chart.helpers.valueOrDefault;
-  const globalDefaults = Chart.defaults.global;
+  const valueOrDefault = helpers.valueOrDefault;
+  const globalDefaults = defaults.global;
   const size = valueOrDefault(options.fontSize, globalDefaults.defaultFontSize);
   const style = valueOrDefault(options.fontStyle, globalDefaults.defaultFontStyle);
   const family = valueOrDefault(options.fontFamily, globalDefaults.defaultFontFamily);
@@ -15,7 +15,7 @@ function parseFontOptions(options) {
     size: size,
     style: style,
     family: family,
-    font: Chart.helpers.fontString(size, style, family)
+    font: helpers.fontString(size, style, family)
   };
 }
 
@@ -156,7 +156,7 @@ const HierarchicalPlugin = {
     const renderLabel = scale.options.hierarchyLabelPosition;
 
     const scaleLabel = scale.options.scaleLabel;
-    const scaleLabelFontColor = Chart.helpers.valueOrDefault(scaleLabel.fontColor, Chart.defaults.global.defaultFontColor);
+    const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.global.defaultFontColor);
     const scaleLabelFont = parseFontOptions(scaleLabel);
 
     ctx.save();
@@ -488,6 +488,6 @@ const HierarchicalPlugin = {
   }
 };
 
-Chart.pluginService.register(HierarchicalPlugin);
+pluginService.register(HierarchicalPlugin);
 
 export default HierarchicalPlugin;

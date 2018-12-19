@@ -1,9 +1,9 @@
 'use strict';
 
-import * as Chart from 'chart.js';
+import {scaleService, Scale} from 'chart.js';
 import {parentsOf} from '../utils';
 
-const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('category'), {
+const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'), {
   /**
    * reduce the space between items at level X by this factor
    */
@@ -50,7 +50,7 @@ const defaultConfig = Object.assign({}, Chart.scaleService.getScaleDefaults('cat
 });
 
 
-const HierarchicalScale = Chart.Scale.extend({
+const HierarchicalScale = Scale.extend({
   determineDataLimits() {
     const data = this.chart.data;
     const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
@@ -186,6 +186,6 @@ const HierarchicalScale = Chart.Scale.extend({
   }
 });
 
-Chart.scaleService.registerScaleType('hierarchical', HierarchicalScale, defaultConfig);
+scaleService.registerScaleType('hierarchical', HierarchicalScale, defaultConfig);
 
 export default HierarchicalScale;

@@ -69,6 +69,10 @@ export function parentsOf(node, flat) {
 }
 
 
+/**
+ * computes the right most grand child of expanded nodes
+ * @param {ILabelNode} node
+ */
 function rightMost(node) {
   if (!node.expand || node.children.length === 0) {
     return node;
