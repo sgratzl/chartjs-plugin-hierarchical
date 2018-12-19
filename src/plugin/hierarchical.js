@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Chart from 'chart.js';
-import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal} from '../utils';
+import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, flatChildren, lastOfLevel} from '../utils';
 
 
 function parseFontOptions(options) {
@@ -148,10 +148,10 @@ const HierarchicalPlugin = {
     const spanLogic = (node) => {
       const firstChild = node.children[0];
       const lastChild = node.children[node.children.length - 1];
-      const flatSubTree = flat.slice(firstChild.index, lastChild.index + 1);
+      const flatSubTree = flatChildren(node, flat);
 
       const leftVisible = flatSubTree.find((d) => visibles.has(d));
-      const rightVisible = flatSubTree.reverse().find((d) => visibles.has(d));
+      const rightVisible = flatSubTree.slice().reverse().find((d) => visibles.has(d));
 
       if (!leftVisible || !rightVisible) {
         return false;
@@ -389,9 +389,16 @@ const HierarchicalPlugin = {
     node.expand = true;
   },
 
-  _zoomIn(chart, lastIndex, parent) {
+  _zoomIn(chart, lastIndex, parent, flat) {
     const count = countExpanded(parent);
+    // reset others
+    flat.forEach((d) => {
+      if (d.expand === 'focus') {
+        d.expand = true;
+      }
+    });
     parent.expand = 'focus';
+
     const index = lastIndex - count + 1;
 
     const labels = chart.data.labels;
@@ -473,26 +480,34 @@ const HierarchicalPlugin = {
 
     const inRange = hor ? (o) => event.y >= o && event.y <= o + boxRow : (o) => event.x <= o && event.x >= o - boxRow;
 
-    for (let i = 1; i < parents.length; ++i) {
-      const parent = parents[i];
-      // out of box
-      if (inRange(offset) && (parent.children[0] === parents[i + 1] || i === parents.length - 1)) {
-        const pp = flat[parent.parent];
-        if (parent.relIndex === 0 && pp.expand === true) {
-          this._collapse(chart, index, pp);
-          return;
-        }
-        const isLastIndex = pp.children.length === parent.relIndex + 1;
-
-        if (isLastIndex && pp.expand === 'focus') {
-          this._zoomOut(chart, pp);
-          return;
-        } else if (isLastIndex && pp.expand === true) {
-          this._zoomIn(chart, index, pp);
-          return;
-        }
+    for (let i = 1; i < parents.length; ++i, offset += hor ? boxRow : -boxRow) {
+      if (!inRange(offset)) {
+        continue;
       }
-      offset += hor ? boxRow : -boxRow;
+      const node = parents[i];
+      const isParentOfFirstChild = node.children[0] === parents[i + 1] || i === parents.length - 1;
+
+      console.log(node.label, 'in range');
+
+      const parent = flat[node.parent];
+
+      // first child of expanded parent
+      if (isParentOfFirstChild && node.relIndex === 0 && parent.expand === true) {
+        this._collapse(chart, index, parent);
+        return;
+      }
+      const isLastChildOfParent = lastOfLevel(node, flat) === label; // leaf = current node
+
+      // last index of focussed parent
+      if (isLastChildOfParent && parent.expand === 'focus') {
+        this._zoomOut(chart, parent);
+        return;
+      }
+      // last index of expanded parent
+      if (isLastChildOfParent && parent.expand === true) {
+        this._zoomIn(chart, index, parent, flat);
+        return;
+      }
     }
 
     if (label.children.length > 0 && inRange(offset)) {

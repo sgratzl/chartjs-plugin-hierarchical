@@ -139,3 +139,15 @@ export function countExpanded(node) {
   }
   return node.children.reduce((acc, d) => acc + countExpanded(d), 0);
 }
+
+
+export function flatChildren(node, flat) {
+  const firstChild = node.children[0];
+  if (node.parent >= 0 && node.relIndex < flat[node.parent].children.length - 1) {
+    // not the last child
+    const nextSibling = flat[node.parent].children[node.relIndex + 1];
+    return flat.slice(firstChild.index, nextSibling.index);
+  } else {
+    return flat.slice(firstChild.index); // till end
+  }
+}
