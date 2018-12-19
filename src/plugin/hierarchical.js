@@ -165,7 +165,7 @@ const HierarchicalPlugin = {
       const rightLastVisible = rightParents[node.level + 1] === lastChild;
 
       const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
-      const hasFocusBox = rightLastVisible && node.children.length > 1;
+      const hasFocusBox = leftFirstVisible && rightLastVisible && node.children.length > 1;
       // the next visible after the left one
       const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
       const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
