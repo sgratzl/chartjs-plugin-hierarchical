@@ -1,7 +1,7 @@
 'use strict';
 
 import * as Chart from 'chart.js';
-import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, lastOfLevel} from '../utils';
+import {toNodes, countExpanded, resolve, parentsOf, preOrderTraversal, lastOfLevel, spanLogic} from '../utils';
 
 
 function parseFontOptions(options) {
