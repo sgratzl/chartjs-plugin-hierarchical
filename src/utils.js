@@ -152,7 +152,12 @@ export function flatChildren(node, flat) {
   }
 }
 
-
+/**
+ *
+ * @param {ILabelNode} node
+ * @param {ILabelNode[]} flat
+ * @param {Set<ILabelNode>} visibles
+ */
 export function spanLogic(node, flat, visibles) {
   const firstChild = node.children[0];
   const lastChild = node.children[node.children.length - 1];
