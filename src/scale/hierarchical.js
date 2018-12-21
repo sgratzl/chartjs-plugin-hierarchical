@@ -154,7 +154,7 @@ const HierarchicalScale = Scale.extend({
       }
       if (valueCategory !== undefined || (value !== undefined && isNaN(index))) {
         value = valueCategory || value;
-        const idx = this._flatTree.findIndex((d) => d.label === value);
+        const idx = this._nodes.findIndex((d) => d.label === value);
         index = idx !== -1 ? idx : index;
       }
     }

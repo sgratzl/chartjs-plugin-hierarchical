@@ -344,6 +344,13 @@ const HierarchicalPlugin = {
     ctx.restore();
   },
 
+  _postDataUpdate(chart) {
+    this._updateVerifyCode(chart);
+    this._updateAttributes(chart);
+
+    chart.update();
+  },
+
   _expandCollapse(chart, index, count, toAdd) {
     const labels = chart.data.labels;
     const flatLabels = chart.data.flatLabels;
@@ -356,16 +363,13 @@ const HierarchicalPlugin = {
     toAdd.forEach((d) => {
       d.hidden = false;
     });
+    // update since line doesn't call it by itself
+    this._findScale(chart).determineDataLimits();
 
     data.forEach((dataset) => {
       const toAddData = toAdd.map((d) => resolve(d, flatLabels, dataset.tree));
       dataset.data.splice.apply(dataset.data, [index, count].concat(toAddData));
     });
-
-    this._updateVerifyCode(chart);
-    this._updateAttributes(chart);
-
-    chart.update();
   },
 
   _collapse(chart, index, parent) {
@@ -376,11 +380,15 @@ const HierarchicalPlugin = {
     }));
     this._expandCollapse(chart, index, count, [parent]);
     parent.expand = false;
+
+    this._postDataUpdate(chart);
   },
 
   _expand(chart, index, node) {
     this._expandCollapse(chart, index, 1, node.children);
     node.expand = true;
+
+    this._postDataUpdate(chart);
   },
 
   _zoomIn(chart, lastIndex, parent, flat) {
@@ -398,6 +406,8 @@ const HierarchicalPlugin = {
     const labels = chart.data.labels;
     labels.splice(lastIndex + 1, labels.length);
     labels.splice(0, index);
+    // update since line doesn't call it by itself
+    this._findScale(chart).determineDataLimits();
 
     const data = chart.data.datasets;
     data.forEach((dataset) => {
@@ -405,10 +415,7 @@ const HierarchicalPlugin = {
       dataset.data.splice(0, index);
     });
 
-    this._updateVerifyCode(chart);
-    this._updateAttributes(chart);
-
-    chart.update();
+    this._postDataUpdate(chart);
   },
 
   _zoomOut(chart, parent) {
@@ -422,20 +429,19 @@ const HierarchicalPlugin = {
 
     labels.splice.apply(labels, [labels.length, 0].concat(nextLabels.slice(index + count)));
     labels.splice.apply(labels, [0, 0].concat(nextLabels.slice(0, index)));
+    // update since line doesn't call it by itself
+    this._findScale(chart).determineDataLimits();
 
     const data = chart.data.datasets;
     data.forEach((dataset) => {
       const toAddBefore = nextLabels.slice(0, index).map((d) => resolve(d, flatLabels, dataset.tree));
       const toAddAfter = nextLabels.slice(index + count).map((d) => resolve(d, flatLabels, dataset.tree));
 
-      dataset.data.splice.apply(dataset.data, [labels.length, 0].concat(toAddAfter));
+      dataset.data.splice.apply(dataset.data, [dataset.data.length, 0].concat(toAddAfter));
       dataset.data.splice.apply(dataset.data, [0, 0].concat(toAddBefore));
     });
 
-    this._updateVerifyCode(chart);
-    this._updateAttributes(chart);
-
-    chart.update();
+    this._postDataUpdate(chart);
   },
 
   _resolveElement(event, chart, scale) {
