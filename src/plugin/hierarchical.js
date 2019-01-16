@@ -66,6 +66,10 @@ const HierarchicalPlugin = {
     return null;
   },
 
+  /**
+   * checks whether the data has been changed by the user and all caches are invalid
+   * @param {*} chart
+   */
   _check(chart) {
     if (chart.data.labels && chart.data._verify === generateCode(chart.data.labels)) {
       return;
@@ -91,6 +95,10 @@ const HierarchicalPlugin = {
     this._updateAttributes(chart);
   },
 
+  /**
+   * a verify code is used to recognize when the user changes the data
+   * @param {*} chart
+   */
   _updateVerifyCode(chart) {
     chart.data._verify = generateCode(chart.data.labels);
   },
@@ -356,6 +364,7 @@ const HierarchicalPlugin = {
     const flatLabels = chart.data.flatLabels;
     const data = chart.data.datasets;
 
+    // use splice since Chart.js is tracking the array using this method to have a proper animation
     const removed = labels.splice.apply(labels, [index, count].concat(toAdd));
     removed.forEach((d) => {
       d.hidden = true;
