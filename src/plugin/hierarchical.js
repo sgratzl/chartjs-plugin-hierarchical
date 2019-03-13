@@ -53,14 +53,27 @@ function generateCode(labels) {
 const HierarchicalPlugin = {
   id: 'chartJsPluginHierarchical',
 
+  _isValidScaleType(chart, scale) {
+    if (!chart.config.options.scales.hasOwnProperty(scale)) {
+      return false;
+    }
+    if (!Array.isArray(chart.config.options.scales[scale])) {
+      return false;
+    }
+    return chart.config.options.scales[scale][0].hasOwnProperty('type');
+  },
+
   /**
    * checks whether this plugin needs ot be enabled based on wehther one is a hierarchical axis
    */
   _enabled(chart) {
-    if (chart.config.options.scales.xAxes[0].type === 'hierarchical') {
+    if (!chart.config.options.hasOwnProperty('scales')) {
+      return null;
+    }
+    if (this._isValidScaleType(chart, 'xAxes') && chart.config.options.scales.xAxes[0].type === 'hierarchical') {
       return 'x';
     }
-    if (chart.config.options.scales.yAxes[0].type === 'hierarchical') {
+    if (this._isValidScaleType(chart, 'yAxes') && chart.config.options.scales.yAxes[0].type === 'hierarchical') {
       return 'y';
     }
     return null;
