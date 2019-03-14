@@ -53,19 +53,36 @@ function generateCode(labels) {
 const HierarchicalPlugin = {
   id: 'chartJsPluginHierarchical',
 
+  _isValidScaleType(chart, scale) {
+    if (!chart.config.options.scales.hasOwnProperty(scale)) {
+      return false;
+    }
+    if (!Array.isArray(chart.config.options.scales[scale])) {
+      return false;
+    }
+    return chart.config.options.scales[scale][0].hasOwnProperty('type');
+  },
+
   /**
    * checks whether this plugin needs ot be enabled based on wehther one is a hierarchical axis
    */
   _enabled(chart) {
-    if (chart.config.options.scales.xAxes[0].type === 'hierarchical') {
+    if (!chart.config.options.hasOwnProperty('scales')) {
+      return null;
+    }
+    if (this._isValidScaleType(chart, 'xAxes') && chart.config.options.scales.xAxes[0].type === 'hierarchical') {
       return 'x';
     }
-    if (chart.config.options.scales.yAxes[0].type === 'hierarchical') {
+    if (this._isValidScaleType(chart, 'yAxes') && chart.config.options.scales.yAxes[0].type === 'hierarchical') {
       return 'y';
     }
     return null;
   },
 
+  /**
+   * checks whether the data has been changed by the user and all caches are invalid
+   * @param {*} chart
+   */
   _check(chart) {
     if (chart.data.labels && chart.data._verify === generateCode(chart.data.labels)) {
       return;
@@ -91,6 +108,10 @@ const HierarchicalPlugin = {
     this._updateAttributes(chart);
   },
 
+  /**
+   * a verify code is used to recognize when the user changes the data
+   * @param {*} chart
+   */
   _updateVerifyCode(chart) {
     chart.data._verify = generateCode(chart.data.labels);
   },
@@ -356,6 +377,7 @@ const HierarchicalPlugin = {
     const flatLabels = chart.data.flatLabels;
     const data = chart.data.datasets;
 
+    // use splice since Chart.js is tracking the array using this method to have a proper animation
     const removed = labels.splice.apply(labels, [index, count].concat(toAdd));
     removed.forEach((d) => {
       d.hidden = true;
