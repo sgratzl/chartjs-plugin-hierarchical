@@ -131,7 +131,7 @@ const HierarchicalPlugin = {
 
     Object.keys(attributes).forEach((attr) => {
       chart.data.datasets.forEach((d) => {
-        d[attr] = nodes.map((n) => {
+        const v = nodes.map((n) => {
           while (n) {
             if (n.hasOwnProperty(attr)) {
               return n[attr];
@@ -141,6 +141,9 @@ const HierarchicalPlugin = {
           }
           return attributes[attr]; // default value
         });
+
+        // check if all values are the same, if so replace with a single value
+        d[attr] = v.length >= 1 && v.every((vi) => vi === v[0]) ? v[0] : v;
       });
     });
   },
