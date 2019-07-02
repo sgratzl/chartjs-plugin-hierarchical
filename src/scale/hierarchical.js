@@ -163,7 +163,7 @@ const HierarchicalScale = Scale.extend({
     const centerTick = this.options.offset;
     const base = this.isHorizontal() ? this.left : this.top;
 
-    return base + node.center - (centerTick ? 0 : node.width / 2);
+    return base + (node != null && node.center != null ? node.center : 0) - (centerTick ? 0 : node.width / 2);
   },
 
   getPixelForTick(index) {
@@ -174,7 +174,8 @@ const HierarchicalScale = Scale.extend({
     const centerTick = this.options.offset;
     const node = this._nodes[index + this.minIndex];
     const base = this.isHorizontal() ? this.left : this.top;
-    return base + node.center - (centerTick ? 0 : node.width / 2);
+    console.warn(node);
+    return base + (node != null && node.center != null ? node.center : 0) - (centerTick ? 0 : node.width / 2);
   },
 
   getValueForPixel(pixel) {
