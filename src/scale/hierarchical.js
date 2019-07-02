@@ -90,31 +90,31 @@ const HierarchicalScale = Scale.extend({
     // max 5 levels for now
     const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4)];
 
-    const distances = []; {
-      let prev = nodes[0];
-      let prevParents = parentsOf(prev, flat);
-      distances.push(0.5); // half top level distance before and after
+    const distances = [];
 
-      for (let i = 1; i < nodes.length; ++i) {
-        const n = nodes[i];
-        const parents = parentsOf(n, flat);
-        if (prev.parent === n.parent) {
-          // same parent -> can use the level distance
-          distances.push(ratios[n.level]);
-        } else {
-          // differnt level -> use the distance of the common parent
-          // find level of common parent
-          let common = 0;
-          while (parents[common] === prevParents[common]) {
-            common++;
-          }
-          distances.push(ratios[common]);
+    let prev = nodes[0];
+    let prevParents = parentsOf(prev, flat);
+    distances.push(0.5); // half top level distance before and after
+
+    for (let i = 1; i < nodes.length; ++i) {
+      const n = nodes[i];
+      const parents = parentsOf(n, flat);
+      if (prev.parent === n.parent) {
+        // same parent -> can use the level distance
+        distances.push(ratios[n.level]);
+      } else {
+        // differnt level -> use the distance of the common parent
+        // find level of common parent
+        let common = 0;
+        while (parents[common] === prevParents[common]) {
+          common++;
         }
-        prev = n;
-        prevParents = parents;
+        distances.push(ratios[common]);
       }
-      distances.push(0.5);
+      prev = n;
+      prevParents = parents;
     }
+    distances.push(0.5);
 
     const distance = distances.reduce((acc, s) => acc + s, 0);
     const factor = total / distance;
@@ -172,20 +172,21 @@ const HierarchicalScale = Scale.extend({
       return this._nodes[0].width;
     }
 
-    return this._centerBase(index);
+    return this._centerBase(index + this.minIndex);
   },
 
   _centerBase(index) {
     const centerTick = this.options.offset;
     const base = this.isHorizontal() ? this.left : this.top;
-    const node = this._nodes[index + this.minIndex];
+    const node = this._nodes[index];
 
     if (node == null) {
       return base;
     }
 
     const nodeCenter = node.center != null ? node.center : 0;
-    return base + nodeCenter - (centerTick ? 0 : node.width / 2);
+    const nodeWidth = node.width != null ? node.width : 0;
+    return base + nodeCenter - (centerTick ? 0 : nodeWidth / 2);
   },
 
   getValueForPixel(pixel) {
