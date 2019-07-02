@@ -1,7 +1,12 @@
 'use strict';
 
-import {scaleService, Scale} from 'chart.js';
-import {parentsOf} from '../utils';
+import {
+  scaleService,
+  Scale
+} from 'chart.js';
+import {
+  parentsOf
+} from '../utils';
 
 const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'), {
   /**
@@ -85,8 +90,7 @@ const HierarchicalScale = Scale.extend({
     // max 5 levels for now
     const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4)];
 
-    const distances = [];
-    {
+    const distances = []; {
       let prev = nodes[0];
       let prevParents = parentsOf(prev, flat);
       distances.push(0.5); // half top level distance before and after
@@ -159,11 +163,7 @@ const HierarchicalScale = Scale.extend({
       }
     }
 
-    const node = this._nodes[index];
-    const centerTick = this.options.offset;
-    const base = this.isHorizontal() ? this.left : this.top;
-
-    return base + (node != null && node.center != null ? node.center : 0) - (centerTick ? 0 : node.width / 2);
+    return this._centerBase(index);
   },
 
   getPixelForTick(index) {
@@ -171,11 +171,21 @@ const HierarchicalScale = Scale.extend({
       // cornercase in chartjs to determine tick with, hard coded 1
       return this._nodes[0].width;
     }
+
+    return this._centerBase(index);
+  },
+
+  _centerBase(index) {
     const centerTick = this.options.offset;
-    const node = this._nodes[index + this.minIndex];
     const base = this.isHorizontal() ? this.left : this.top;
-    console.warn(node);
-    return base + (node != null && node.center != null ? node.center : 0) - (centerTick ? 0 : node.width / 2);
+    const node = this._nodes[index + this.minIndex];
+
+    if (node == null) {
+      return base;
+    }
+
+    const nodeCenter = node.center != null ? node.center : 0;
+    return base + nodeCenter - (centerTick ? 0 : node.width / 2);
   },
 
   getValueForPixel(pixel) {
