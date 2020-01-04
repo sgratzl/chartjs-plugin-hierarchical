@@ -4,8 +4,10 @@ env:
   es6: true
   jquery: true
   node: true
+  jest: true
 
 parserOptions:
+  ecmaVersion: 2018
   sourceType: module
 
 # http://eslint.org/docs/rules/
@@ -43,7 +45,7 @@ rules:
   accessor-pairs: 2
   array-callback-return: 0
   block-scoped-var: 0
-  complexity: [2, 20]
+  complexity: [2, 15]
   consistent-return: 0
   curly: [2, all]
   default-case: 2
@@ -152,7 +154,7 @@ rules:
   max-nested-callbacks: 0
   max-params: 0
   max-statements-per-line: 0
-  max-statements: [2, 40]
+  max-statements: [2, 43]
   multiline-ternary: 0
   new-cap: 0
   new-parens: 2

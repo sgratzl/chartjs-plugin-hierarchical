@@ -7,11 +7,11 @@ Chart.js module for adding a new categorical scale which mimics a hierarchical t
 
 ## Install
 ```bash
-npm install --save chart.js chartjs-scale-hierarchical
+npm install --save chart.js chartjs-plugin-hierarchical
 ```
 
 ## Usage
-see [Samples](https://github.com/datavisyn/chartjs-scale-hierarchical/tree/master/samples) on Github
+see [Samples](https://github.com/sgratzl/chartjs-plugin-hierarchical/tree/master/samples) on Github
 
 or at this [CodePen](https://codepen.io/sgratzl/pen/vrVXae)
 
@@ -104,14 +104,14 @@ npm run build
 ***
 
 <div style="display:flex;align-items:center">
-  <a href="http://datavisyn.io"><img src="https://user-images.githubusercontent.com/1711080/37700685-bcbb18c6-2cec-11e8-9b6f-f49c9ef6c167.png" align="left" width="50px" hspace="10" vspace="6"></a>
-  Developed by&nbsp;<strong><a href="http://datavisyn.io">datavisyn</a></strong>.
+  <a href="https://www.datavisyn.io"><img src="https://user-images.githubusercontent.com/1711080/37700685-bcbb18c6-2cec-11e8-9b6f-f49c9ef6c167.png" align="left" width="50px" hspace="10" vspace="6"></a>
+  Developed by&nbsp;<strong><a href="https://www.datavisyn.io">datavisyn</a></strong>.
 </div>
 
 [datavisyn-image]: https://img.shields.io/badge/datavisyn-io-black.svg
-[datavisyn-url]: http://datavisyn.io
-[npm-image]: https://badge.fury.io/js/chartjs-scale-hierarchical.svg
-[npm-url]: https://npmjs.org/package/chartjs-scale-hierarchical
-[circleci-image]: https://circleci.com/gh/datavisyn/chartjs-scale-hierarchical.svg?style=shield
-[circleci-url]: https://circleci.com/gh/datavisyn/chartjs-scale-hierarchical
+[datavisyn-url]: https://www.datavisyn.io
+[npm-image]: https://badge.fury.io/js/chartjs-plugin-hierarchical.svg
+[npm-url]: https://npmjs.org/package/chartjs-plugin-hierarchical
+[circleci-image]: https://circleci.com/gh/sgratzl/chartjs-plugin-hierarchical.svg?style=shield
+[circleci-url]: https://circleci.com/gh/sgratzl/chartjs-plugin-hierarchical
 

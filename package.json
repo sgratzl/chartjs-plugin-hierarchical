@@ -1,20 +1,20 @@
 {
-  "name": "chartjs-scale-hierarchical",
+  "name": "chartjs-plugin-hierarchical",
   "description": "Chart.js module for hierarchical categories",
   "version": "1.2.1",
   "author": {
     "name": "Samuel Gratzl",
-    "email": "samuel.gratzl@datavisyn.io",
-    "url": "http://datavisyn.io"
+    "email": "sam@sgratzl.com",
+    "url": "https://www.sgratzl.com"
   },
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/datavisyn/chartjs-scale-hierarchical.git"
+    "url": "https://github.com/sgratzl/chartjs-plugin-hierarchical.git"
   },
   "main": "build/Chart.Hierarchical.js",
   "unpkg": "build/Chart.Hierarchical.min.js",
-  "module": "build/Chart.Hierarchical.mjs",
+  "module": "build/Chart.Hierarchical.esm.js",
   "files": [
     "build",
     "src/**/*.js"
@@ -23,27 +23,27 @@
     "chart.js": "^2.8.0"
   },
   "devDependencies": {
-    "@babel/core": "^7.4.5",
-    "@babel/preset-env": "^7.4.5",
+    "@babel/core": "^7.7.7",
+    "@babel/preset-env": "^7.7.7",
     "babel-core": "^7.0.0-bridge.0",
-    "babel-jest": "^24.8.0",
-    "eslint": "^5.16.0",
-    "jest": "^24.8.0",
-    "release-it": "^12.3.0",
-    "rimraf": "^2.6.3",
-    "rollup": "^1.15.4",
-    "rollup-plugin-babel": "^4.3.2",
-    "rollup-plugin-commonjs": "^10.0.0",
-    "rollup-plugin-node-resolve": "^5.0.2",
+    "babel-jest": "^24.9.0",
+    "eslint": "^6.8.0",
+    "jest": "^24.9.0",
+    "release-it": "^12.4.3",
+    "rimraf": "^3.0.0",
+    "rollup": "^1.27.14",
+    "rollup-plugin-babel": "^4.3.3",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-watch": "^4.3.1",
     "uglify-es": "^3.3.9"
   },
   "scripts": {
-    "clean": "rimraf build",
+    "clean": "rimraf build *.tgz",
     "watch": "rollup -c -w -i src/index.js",
     "lint": "eslint src",
     "pretest": "npm run lint",
-    "test": "jest",
+    "test": "jest --passWithNoTests",
     "test:watch": "jest --watch",
     "build:dev": "rollup -c -i src/index.js",
     "build:prod": "npm run build:dev && uglifyjs build/Chart.Hierarchical.js -c -m -o build/Chart.Hierarchical.min.js",
@@ -51,6 +51,7 @@
     "build": "npm run build:prod",
     "preversion": "npm run test",
     "prepare": "npm run build:dev",
+    "prepublishOnly": "npm run build:prod",
     "release:major": "release-it major",
     "release:minor": "release-it minor",
     "release:patch": "release-it patch",

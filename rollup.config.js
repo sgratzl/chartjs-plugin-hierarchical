@@ -20,7 +20,7 @@ export default [{
   ]
 }, {
   output: {
-    file: 'build/Chart.Hierarchical.mjs',
+    file: 'build/Chart.Hierarchical.esm.js',
     name: 'ChartHierarchical',
     format: 'esm',
     globals: {
