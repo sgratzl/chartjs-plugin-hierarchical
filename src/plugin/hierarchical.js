@@ -488,29 +488,15 @@ const HierarchicalPlugin = {
     };
   },
 
-  beforeEvent(chart, event) {
-    if (event.type !== 'click' || !this._enabled(chart)) {
-      return;
-    }
-
-    const scale = this._findScale(chart);
-    const hor = scale.isHorizontal();
-
-    const elem = this._resolveElement(event, chart, scale);
-    if (!elem) {
-      return;
-    }
+  _handleClickEvents(chart, event, elem, offsetDelta, inRange) {
     let offset = elem.offset;
 
     const index = elem.index;
     const flat = chart.data.flatLabels;
     const label = chart.data.labels[index];
     const parents = parentsOf(label, flat);
-    const boxRow = scale.options.hierarchyBoxLineHeight;
 
-    const inRange = hor ? (o) => event.y >= o && event.y <= o + boxRow : (o) => event.x <= o && event.x >= o - boxRow;
-
-    for (let i = 1; i < parents.length; ++i, offset += hor ? boxRow : -boxRow) {
+    for (let i = 1; i < parents.length; ++i, offset += offsetDelta) {
       if (!inRange(offset)) {
         continue;
       }
@@ -543,6 +529,26 @@ const HierarchicalPlugin = {
       this._expand(chart, index, label);
       return;
     }
+  },
+
+  beforeEvent(chart, event) {
+    if (event.type !== 'click' || !this._enabled(chart)) {
+      return;
+    }
+
+    const scale = this._findScale(chart);
+    const hor = scale.isHorizontal();
+
+    const elem = this._resolveElement(event, chart, scale);
+    if (!elem) {
+      return;
+    }
+
+    const boxRow = scale.options.hierarchyBoxLineHeight;
+
+    const inRange = hor ? (o) => event.y >= o && event.y <= o + boxRow : (o) => event.x <= o && event.x >= o - boxRow;
+    const offsetDelta = hor ? boxRow : -boxRow;
+    this._handleClickEvents(chart, event, elem, offsetDelta, inRange);
   }
 };
 
