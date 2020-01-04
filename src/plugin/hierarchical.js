@@ -51,7 +51,7 @@ function generateCode(labels) {
 }
 
 const HierarchicalPlugin = {
-  id: 'chartJsPluginHierarchical',
+  id: 'hierarchical',
 
   _isValidScaleType(chart, scale) {
     if (!chart.config.options.scales.hasOwnProperty(scale)) {
