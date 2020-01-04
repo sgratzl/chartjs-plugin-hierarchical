@@ -1,5 +1,5 @@
 # Chart.js Hierarchical Scale Plugin
-[![datavisyn][datavisyn-image]][datavisyn-url] [![NPM Package][npm-image]][npm-url] [![CircleCI][circleci-image]][circleci-url]
+[![datavisyn][datavisyn-image]][datavisyn-url] [![NPM Package][npm-image]][npm-url] [![Github Actions][github-actions-image]][github-actions-url]
 
 Chart.js module for adding a new categorical scale which mimics a hierarchical tree.
 
@@ -112,6 +112,6 @@ npm run build
 [datavisyn-url]: https://www.datavisyn.io
 [npm-image]: https://badge.fury.io/js/chartjs-plugin-hierarchical.svg
 [npm-url]: https://npmjs.org/package/chartjs-plugin-hierarchical
-[circleci-image]: https://circleci.com/gh/sgratzl/chartjs-plugin-hierarchical.svg?style=shield
-[circleci-url]: https://circleci.com/gh/sgratzl/chartjs-plugin-hierarchical
+[github-actions-image]: https://github.com/sgratzl/chartjs-plugin-hierarchical/workflows/nodeci/badge.svg
+[github-actions-url]: https://github.com/sgratzl/chartjs-plugin-hierarchical/actions
 
