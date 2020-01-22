@@ -64,7 +64,7 @@ const HierarchicalPlugin = {
   },
 
   /**
-   * checks whether this plugin needs ot be enabled based on wehther one is a hierarchical axis
+   * checks whether this plugin needs to be enabled based on whether one is a hierarchical axis
    */
   _enabled(chart) {
     if (!chart.config.options.hasOwnProperty('scales')) {
