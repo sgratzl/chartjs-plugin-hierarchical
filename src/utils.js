@@ -5,18 +5,23 @@
  * @returns the node itself
  */
 export function asNode(label, parent) {
-  const node = Object.assign({
-    label: '',
-    children: [],
-    expand: false,
-    level: parent ? parent.level + 1 : 0,
-    center: NaN,
-    width: 0,
-    hidden: false,
-    major: !parent // for ticks
-  }, typeof label === 'string' ? {
-    label
-  } : label);
+  const node = Object.assign(
+    {
+      label: '',
+      children: [],
+      expand: false,
+      level: parent ? parent.level + 1 : 0,
+      center: NaN,
+      width: 0,
+      hidden: false,
+      major: !parent, // for ticks
+    },
+    typeof label === 'string'
+      ? {
+          label,
+        }
+      : label
+  );
 
   node.children = node.children.map((d) => asNode(d, node));
 
@@ -69,7 +74,6 @@ export function parentsOf(node, flat) {
   return parents;
 }
 
-
 /**
  * computes the right most grand child of expanded nodes
  * @param {ILabelNode} node
@@ -80,7 +84,6 @@ function rightMost(node) {
   }
   return rightMost(node.children[node.children.length - 1]);
 }
-
 
 /**
  * based on the visibility of the nodes computes the last node in the same level that is visible also considering expanded children
@@ -93,7 +96,10 @@ export function lastOfLevel(node, flat) {
     return rightMost(parent.children[parent.children.length - 1]);
   }
   // top level search last top level sibling
-  const sibling = flat.slice().reverse().find((d) => d.parent === -1);
+  const sibling = flat
+    .slice()
+    .reverse()
+    .find((d) => d.parent === -1);
   return rightMost(sibling);
 }
 
@@ -121,10 +127,13 @@ export function resolve(label, flat, dataTree) {
   const parents = parentsOf(label, flat);
 
   let dataItem = {
-    children: dataTree
+    children: dataTree,
   };
   const dataParents = parents.map((p) => {
-    dataItem = dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children ? dataItem.children[p.relIndex] : NaN;
+    dataItem =
+      dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children
+        ? dataItem.children[p.relIndex]
+        : NaN;
     return dataItem;
   });
 
@@ -147,7 +156,6 @@ export function countExpanded(node) {
   return node.children.reduce((acc, d) => acc + countExpanded(d), 0);
 }
 
-
 export function flatChildren(node, flat) {
   if (node.children.length === 0) {
     return [];
@@ -159,7 +167,9 @@ export function flatChildren(node, flat) {
     return flat.slice(firstChild.index, nextSibling.index);
   }
   // find sibling or next in the hierarchy up
-  const nextSibling = flat.slice(firstChild.index + 1).find((d) => d.level < node.level || (d.parent === node.parent && d.relIndex === node.relIndex + 1));
+  const nextSibling = flat
+    .slice(firstChild.index + 1)
+    .find((d) => d.level < node.level || (d.parent === node.parent && d.relIndex === node.relIndex + 1));
   if (nextSibling) {
     return flat.slice(firstChild.index, nextSibling.index);
   }
@@ -192,7 +202,10 @@ export function spanLogic(node, flat, visibles) {
   const flatSubTree = flatChildren(node, flat);
 
   const leftVisible = flatSubTree.find((d) => visibles.has(d));
-  const rightVisible = flatSubTree.slice().reverse().find((d) => visibles.has(d));
+  const rightVisible = flatSubTree
+    .slice()
+    .reverse()
+    .find((d) => visibles.has(d));
 
   if (!leftVisible || !rightVisible) {
     return false;
@@ -218,6 +231,6 @@ export function spanLogic(node, flat, visibles) {
     rightVisible,
     groupLabelCenter,
     leftFirstVisible,
-    rightLastVisible
+    rightLastVisible,
   };
 }

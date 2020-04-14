@@ -1,111 +1,112 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
+  <head>
+    <title>Hierarchical Bar Chart</title>
+    <script src="../node_modules/chart.js/dist/Chart.bundle.js"></script>
+    <script src="../build/Chart.Hierarchical.js" type="text/javascript"></script>
+    <style>
+      canvas {
+        -moz-user-select: none;
+        -webkit-user-select: none;
+        -ms-user-select: none;
+      }
+    </style>
+  </head>
 
-<head>
-  <title>Hierarchical Bar Chart</title>
-  <script src="../node_modules/chart.js/dist/Chart.bundle.js"></script>
-  <script src="../build/Chart.Hierarchical.js" type="text/javascript"></script>
-  <style>
-    canvas {
-      -moz-user-select: none;
-      -webkit-user-select: none;
-      -ms-user-select: none;
-    }
-
-  </style>
-</head>
-
-<body>
-  <div id="container" style="width: 75%;">
-    <canvas id="canvas"></canvas>
-  </div>
-  <script>
-    const data = {
-      // define label tree
-      labels: [
-        'A',
-        {
-          label: 'B1',
-          expand: false, // 'focus', // expand level
-          children: [
-            'B1.1',
-            {
-              label: 'B1.2',
-              children: ['B1.2.1', 'B1.2.2']
-            },
-            'B1.3'
-          ]
-        },
-        {
-          label: 'C1',
-          children: ['C1.1', 'C1.2', 'C1.3', 'C1.4']
-        },
-        'D'
-      ],
-      datasets: [{
-        label: 'Test',
-        // store as the tree attribute for reference, the data attribute will be automatically managed
-        tree: [
-          1,
+  <body>
+    <div id="container" style="width: 75%;">
+      <canvas id="canvas"></canvas>
+    </div>
+    <script>
+      const data = {
+        // define label tree
+        labels: [
+          'A',
           {
-            value: 2,
+            label: 'B1',
+            expand: false, // 'focus', // expand level
             children: [
-              3,
+              'B1.1',
               {
-                value: 4,
-                children: [4.1, 4.2]
+                label: 'B1.2',
+                children: ['B1.2.1', 'B1.2.2'],
               },
-              5
-            ]
+              'B1.3',
+            ],
           },
           {
-            value: 6,
-            children: [7, 8, 9, 10]
+            label: 'C1',
+            children: ['C1.1', 'C1.2', 'C1.3', 'C1.4'],
           },
-          11
-        ]
-      }]
-    };
-    window.onload = () => {
-      const ctx = document.getElementById("canvas").getContext("2d");
-      window.myBar = new Chart(ctx, {
-        type: 'bar',
-        data: data,
-        options: {
-          responsive: true,
-          title: {
-            display: true,
-            text: 'Chart.js Hierarchical Bar Chart'
+          'D',
+        ],
+        datasets: [
+          {
+            label: 'Test',
+            // store as the tree attribute for reference, the data attribute will be automatically managed
+            tree: [
+              1,
+              {
+                value: 2,
+                children: [
+                  3,
+                  {
+                    value: 4,
+                    children: [4.1, 4.2],
+                  },
+                  5,
+                ],
+              },
+              {
+                value: 6,
+                children: [7, 8, 9, 10],
+              },
+              11,
+            ],
           },
-          layout: {
-            padding: {
-              // add more space at the bottom for the hierarchy
-              bottom: 60
-            }
+        ],
+      };
+      window.onload = () => {
+        const ctx = document.getElementById('canvas').getContext('2d');
+        window.myBar = new Chart(ctx, {
+          type: 'bar',
+          data: data,
+          options: {
+            responsive: true,
+            title: {
+              display: true,
+              text: 'Chart.js Hierarchical Bar Chart',
+            },
+            layout: {
+              padding: {
+                // add more space at the bottom for the hierarchy
+                bottom: 60,
+              },
+            },
+            scales: {
+              xAxes: [
+                {
+                  type: 'hierarchical',
+                  // offset setings, for centering the categorical axis in the bar chart case
+                  offset: true,
+
+                  // grid line settings
+                  gridLines: {
+                    offsetGridLines: true,
+                  },
+                },
+              ],
+              yAxes: [
+                {
+                  ticks: {
+                    beginAtZero: true,
+                  },
+                },
+              ],
+            },
           },
-          scales: {
-            xAxes: [{
-              type: 'hierarchical',
-              // offset setings, for centering the categorical axis in the bar chart case
-              offset: true,
-
-              // grid line settings
-              gridLines: {
-                offsetGridLines: true
-              }
-            }],
-            yAxes: [{
-              ticks: {
-                beginAtZero: true
-              }
-            }]
-          }
-        }
-      });
-
-    };
-
-  </script>
-</body>
-
+        });
+      };
+    </script>
+  </body>
 </html>

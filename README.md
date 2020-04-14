@@ -1,4 +1,5 @@
 # Chart.js Hierarchical Scale Plugin
+
 [![datavisyn][datavisyn-image]][datavisyn-url] [![NPM Package][npm-image]][npm-url] [![Github Actions][github-actions-image]][github-actions-url]
 
 Chart.js module for adding a new categorical scale which mimics a hierarchical tree.
@@ -6,14 +7,16 @@ Chart.js module for adding a new categorical scale which mimics a hierarchical t
 ![hierarchy](https://user-images.githubusercontent.com/4129778/41763778-6722e04a-75ff-11e8-84ad-1b417fd25c65.gif)
 
 ## Install
+
 ```bash
 npm install --save chart.js chartjs-plugin-hierarchical
 ```
 
 ## Usage
+
 see [Samples](https://github.com/sgratzl/chartjs-plugin-hierarchical/tree/master/samples) on Github
 
-or at this [CodePen](https://codepen.io/sgratzl/pen/NWPwewL)
+or at this [![Open in CodePen][codepen]](https://codepen.io/sgratzl/pen/NWPwewL)
 
 ## Scale
 
@@ -39,19 +42,18 @@ interface IHierarchicalScaleOptions {
    * position of the hierarchy label in expanded levels, null to disable
    * @default 'below'
    */
-  hierarchyLabelPosition: 'below'|'above'|null;
+  hierarchyLabelPosition: 'below' | 'above' | null;
 
   /**
    * object of attributes that should be managed and extacted from the tree datastrutures such as `backgroundColor` for coloring individual bars
    * the object conainst the key and default value
    * @default {}
    */
-  attributes: {[attribute: string]: any};
+  attributes: { [attribute: string]: any };
 }
 ```
 
 ## Data structure
-
 
 ```typescript
 interface ILabelNode {
@@ -92,7 +94,6 @@ interface IValueNode<T> {
 declare type ISubValueNode<T> = IValueNode<T> | T;
 ```
 
-
 ## Building
 
 ```sh
@@ -100,8 +101,7 @@ npm install
 npm run build
 ```
 
-
-***
+---
 
 <div style="display:flex;align-items:center">
   <a href="https://www.datavisyn.io"><img src="https://user-images.githubusercontent.com/1711080/37700685-bcbb18c6-2cec-11e8-9b6f-f49c9ef6c167.png" align="left" width="50px" hspace="10" vspace="6"></a>

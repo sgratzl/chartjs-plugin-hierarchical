@@ -1,12 +1,7 @@
 'use strict';
 
-import {
-  scaleService,
-  Scale
-} from 'chart.js';
-import {
-  parentsOf
-} from '../utils';
+import { scaleService, Scale } from 'chart.js';
+import { parentsOf } from '../utils';
 
 const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'), {
   /**
@@ -51,9 +46,8 @@ const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'
   /**
    * stroke width of the toggle box
    */
-  hierarchyBoxWidth: 1
+  hierarchyBoxWidth: 1,
 });
-
 
 const HierarchicalScale = Scale.extend({
   determineDataLimits() {
@@ -195,7 +189,7 @@ const HierarchicalScale = Scale.extend({
 
   getBasePixel() {
     return this.bottom;
-  }
+  },
 });
 
 scaleService.registerScaleType('hierarchical', HierarchicalScale, defaultConfig);

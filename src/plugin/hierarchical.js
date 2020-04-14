@@ -1,10 +1,6 @@
 'use strict';
 
-import {
-  helpers,
-  defaults,
-  pluginService
-} from 'chart.js';
+import { helpers, defaults, pluginService } from 'chart.js';
 import {
   toNodes,
   countExpanded,
@@ -14,9 +10,8 @@ import {
   lastOfLevel,
   spanLogic,
   determineVisible,
-  flatChildren
+  flatChildren,
 } from '../utils';
-
 
 function parseFontOptions(options) {
   const valueOrDefault = helpers.valueOrDefault;
@@ -29,7 +24,7 @@ function parseFontOptions(options) {
     size: size,
     style: style,
     family: family,
-    font: helpers.fontString(size, style, family)
+    font: helpers.fontString(size, style, family),
   };
 }
 
@@ -89,10 +84,10 @@ const HierarchicalPlugin = {
     }
 
     // convert labels to nodes
-    const flat = chart.data.flatLabels = toNodes(chart.data.labels);
+    const flat = (chart.data.flatLabels = toNodes(chart.data.labels));
     chart.data.rootNodes = flat.filter((d) => d.parent === -1);
 
-    const labels = chart.data.labels = determineVisible(flat);
+    const labels = (chart.data.labels = determineVisible(flat));
 
     chart.data.labels = labels;
     this._updateVerifyCode(chart);
@@ -221,7 +216,7 @@ const HierarchicalPlugin = {
         rightVisible,
         leftFirstVisible,
         rightLastVisible,
-        groupLabelCenter
+        groupLabelCenter,
       } = r;
 
       // render group label
@@ -301,7 +296,7 @@ const HierarchicalPlugin = {
         rightVisible,
         leftFirstVisible,
         rightLastVisible,
-        groupLabelCenter
+        groupLabelCenter,
       } = r;
 
       // render group label
@@ -400,9 +395,11 @@ const HierarchicalPlugin = {
   _collapse(chart, index, parent) {
     const count = countExpanded(parent);
     // collapse sub structures, too
-    parent.children.forEach((c) => preOrderTraversal(c, (d) => {
-      d.expand = false;
-    }));
+    parent.children.forEach((c) =>
+      preOrderTraversal(c, (d) => {
+        d.expand = false;
+      })
+    );
     this._expandCollapse(chart, index, count, [parent]);
     parent.expand = false;
 
@@ -477,14 +474,14 @@ const HierarchicalPlugin = {
     }
 
     const elem = chart.getElementsAtEventForMode(event, 'index', {
-      axis: hor ? 'x' : 'y'
+      axis: hor ? 'x' : 'y',
     })[0];
     if (!elem) {
       return null;
     }
     return {
       offset,
-      index: elem._index
+      index: elem._index,
     };
   },
 
@@ -518,7 +515,11 @@ const HierarchicalPlugin = {
         return;
       }
       // last index of expanded parent
-      if (isLastChildOfParent && parent.expand === true && flatChildren(parent, flat).every((d) => d.expand !== 'focus')) {
+      if (
+        isLastChildOfParent &&
+        parent.expand === true &&
+        flatChildren(parent, flat).every((d) => d.expand !== 'focus')
+      ) {
         this._zoomIn(chart, index, parent, flat);
         return;
       }
@@ -549,7 +550,7 @@ const HierarchicalPlugin = {
     const inRange = hor ? (o) => event.y >= o && event.y <= o + boxRow : (o) => event.x <= o && event.x >= o - boxRow;
     const offsetDelta = hor ? boxRow : -boxRow;
     this._handleClickEvents(chart, event, elem, offsetDelta, inRange);
-  }
+  },
 };
 
 pluginService.register(HierarchicalPlugin);
