@@ -112,6 +112,6 @@ npm run build
 [datavisyn-url]: https://www.datavisyn.io
 [npm-image]: https://badge.fury.io/js/chartjs-plugin-hierarchical.svg
 [npm-url]: https://npmjs.org/package/chartjs-plugin-hierarchical
-[github-actions-image]: https://github.com/sgratzl/chartjs-plugin-hierarchical/workflows/nodeci/badge.svg
+[github-actions-image]: https://github.com/sgratzl/chartjs-plugin-hierarchical/workflows/ci/badge.svg
 [github-actions-url]: https://github.com/sgratzl/chartjs-plugin-hierarchical/actions
-
+[codepen]: https://img.shields.io/badge/CodePen-open-blue?logo=codepen
