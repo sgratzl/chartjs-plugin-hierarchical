@@ -1,5 +1,3 @@
-'use strict';
-
 import { helpers, defaults, pluginService } from 'chart.js';
 import {
   toNodes,

@@ -1,5 +1,3 @@
-'use strict';
-
 import { scaleService, Scale } from 'chart.js';
 import { parentsOf } from '../utils';
 
