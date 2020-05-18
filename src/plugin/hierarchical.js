@@ -446,22 +446,16 @@ export const HierarchicalPlugin = {
     this._postDataUpdate(chart);
   },
 
-  _resolveElement(event, chart, scale) {
+  _resolveElement(event, scale) {
     const hor = scale.isHorizontal();
     let offset = hor ? scale.top + scale.options.padding : scale.left - scale.options.padding;
     if ((hor && event.y <= offset) || (!hor && event.x > offset)) {
       return null;
     }
-
-    const elem = chart.getElementsAtEventForMode(event, 'index', {
-      axis: hor ? 'x' : 'y',
-    })[0];
-    if (!elem) {
-      return null;
-    }
+    const index = scale.getValueForPixel(hor ? event.x - scale.left : event.y - scale.top);
     return {
       offset,
-      index: elem._index,
+      index,
     };
   },
 
@@ -471,6 +465,9 @@ export const HierarchicalPlugin = {
     const index = elem.index;
     const flat = chart.data.flatLabels;
     const label = chart.data.labels[index];
+    if (!label) {
+      return;
+    }
     const parents = parentsOf(label, flat);
 
     for (let i = 1; i < parents.length; ++i, offset += offsetDelta) {
@@ -520,7 +517,7 @@ export const HierarchicalPlugin = {
     const scale = this._findScale(chart);
     const hor = scale.isHorizontal();
 
-    const elem = this._resolveElement(event, chart, scale);
+    const elem = this._resolveElement(event, scale);
     if (!elem) {
       return;
     }

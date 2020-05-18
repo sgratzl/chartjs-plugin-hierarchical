@@ -1,4 +1,4 @@
-import { scaleService, Scale, helpers } from 'chart.js';
+import { scaleService, helpers } from 'chart.js';
 import { parentsOf } from '../utils';
 import { HierarchicalPlugin } from '../plugin';
 
