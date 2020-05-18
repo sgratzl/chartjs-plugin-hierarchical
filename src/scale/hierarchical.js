@@ -15,11 +15,6 @@ const defaultConfig = {
    * reduce the space between items at level X by this factor
    */
   levelPercentage: 0.75,
-  /**
-   * additional attributes to copy, e.g. backgroundColor
-   * object where the key is the attribute and the value the default value if not explicity specified in the label tree
-   */
-  attributes: {},
 
   /**
    * top/left padding for showing the hierarchy marker
@@ -54,34 +49,32 @@ const defaultConfig = {
    * stroke width of the toggle box
    */
   hierarchyBoxWidth: 1,
+
+  attributes: {},
 };
 
 export class HierarchicalScale extends Scale {
-  xx_determineDataLimits() {
-    const data = this.chart.data;
-    const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
+  determineDataLimits() {
+    const labels = this.getLabels();
 
     // labels are already prepared by the plugin just use them as ticks
     this._nodes = labels.slice();
 
-    // not really used
-    this.minIndex = 0;
-    this.maxIndex = this._nodes.length;
-    this.min = this._nodes[this.minIndex];
-    this.max = this._nodes[this.maxIndex];
-
-    // this.options.barThickness = 'flex';
+    super.determineDataLimits();
   }
 
-  buildTicksXXX() {
+  buildTicks() {
     const hor = this.isHorizontal();
     const total = hor ? this.width : this.height;
-    const nodes = this._nodes.slice(this.minIndex, this.maxIndex);
+    const nodes = this._nodes.slice(this.min, this.max + 1);
     const flat = this.chart.data.flatLabels;
 
+    this._numLabels = nodes.length;
+    this._valueRange = Math.max(nodes.length, 1);
+    this._startValue = this.min - 0.5;
+
     if (nodes.length === 0) {
-      this.ticks = [];
-      return this.ticks;
+      return [];
     }
 
     // optimize such that the distance between two points on the same level is same
@@ -104,7 +97,7 @@ export class HierarchicalScale extends Scale {
         // same parent -> can use the level distance
         distances.push(ratios[n.level]);
       } else {
-        // differnt level -> use the distance of the common parent
+        // different level -> use the distance of the common parent
         // find level of common parent
         let common = 0;
         while (parents[common] === prevParents[common]) {
@@ -127,56 +120,24 @@ export class HierarchicalScale extends Scale {
       node.center = offset;
       offset += next;
 
+      node.value = node.label;
       node.width = Math.min(next, previous) / 2;
     });
 
-    this.ticks = nodes.map((d) => Object.assign({}, d)); // copy since mutated during auto skip
-    return this.ticks;
+    return nodes.map((d) => Object.assign({}, d)); // copy since mutated during auto skip
   }
 
-  convertTicksToLabelsXX(ticks) {
-    return ticks.map((d) => d.label);
-  }
+  getPixelForDecimal(value) {
+    const index = Math.min(Math.floor(value * this._nodes.length), this._nodes.length - 1);
 
-  xx_getLabelForIndex(index, datasetIndex) {
-    const data = this.chart.data;
-    const isHorizontal = this.isHorizontal();
-
-    if (data.yLabels && !isHorizontal) {
-      return this.getRightValue(data.datasets[datasetIndex].data[index]);
+    if (index === 1 && this._nodes.length === 1) {
+      // corner case in chartjs to determine tick width, hard coded 1
+      return this._nodes[0].width;
     }
-    return this._nodes[index - this.minIndex].label;
-  }
-
-  // Used to get data value locations.  Value can either be an index or a numerical value
-  xx_getPixelForValue(value, index) {
-    // If value is a data object, then index is the index in the data array,
-    // not the index of the scale. We need to change that.
-    {
-      let valueCategory;
-      if (value !== undefined && value !== null) {
-        valueCategory = this.isHorizontal() ? value.x : value.y;
-      }
-      if (valueCategory !== undefined || (value !== undefined && isNaN(index))) {
-        value = valueCategory || value;
-        const idx = this._nodes.findIndex((d) => d.label === value);
-        index = idx !== -1 ? idx : index;
-      }
-    }
-
     return this._centerBase(index);
   }
 
-  xx_getPixelForTick(index) {
-    if (index === 1 && this._nodes.length === 1) {
-      // corner case in chartjs to determine tick with, hard coded 1
-      return this._nodes[0].width;
-    }
-
-    return this._centerBase(index + this.minIndex);
-  }
-
-  xx__centerBase(index) {
+  _centerBase(index) {
     const centerTick = this.options.offset;
     const base = this.isHorizontal() ? this.left : this.top;
     const node = this._nodes[index];
@@ -190,12 +151,8 @@ export class HierarchicalScale extends Scale {
     return base + nodeCenter - (centerTick ? 0 : nodeWidth / 2);
   }
 
-  xx_getValueForPixel(pixel) {
+  getValueForPixel(pixel) {
     return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
-  }
-
-  xx_getBasePixel() {
-    return this.bottom;
   }
 }
 

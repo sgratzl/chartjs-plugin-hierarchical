@@ -35,10 +35,7 @@ export const HierarchicalPlugin = {
     if (!chart.config.options.scales.hasOwnProperty(scale)) {
       return false;
     }
-    if (!Array.isArray(chart.config.options.scales[scale])) {
-      return false;
-    }
-    return chart.config.options.scales[scale][0].hasOwnProperty('type');
+    return chart.config.options.scales[scale].hasOwnProperty('type');
   },
 
   /**
@@ -48,10 +45,10 @@ export const HierarchicalPlugin = {
     if (!chart.config.options.hasOwnProperty('scales')) {
       return null;
     }
-    if (this._isValidScaleType(chart, 'xAxes') && chart.config.options.scales.xAxes[0].type === 'hierarchical') {
+    if (this._isValidScaleType(chart, 'x') && chart.config.options.scales.x.type === 'hierarchical') {
       return 'x';
     }
-    if (this._isValidScaleType(chart, 'yAxes') && chart.config.options.scales.yAxes[0].type === 'hierarchical') {
+    if (this._isValidScaleType(chart, 'y') && chart.config.options.scales.y.type === 'hierarchical') {
       return 'y';
     }
     return null;
@@ -164,8 +161,8 @@ export const HierarchicalPlugin = {
     const renderLabel = scale.options.hierarchyLabelPosition;
 
     const scaleLabel = scale.options.scaleLabel;
-    const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.global.defaultFontColor);
-    const scaleLabelFont = helpers._parseFont(scaleLabel);
+    const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.defaultFontColor);
+    const scaleLabelFont = helpers.options._parseFont(scaleLabel);
 
     ctx.save();
     ctx.strokeStyle = boxColor;
@@ -468,7 +465,7 @@ export const HierarchicalPlugin = {
     };
   },
 
-  _handleClickEvents(chart, event, elem, offsetDelta, inRange) {
+  _handleClickEvents(chart, _event, elem, offsetDelta, inRange) {
     let offset = elem.offset;
 
     const index = elem.index;
