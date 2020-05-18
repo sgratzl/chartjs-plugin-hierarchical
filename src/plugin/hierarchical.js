@@ -161,14 +161,14 @@ export const HierarchicalPlugin = {
     const renderLabel = scale.options.hierarchyLabelPosition;
 
     const scaleLabel = scale.options.scaleLabel;
-    const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.defaultFontColor);
+    const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.fontColor);
     const scaleLabelFont = helpers.options._parseFont(scaleLabel);
 
     ctx.save();
     ctx.strokeStyle = boxColor;
     ctx.lineWidth = boxWidth;
     ctx.fillStyle = scaleLabelFontColor; // render in correct color
-    ctx.font = scaleLabelFont.font;
+    ctx.font = scaleLabelFont.string;
 
     const renderHorLevel = (node) => {
       if (node.children.length === 0) {

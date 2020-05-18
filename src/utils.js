@@ -14,7 +14,10 @@ export function asNode(label, parent) {
       center: NaN,
       width: 0,
       hidden: false,
-      major: !parent, // for ticks
+      major: !parent, // for ticks,
+      toString() {
+        return this.label;
+      },
     },
     typeof label === 'string'
       ? {

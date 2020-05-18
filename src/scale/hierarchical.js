@@ -53,7 +53,7 @@ const defaultConfig = {
   attributes: {},
 };
 
-export class HierarchicalScale extends Scale {
+export class HierarchicalScale extends scaleService.getScaleConstructor('category') {
   determineDataLimits() {
     const labels = this.getLabels();
 
