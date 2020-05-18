@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>Hierarchical Bar Chart</title>
-    <script src="../node_modules/chart.js/dist/Chart.bundle.js"></script>
+    <script src="https://unpkg.com/chart.js@3.0.0-alpha/dist/Chart.js"></script>
     <script src="../build/Chart.Hierarchical.js" type="text/javascript"></script>
     <style>
       canvas {
@@ -88,25 +88,14 @@
               },
             },
             scales: {
-              xAxes: [
-                {
-                  type: 'hierarchical',
-                  // offset setings, for centering the categorical axis in the bar chart case
-                  offset: true,
-
-                  // grid line settings
-                  gridLines: {
-                    offsetGridLines: true,
-                  },
+              x: {
+                type: 'hierarchical',
+              },
+              y: {
+                ticks: {
+                  beginAtZero: true,
                 },
-              ],
-              yAxes: [
-                {
-                  ticks: {
-                    beginAtZero: true,
-                  },
-                },
-              ],
+              },
             },
           },
         });

@@ -9,7 +9,7 @@ export default [
     input: 'src/bundle.js',
     output: {
       file: 'build/Chart.Hierarchical.js',
-      name: 'ChartGeo',
+      name: 'ChartHierarchical',
       format: 'umd',
       globals: {
         'chart.js': 'Chart',
@@ -22,7 +22,7 @@ export default [
     input: 'src/index.js',
     output: {
       file: 'build/Chart.Hierarchical.esm.js',
-      name: 'ChartGeo',
+      name: 'ChartHierarchical',
       format: 'esm',
       globals: {
         'chart.js': 'Chart',

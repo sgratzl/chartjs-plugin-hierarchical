@@ -1,4 +1,4 @@
-import { helpers, defaults, pluginService } from 'chart.js';
+import { helpers, defaults, plugins } from 'chart.js';
 import {
   toNodes,
   countExpanded,
@@ -10,21 +10,6 @@ import {
   determineVisible,
   flatChildren,
 } from '../utils';
-
-function parseFontOptions(options) {
-  const valueOrDefault = helpers.valueOrDefault;
-  const globalDefaults = defaults.global;
-  const size = valueOrDefault(options.fontSize, globalDefaults.defaultFontSize);
-  const style = valueOrDefault(options.fontStyle, globalDefaults.defaultFontStyle);
-  const family = valueOrDefault(options.fontFamily, globalDefaults.defaultFontFamily);
-
-  return {
-    size: size,
-    style: style,
-    family: family,
-    font: helpers.fontString(size, style, family),
-  };
-}
 
 function generateCode(labels) {
   // label, expand, children
@@ -43,7 +28,7 @@ function generateCode(labels) {
   return code;
 }
 
-const HierarchicalPlugin = {
+export const HierarchicalPlugin = {
   id: 'hierarchical',
 
   _isValidScaleType(chart, scale) {
@@ -180,7 +165,7 @@ const HierarchicalPlugin = {
 
     const scaleLabel = scale.options.scaleLabel;
     const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.global.defaultFontColor);
-    const scaleLabelFont = parseFontOptions(scaleLabel);
+    const scaleLabelFont = helpers._parseFont(scaleLabel);
 
     ctx.save();
     ctx.strokeStyle = boxColor;
@@ -551,6 +536,6 @@ const HierarchicalPlugin = {
   },
 };
 
-pluginService.register(HierarchicalPlugin);
-
-export default HierarchicalPlugin;
+HierarchicalPlugin.register = () => {
+  plugins.register(HierarchicalPlugin);
+};

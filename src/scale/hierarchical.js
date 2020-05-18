@@ -1,7 +1,16 @@
-import { scaleService, Scale } from 'chart.js';
+import { scaleService, Scale, helpers } from 'chart.js';
 import { parentsOf } from '../utils';
+import { HierarchicalPlugin } from '../plugin';
 
-const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'), {
+const defaultConfig = {
+  // offset settings, for centering the categorical axis in the bar chart case
+  offset: true,
+
+  // grid line settings
+  gridLines: {
+    offsetGridLines: true,
+  },
+
   /**
    * reduce the space between items at level X by this factor
    */
@@ -26,7 +35,7 @@ const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'
    */
   hierarchyBoxSize: 14,
   /**
-   * distance between two hierarhy indicators
+   * distance between two hierarchy indicators
    */
   hierarchyBoxLineHeight: 30,
   /**
@@ -34,7 +43,7 @@ const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'
    */
   hierarchySpanColor: 'gray',
   /**
-   * storke width of the line
+   * stroke width of the line
    */
   hierarchySpanWidth: 2,
   /**
@@ -45,10 +54,10 @@ const defaultConfig = Object.assign({}, scaleService.getScaleDefaults('category'
    * stroke width of the toggle box
    */
   hierarchyBoxWidth: 1,
-});
+};
 
-const HierarchicalScale = Scale.extend({
-  determineDataLimits() {
+export class HierarchicalScale extends Scale {
+  xx_determineDataLimits() {
     const data = this.chart.data;
     const labels = this.options.labels || (this.isHorizontal() ? data.xLabels : data.yLabels) || data.labels;
 
@@ -62,9 +71,9 @@ const HierarchicalScale = Scale.extend({
     this.max = this._nodes[this.maxIndex];
 
     // this.options.barThickness = 'flex';
-  },
+  }
 
-  buildTicks() {
+  buildTicksXXX() {
     const hor = this.isHorizontal();
     const total = hor ? this.width : this.height;
     const nodes = this._nodes.slice(this.minIndex, this.maxIndex);
@@ -76,7 +85,7 @@ const HierarchicalScale = Scale.extend({
     }
 
     // optimize such that the distance between two points on the same level is same
-    // creaiing a grouping effect of nodes
+    // creating a grouping effect of nodes
     const ratio = this.options.levelPercentage;
 
     // max 5 levels for now
@@ -123,13 +132,13 @@ const HierarchicalScale = Scale.extend({
 
     this.ticks = nodes.map((d) => Object.assign({}, d)); // copy since mutated during auto skip
     return this.ticks;
-  },
+  }
 
-  convertTicksToLabels(ticks) {
+  convertTicksToLabelsXX(ticks) {
     return ticks.map((d) => d.label);
-  },
+  }
 
-  getLabelForIndex(index, datasetIndex) {
+  xx_getLabelForIndex(index, datasetIndex) {
     const data = this.chart.data;
     const isHorizontal = this.isHorizontal();
 
@@ -137,10 +146,10 @@ const HierarchicalScale = Scale.extend({
       return this.getRightValue(data.datasets[datasetIndex].data[index]);
     }
     return this._nodes[index - this.minIndex].label;
-  },
+  }
 
   // Used to get data value locations.  Value can either be an index or a numerical value
-  getPixelForValue(value, index) {
+  xx_getPixelForValue(value, index) {
     // If value is a data object, then index is the index in the data array,
     // not the index of the scale. We need to change that.
     {
@@ -156,18 +165,18 @@ const HierarchicalScale = Scale.extend({
     }
 
     return this._centerBase(index);
-  },
+  }
 
-  getPixelForTick(index) {
+  xx_getPixelForTick(index) {
     if (index === 1 && this._nodes.length === 1) {
-      // cornercase in chartjs to determine tick with, hard coded 1
+      // corner case in chartjs to determine tick with, hard coded 1
       return this._nodes[0].width;
     }
 
     return this._centerBase(index + this.minIndex);
-  },
+  }
 
-  _centerBase(index) {
+  xx__centerBase(index) {
     const centerTick = this.options.offset;
     const base = this.isHorizontal() ? this.left : this.top;
     const node = this._nodes[index];
@@ -179,17 +188,21 @@ const HierarchicalScale = Scale.extend({
     const nodeCenter = node.center != null ? node.center : 0;
     const nodeWidth = node.width != null ? node.width : 0;
     return base + nodeCenter - (centerTick ? 0 : nodeWidth / 2);
-  },
+  }
 
-  getValueForPixel(pixel) {
+  xx_getValueForPixel(pixel) {
     return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
-  },
+  }
 
-  getBasePixel() {
+  xx_getBasePixel() {
     return this.bottom;
-  },
-});
+  }
+}
 
-scaleService.registerScaleType('hierarchical', HierarchicalScale, defaultConfig);
-
-export default HierarchicalScale;
+HierarchicalScale.id = 'hierarchical';
+HierarchicalScale.defaults = helpers.merge({}, [scaleService.getScaleDefaults('category'), defaultConfig]);
+HierarchicalScale.register = () => {
+  HierarchicalPlugin.register();
+  scaleService.registerScale(HierarchicalScale);
+  return HierarchicalScale;
+};

@@ -1,2 +1,2 @@
-export { default as HierarchialScale } from './scale/hierarchical';
-export { default as HierarchialPlugin } from './plugin/hierarchical';
+export * from './scale/hierarchical';
+export * from './plugin/hierarchical';
