@@ -28,7 +28,7 @@ a new scale type `hierarchical`.
 
 The `hierarchical` axis scale has the following styling options
 
-```typescript
+```ts
 interface IHierarchicalScaleOptions {
   /**
    * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
@@ -47,8 +47,9 @@ interface IHierarchicalScaleOptions {
   hierarchyLabelPosition: 'below' | 'above' | null;
 
   /**
-   * object of attributes that should be managed and extacted from the tree datastrutures such as `backgroundColor` for coloring individual bars
-   * the object conainst the key and default value
+   * object of attributes that should be managed and extracted from the tree
+   * data structures such as `backgroundColor` for coloring individual bars
+   * the object contains the key and default value
    * @default {}
    */
   attributes: { [attribute: string]: any };
@@ -57,7 +58,7 @@ interface IHierarchicalScaleOptions {
 
 ## Data structure
 
-```typescript
+```ts
 interface ILabelNode {
   /**
    * label
