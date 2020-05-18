@@ -4,12 +4,14 @@
 
 Chart.js module for adding a new categorical scale which mimics a hierarchical tree.
 
+**Works only with Chart.js >= 3.0.0**
+
 ![hierarchy](https://user-images.githubusercontent.com/4129778/41763778-6722e04a-75ff-11e8-84ad-1b417fd25c65.gif)
 
 ## Install
 
 ```bash
-npm install --save chart.js chartjs-plugin-hierarchical
+npm install --save chart.js@next chartjs-plugin-hierarchical@next
 ```
 
 ## Usage
@@ -94,19 +96,39 @@ interface IValueNode<T> {
 declare type ISubValueNode<T> = IValueNode<T> | T;
 ```
 
-## Building
+### ESM and Tree Shaking
+
+The ESM build of the library supports three shaking but having no side effects. As a consequence the chart.js library won't be automatically manipulated nor new controllers automatically registered. One has to manually import and register them.
+
+```js
+import Chart from 'chart.js';
+import { HierarchicalScale } from 'chartjs-plugin-hierarchical';
+
+// register scale in chart.js and ensure the defaults are set
+HierarchicalScale.register();
+...
+```
+
+## Development Environment
 
 ```sh
-npm install
-npm run build
+npm i -g yarn
+yarn set version 2
+yarn
+yarn pnpify --sdk
+```
+
+### Building
+
+```sh
+yarn install
+yarn build
 ```
 
 ---
 
-<div style="display:flex;align-items:center">
-  <a href="https://www.datavisyn.io"><img src="https://user-images.githubusercontent.com/1711080/37700685-bcbb18c6-2cec-11e8-9b6f-f49c9ef6c167.png" align="left" width="50px" hspace="10" vspace="6"></a>
-  Developed by&nbsp;<strong><a href="https://www.datavisyn.io">datavisyn</a></strong>.
-</div>
+<a href="https://www.datavisyn.io"><img src="https://www.datavisyn.io/img/logos/datavisyn-d-logo.png" align="left" width="25px" hspace="10" vspace="6"></a>
+developed by **[datavisyn][datavisyn-url]**.
 
 [datavisyn-image]: https://img.shields.io/badge/datavisyn-io-black.svg
 [datavisyn-url]: https://www.datavisyn.io
