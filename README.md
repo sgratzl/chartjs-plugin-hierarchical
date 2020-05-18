@@ -18,7 +18,7 @@ npm install --save chart.js@next chartjs-plugin-hierarchical@next
 
 see [Samples](https://github.com/sgratzl/chartjs-plugin-hierarchical/tree/master/samples) on Github
 
-or at this [![Open in CodePen][codepen]](https://codepen.io/sgratzl/pen/NWPwewL)
+or at this [![Open in CodePen][codepen]](https://codepen.io/sgratzl/pen/KKdryvg)
 
 ## Scale
 
