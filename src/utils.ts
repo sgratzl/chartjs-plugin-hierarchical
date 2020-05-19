@@ -1,11 +1,11 @@
+import { ILabelNode } from './model';
+
 /**
  * builds up recursively the label tree
- * @param {string|ILabelNode} label
- * @param {ILabelNode|null} parent
  * @returns the node itself
  */
-export function asNode(label, parent) {
-  const node = Object.assign(
+export function asNode(label: string | Partial<ILabelNode>, parent?: ILabelNode): ILabelNode {
+  const node: ILabelNode = Object.assign(
     {
       label: '',
       children: [],
@@ -32,14 +32,9 @@ export function asNode(label, parent) {
 }
 
 /**
- * pushses a node into the given flat array and updates the index information to avoid parent links
- *
- * @param {ILabelNode} node
- * @param {number} i relative index of this node to its parent
- * @param {ILabelNode[]} flat flat array to push
- * @param {ILabelNode|null} parent
+ * pushes a node into the given flat array and updates the index information to avoid parent links
  */
-function push(node, i, flat, parent) {
+function push(node: ILabelNode, i: number, flat: ILabelNode[], parent?: ILabelNode) {
   node.relIndex = i;
   node.index = flat.length; // absolute index
   node.parent = parent ? parent.index : -1;
@@ -122,11 +117,8 @@ export function preOrderTraversal(node, visit) {
 
 /**
  * resolves for the given label node its value node
- * @param {ILabelNode} label
- * @param {ILabelNode[]} flat
- * @param {(IValueNode|any)[]} dataTree
  */
-export function resolve(label, flat, dataTree) {
+export function resolve(label: ILabelNode, flat: ILabelNodes, dataTree: (IValueNode | any)[]) {
   const parents = parentsOf(label, flat);
 
   let dataItem = {
@@ -150,16 +142,15 @@ export function resolve(label, flat, dataTree) {
 
 /**
  * counts the number of nodes that are visible when the given node is expanded
- * @param {ILabelNode} node
  */
-export function countExpanded(node) {
+export function countExpanded(node: ILabelNode): number {
   if (!node.expand) {
     return 1;
   }
   return node.children.reduce((acc, d) => acc + countExpanded(d), 0);
 }
 
-export function flatChildren(node, flat) {
+export function flatChildren(node: ILabelNode, flat: ILabelNodes) {
   if (node.children.length === 0) {
     return [];
   }
@@ -180,7 +171,7 @@ export function flatChildren(node, flat) {
   return flat.slice(firstChild.index);
 }
 
-export function determineVisible(flat) {
+export function determineVisible(flat: ILabelNodes) {
   const focus = flat.find((d) => d.expand === 'focus');
 
   if (focus) {
@@ -196,7 +187,7 @@ export function determineVisible(flat) {
  * @param {ILabelNode[]} flat
  * @param {Set<ILabelNode>} visibles
  */
-export function spanLogic(node, flat, visibles) {
+export function spanLogic(node: ILabelNode, flat: ILabelNodes, visibles: Set<ILabelNode>) {
   if (node.children.length === 0 || !node.expand) {
     return false;
   }

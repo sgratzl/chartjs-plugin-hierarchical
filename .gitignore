@@ -12,6 +12,7 @@ npm-debug.log*
 
 # Build files
 /build
+/dist
 
 *.tgz
 /.vscode

@@ -8,60 +8,64 @@
     "url": "https://www.sgratzl.com"
   },
   "license": "MIT",
+  "homepage": "https://github.com/sgratzl/chartjs-plugin-hierarchical",
+  "bugs": {
+    "url": "https://github.com/sgratzl/chartjs-plugin-hierarchical/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/sgratzl/chartjs-plugin-hierarchical.git"
   },
-  "main": "build/Chart.Hierarchical.js",
-  "unpkg": "build/Chart.Hierarchical.min.js",
-  "module": "build/Chart.Hierarchical.esm.js",
+  "module": "dist/model.esm.js",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "sideEffects": false,
   "files": [
-    "build",
+    "dist",
     "src/**/*.js"
   ],
   "peerDependencies": {
     "chart.js": "^3.0.0-alpha"
   },
-  "dependencies": {
-    "@babel/runtime": "^7.9.6"
-  },
   "devDependencies": {
-    "@babel/core": "^7.9.6",
-    "@babel/plugin-transform-runtime": "^7.9.6",
-    "@babel/preset-env": "^7.9.6",
-    "@rollup/plugin-babel": "^5.0.0",
     "@rollup/plugin-commonjs": "^11.1.0",
-    "@rollup/plugin-node-resolve": "^7.1.3",
+    "@types/jest": "^25.2.1",
+    "@typescript-eslint/eslint-plugin": "^2.30.0",
+    "@typescript-eslint/parser": "^2.30.0",
     "@yarnpkg/pnpify": "^2.0.0-rc.22",
-    "babel-jest": "^26.0.1",
     "chart.js": "^3.0.0-alpha",
-    "eslint": "^7.0.0",
+    "eslint": "^6.8.0",
     "eslint-config-prettier": "^6.11.0",
+    "eslint-config-react-app": "^5.2.1",
+    "eslint-plugin-flowtype": "^4.7.0",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-jsx-a11y": "^6.2.3",
     "eslint-plugin-prettier": "^3.1.3",
-    "jest": "^26.0.1",
+    "eslint-plugin-react": "^7.19.0",
+    "eslint-plugin-react-hooks": "^4.0.0",
     "prettier": "^2.0.5",
     "release-it": "^13.6.0",
-    "rimraf": "^3.0.2",
-    "rollup": "^2.10.2",
     "rollup-plugin-pnp-resolve": "^2.0.0",
-    "uglify-es": "^3.3.9"
+    "tsdx": "~0.13.2",
+    "tslib": "^1.11.1",
+    "typedoc": "^0.17.6",
+    "typescript": "^3.8.3"
   },
   "scripts": {
-    "clean": "rimraf build *.tgz",
-    "watch": "rollup -c -w",
-    "lint": "eslint src",
-    "pretest": "npm run lint",
-    "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch",
-    "build:dev": "rollup -c",
-    "build:prod": "npm run build:dev && uglifyjs build/Chart.Hierarchical.js -c -m -o build/Chart.Hierarchical.min.js",
-    "prebuild": "npm run clean && npm test",
-    "build": "npm run build:prod",
-    "format": "prettier --write samples src package.json *.js README.md",
-    "preversion": "npm run test",
-    "prepare": "npm run build:dev",
-    "prepublishOnly": "npm run build:prod",
+    "compile": "tsc -p tsconfig.json --noEmit",
+    "start": "tsdx watch --noClean",
+    "build": "tsdx build",
+    "test": "tsdx test --passWithNoTests",
+    "test:watch": "tsdx test --passWithNoTests --watch",
+    "test:coverage": "tsdx test --passWithNoTests --coverage",
+    "lint": "npm run eslint && npm run prettier",
+    "fix": "npm run eslint:fix && npm run prettier:write",
+    "prettier:impl": "prettier \"*.{md,json,js}\" \"src/**\"",
+    "prettier:write": "npm run prettier:impl -- --write",
+    "prettier": "npm run prettier:impl -- --check",
+    "eslint": "tsdx lint src --ext .ts,.tsx",
+    "eslint:fix": "npm run eslint -- --fix",
+    "prepare": "tsdx build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next"
   },
@@ -69,5 +73,8 @@
     "chart.js": {
       "unplugged": true
     }
+  },
+  "dependencies": {
+    "@types/chart.js": "^2.9.21"
   }
 }
