@@ -1,4 +1,4 @@
-import { scaleService, helpers } from 'chart.js';
+import { scaleService, merge, CategoryScale } from '../chart';
 import { parentsOf } from '../utils';
 import { HierarchicalPlugin } from '../plugin';
 
@@ -53,7 +53,7 @@ const defaultConfig = {
   attributes: {},
 };
 
-export class HierarchicalScale extends scaleService.getScaleConstructor('category') {
+export class HierarchicalScale extends CategoryScale {
   determineDataLimits() {
     const labels = this.getLabels();
 
@@ -157,7 +157,7 @@ export class HierarchicalScale extends scaleService.getScaleConstructor('categor
 }
 
 HierarchicalScale.id = 'hierarchical';
-HierarchicalScale.defaults = helpers.merge({}, [scaleService.getScaleDefaults('category'), defaultConfig]);
+HierarchicalScale.defaults = merge({}, [CategoryScale.defaults, defaultConfig]);
 HierarchicalScale.register = () => {
   HierarchicalPlugin.register();
   scaleService.registerScale(HierarchicalScale);

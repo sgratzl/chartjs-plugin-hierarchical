@@ -1,4 +1,4 @@
-import { helpers, defaults, plugins } from 'chart.js';
+import { defaults, plugins, _parseFont, valueOrDefault } from '../chart';
 import {
   toNodes,
   countExpanded,
@@ -161,8 +161,8 @@ export const HierarchicalPlugin = {
     const renderLabel = scale.options.hierarchyLabelPosition;
 
     const scaleLabel = scale.options.scaleLabel;
-    const scaleLabelFontColor = helpers.valueOrDefault(scaleLabel.fontColor, defaults.fontColor);
-    const scaleLabelFont = helpers.options._parseFont(scaleLabel);
+    const scaleLabelFontColor = valueOrDefault(scaleLabel.fontColor, defaults.fontColor);
+    const scaleLabelFont = _parseFont(scaleLabel);
 
     ctx.save();
     ctx.strokeStyle = boxColor;
