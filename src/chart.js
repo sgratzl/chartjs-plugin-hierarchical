@@ -38,6 +38,6 @@ export const merge = ChartNS.helpers.merge;
 // export const resolve = ChartNS.helpers.options.resolve;
 // export const color = ChartNS.helpers.color;
 export const valueOrDefault = ChartNS.helpers.valueOrDefault;
-export const _parseFont = ChartNS.helpers.valueOrDefault;
+export const _parseFont = ChartNS.helpers.options._parseFont;
 // export const clipArea = ChartNS.helpers.canvas.clipArea;
 // export const unclipArea = ChartNS.helpers.canvas.unclipArea;
