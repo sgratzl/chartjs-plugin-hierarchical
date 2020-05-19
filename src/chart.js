@@ -3,15 +3,15 @@ import ChartNS from 'chart.js';
 export const Chart = ChartNS;
 
 export function registerPlugin(plugin) {
-    ChartNS.plugins.register(plugin);
-    return plugin;
+  ChartNS.plugins.register(plugin);
+  return plugin;
 }
 
 export const defaults = ChartNS.defaults;
 
 export function registerScale(scale) {
-    ChartNS.scaleService.registerScale(scale);
-    return scale;
+  ChartNS.scaleService.registerScale(scale);
+  return scale;
 }
 
 // export const Scale = ChartNS.Scale;
