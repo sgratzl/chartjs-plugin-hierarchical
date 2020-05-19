@@ -1,4 +1,4 @@
-import { defaults, plugins, _parseFont, valueOrDefault } from '../chart';
+import { defaults, registerPlugin, _parseFont, valueOrDefault } from '../chart';
 import {
   toNodes,
   countExpanded,
@@ -530,6 +530,4 @@ export const HierarchicalPlugin = {
   },
 };
 
-HierarchicalPlugin.register = () => {
-  plugins.register(HierarchicalPlugin);
-};
+HierarchicalPlugin.register = () => registerPlugin(HierarchicalPlugin);

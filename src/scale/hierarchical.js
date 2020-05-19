@@ -1,4 +1,4 @@
-import { scaleService, merge, CategoryScale } from '../chart';
+import { registerScale, merge, CategoryScale } from '../chart';
 import { parentsOf } from '../utils';
 import { HierarchicalPlugin } from '../plugin';
 
@@ -160,6 +160,5 @@ HierarchicalScale.id = 'hierarchical';
 HierarchicalScale.defaults = merge({}, [CategoryScale.defaults, defaultConfig]);
 HierarchicalScale.register = () => {
   HierarchicalPlugin.register();
-  scaleService.registerScale(HierarchicalScale);
-  return HierarchicalScale;
+  return registerScale(HierarchicalScale);
 };
