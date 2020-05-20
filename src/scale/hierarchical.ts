@@ -1,6 +1,7 @@
 import { registerScale, merge, CategoryScale } from '../chart';
 import { parentsOf } from '../utils';
 import { HierarchicalPlugin } from '../plugin';
+import { ILabelNodes } from '../model';
 
 const defaultConfig = {
   // offset settings, for centering the categorical axis in the bar chart case
@@ -53,7 +54,11 @@ const defaultConfig = {
   attributes: {},
 };
 
-export class HierarchicalScale extends CategoryScale {
+declare type HierarchicalScaleOptions = typeof defaultConfig;
+
+export class HierarchicalScale extends CategoryScale<HierarchicalScaleOptions> {
+  private _nodes: ILabelNodes = [];
+
   determineDataLimits() {
     const labels = this.getLabels();
 
@@ -84,7 +89,7 @@ export class HierarchicalScale extends CategoryScale {
     // max 5 levels for now
     const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4)];
 
-    const distances = [];
+    const distances: number[] = [];
 
     let prev = nodes[0];
     let prevParents = parentsOf(prev, flat);
@@ -127,7 +132,7 @@ export class HierarchicalScale extends CategoryScale {
     return nodes.map((d) => Object.assign({}, d)); // copy since mutated during auto skip
   }
 
-  getPixelForDecimal(value) {
+  getPixelForDecimal(value: number) {
     const index = Math.min(Math.floor(value * this._nodes.length), this._nodes.length - 1);
 
     if (index === 1 && this._nodes.length === 1) {
@@ -137,7 +142,7 @@ export class HierarchicalScale extends CategoryScale {
     return this._centerBase(index);
   }
 
-  _centerBase(index) {
+  _centerBase(index: number) {
     const centerTick = this.options.offset;
     const base = this.isHorizontal() ? this.left : this.top;
     const node = this._nodes[index];
@@ -151,14 +156,14 @@ export class HierarchicalScale extends CategoryScale {
     return base + nodeCenter - (centerTick ? 0 : nodeWidth / 2);
   }
 
-  getValueForPixel(pixel) {
+  getValueForPixel(pixel: number) {
     return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
   }
-}
 
-HierarchicalScale.id = 'hierarchical';
-HierarchicalScale.defaults = merge({}, [CategoryScale.defaults, defaultConfig]);
-HierarchicalScale.register = () => {
-  HierarchicalPlugin.register();
-  return registerScale(HierarchicalScale);
-};
+  static id = 'hierarchical';
+  static defaults = merge({}, [CategoryScale.defaults, defaultConfig]);
+  static register() {
+    HierarchicalPlugin.register();
+    return registerScale(HierarchicalScale);
+  }
+}

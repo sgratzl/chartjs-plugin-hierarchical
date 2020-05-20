@@ -1,4 +1,4 @@
-import { defaults, registerPlugin, _parseFont, valueOrDefault } from '../chart';
+import { Chart, defaults, registerPlugin, _parseFont, valueOrDefault } from '../chart';
 import {
   toNodes,
   countExpanded,
@@ -10,11 +10,13 @@ import {
   determineVisible,
   flatChildren,
 } from '../utils';
+import { ILabelNodes, ILabelNode } from '../model';
+import { HierarchicalScale } from '../scale';
 
-function generateCode(labels) {
+function generateCode(labels: ReadonlyArray<ILabelNode | string>) {
   // label, expand, children
   let code = '';
-  const encode = (label) => {
+  const encode = (label: string | ILabelNode) => {
     if (typeof label === 'string') {
       code += label;
       return;
@@ -31,24 +33,24 @@ function generateCode(labels) {
 export const HierarchicalPlugin = {
   id: 'hierarchical',
 
-  _isValidScaleType(chart, scale) {
-    if (!chart.config.options.scales.hasOwnProperty(scale)) {
+  _isValidScaleType(chart: Chart, scale: string) {
+    if (!chart.config.options?.scales?.hasOwnProperty(scale)) {
       return false;
     }
-    return chart.config.options.scales[scale].hasOwnProperty('type');
+    return (chart.config.options!.scales! as any)[scale].hasOwnProperty('type');
   },
 
   /**
    * checks whether this plugin needs to be enabled based on whether one is a hierarchical axis
    */
-  _enabled(chart) {
-    if (!chart.config.options.hasOwnProperty('scales')) {
+  _enabled(chart: Chart) {
+    if (!chart.config.options?.hasOwnProperty('scales')) {
       return null;
     }
-    if (this._isValidScaleType(chart, 'x') && chart.config.options.scales.x.type === 'hierarchical') {
+    if (this._isValidScaleType(chart, 'x') && chart.config.options!.scales!.x.type === 'hierarchical') {
       return 'x';
     }
-    if (this._isValidScaleType(chart, 'y') && chart.config.options.scales.y.type === 'hierarchical') {
+    if (this._isValidScaleType(chart, 'y') && chart.config.options!.scales!.y.type === 'hierarchical') {
       return 'y';
     }
     return null;
@@ -56,9 +58,8 @@ export const HierarchicalPlugin = {
 
   /**
    * checks whether the data has been changed by the user and all caches are invalid
-   * @param {*} chart
    */
-  _check(chart) {
+  _check(chart: Chart) {
     if (chart.data.labels && chart.data._verify === generateCode(chart.data.labels)) {
       return;
     }
@@ -87,14 +88,14 @@ export const HierarchicalPlugin = {
    * a verify code is used to recognize when the user changes the data
    * @param {*} chart
    */
-  _updateVerifyCode(chart) {
+  _updateVerifyCode(chart: Chart) {
     chart.data._verify = generateCode(chart.data.labels);
   },
 
   /**
    * updates the attributes according to config, similar to data sync
    */
-  _updateAttributes(chart) {
+  _updateAttributes(chart: Chart) {
     const scale = this._findScale(chart);
     if (!scale) {
       return;
@@ -123,12 +124,12 @@ export const HierarchicalPlugin = {
     });
   },
 
-  _findScale(chart) {
+  _findScale(chart: Chart) {
     const scales = Object.keys(chart.scales).map((d) => chart.scales[d]);
     return scales.find((d) => d.type === 'hierarchical');
   },
 
-  beforeUpdate(chart) {
+  beforeUpdate(chart: Chart) {
     if (!this._enabled(chart)) {
       return;
     }
@@ -138,16 +139,16 @@ export const HierarchicalPlugin = {
   /**
    * draw the hierarchy indicators
    */
-  beforeDatasetsDraw(chart) {
+  beforeDatasetsDraw(chart: Chart) {
     if (!this._enabled(chart)) {
       return;
     }
     const scale = this._findScale(chart);
     const flat = chart.data.flatLabels;
-    const visible = chart.data.labels;
+    const visible = chart.data.labels as ILabelNodes;
     const roots = chart.data.rootNodes;
     const visibles = new Set(visible);
-    const ctx = chart.ctx;
+    const ctx = chart.ctx!;
     const hor = scale.isHorizontal();
 
     const boxSize = scale.options.hierarchyBoxSize;
@@ -170,7 +171,7 @@ export const HierarchicalPlugin = {
     ctx.fillStyle = scaleLabelFontColor; // render in correct color
     ctx.font = scaleLabelFont.string;
 
-    const renderHorLevel = (node) => {
+    const renderHorLevel = (node: ILabelNode) => {
       if (node.children.length === 0) {
         return false;
       }
@@ -251,7 +252,7 @@ export const HierarchicalPlugin = {
       return true;
     };
 
-    const renderVertLevel = (node) => {
+    const renderVertLevel = (node: ILabelNode) => {
       if (node.children.length === 0) {
         return false;
       }
@@ -334,7 +335,7 @@ export const HierarchicalPlugin = {
       roots.forEach((n) => preOrderTraversal(n, renderHorLevel));
     } else {
       ctx.textAlign = 'right';
-      ctx.textBaseline = 'center';
+      ctx.textBaseline = 'middle';
       ctx.translate(scale.left - scale.options.padding, scale.top);
 
       roots.forEach((n) => preOrderTraversal(n, renderVertLevel));
@@ -343,20 +344,20 @@ export const HierarchicalPlugin = {
     ctx.restore();
   },
 
-  _postDataUpdate(chart) {
+  _postDataUpdate(chart: Chart) {
     this._updateVerifyCode(chart);
     this._updateAttributes(chart);
 
     chart.update();
   },
 
-  _expandCollapse(chart, index, count, toAdd) {
+  _expandCollapse(chart: Chart, index: number, count: number, toAdd: ILabelNodes) {
     const labels = chart.data.labels;
     const flatLabels = chart.data.flatLabels;
     const data = chart.data.datasets;
 
     // use splice since Chart.js is tracking the array using this method to have a proper animation
-    const removed = labels.splice.apply(labels, [index, count].concat(toAdd));
+    const removed = labels.splice(index, count, ...toAdd);
     removed.forEach((d) => {
       d.hidden = true;
     });
@@ -368,11 +369,11 @@ export const HierarchicalPlugin = {
 
     data.forEach((dataset) => {
       const toAddData = toAdd.map((d) => resolve(d, flatLabels, dataset.tree));
-      dataset.data.splice.apply(dataset.data, [index, count].concat(toAddData));
+      dataset.data.splice(index, count, ...toAddData);
     });
   },
 
-  _collapse(chart, index, parent) {
+  _collapse(chart: Chart, index: number, parent: ILabelNode) {
     const count = countExpanded(parent);
     // collapse sub structures, too
     parent.children.forEach((c) =>
@@ -386,14 +387,14 @@ export const HierarchicalPlugin = {
     this._postDataUpdate(chart);
   },
 
-  _expand(chart, index, node) {
+  _expand(chart: Chart, index: number, node: ILabelNode) {
     this._expandCollapse(chart, index, 1, node.children);
     node.expand = true;
 
     this._postDataUpdate(chart);
   },
 
-  _zoomIn(chart, lastIndex, parent, flat) {
+  _zoomIn(chart: Chart, lastIndex: number, parent: ILabelNode, flat: ILabelNodes) {
     const count = countExpanded(parent);
     // reset others
     flat.forEach((d) => {
@@ -420,7 +421,7 @@ export const HierarchicalPlugin = {
     this._postDataUpdate(chart);
   },
 
-  _zoomOut(chart, parent) {
+  _zoomOut(chart: Chart, parent: ILabelNode) {
     const labels = chart.data.labels;
     const flatLabels = chart.data.flatLabels;
 
@@ -446,7 +447,7 @@ export const HierarchicalPlugin = {
     this._postDataUpdate(chart);
   },
 
-  _resolveElement(event, scale) {
+  _resolveElement(event: { x: number; y: number }, scale: HierarchicalScale) {
     const hor = scale.isHorizontal();
     let offset = hor ? scale.top + scale.options.padding : scale.left - scale.options.padding;
     if ((hor && event.y <= offset) || (!hor && event.x > offset)) {
@@ -459,7 +460,13 @@ export const HierarchicalPlugin = {
     };
   },
 
-  _handleClickEvents(chart, _event, elem, offsetDelta, inRange) {
+  _handleClickEvents(
+    chart: Chart,
+    _event: unknown,
+    elem: { offset: number; index: number },
+    offsetDelta: number,
+    inRange: (v: number) => boolean
+  ) {
     let offset = elem.offset;
 
     const index = elem.index;
@@ -509,7 +516,7 @@ export const HierarchicalPlugin = {
     }
   },
 
-  beforeEvent(chart, event) {
+  beforeEvent(chart: Chart, event: { x: number; y: number; type: string }) {
     if (event.type !== 'click' || !this._enabled(chart)) {
       return;
     }
@@ -524,7 +531,9 @@ export const HierarchicalPlugin = {
 
     const boxRow = scale.options.hierarchyBoxLineHeight;
 
-    const inRange = hor ? (o) => event.y >= o && event.y <= o + boxRow : (o) => event.x <= o && event.x >= o - boxRow;
+    const inRange = hor
+      ? (o: number) => event.y >= o && event.y <= o + boxRow
+      : (o: number) => event.x <= o && event.x >= o - boxRow;
     const offsetDelta = hor ? boxRow : -boxRow;
     this._handleClickEvents(chart, event, elem, offsetDelta, inRange);
   },

@@ -1,17 +1,20 @@
-import { ILabelNode } from './model';
+import { ILabelNode, ILabelNodes, IValueNode, isValueNode, IRawLabelNode } from './model';
 
 /**
  * builds up recursively the label tree
  * @returns the node itself
  */
-export function asNode(label: string | Partial<ILabelNode>, parent?: ILabelNode): ILabelNode {
+export function asNode(label: string | IRawLabelNode, parent?: ILabelNode): ILabelNode {
   const node: ILabelNode = Object.assign(
     {
       label: '',
+      index: 0,
+      relIndex: 0,
       children: [],
       expand: false,
+      parent: parent ? parent.index : -1,
       level: parent ? parent.level + 1 : 0,
-      center: NaN,
+      center: Number.NaN,
       width: 0,
       hidden: false,
       major: !parent, // for ticks,
@@ -48,12 +51,11 @@ function push(node: ILabelNode, i: number, flat: ILabelNode[], parent?: ILabelNo
 
 /**
  * converts the given labels to a flat array of linked nodes
- * @param {Partial<ILabelNode>|string} labels
  */
-export function toNodes(labels) {
+export function toNodes(labels: ReadonlyArray<IRawLabelNode | string>) {
   const nodes = labels.map((d) => asNode(d));
 
-  const flat = [];
+  const flat: ILabelNode[] = [];
   nodes.forEach((d, i) => push(d, i, flat));
 
   return flat;
@@ -64,7 +66,7 @@ export function toNodes(labels) {
  * @param {ILabelNode} node
  * @param {ILabelNode[]} flat flatArray for lookup
  */
-export function parentsOf(node, flat) {
+export function parentsOf(node: ILabelNode, flat: ILabelNodes) {
   const parents = [node];
   while (parents[0].parent >= 0) {
     parents.unshift(flat[parents[0].parent]);
@@ -74,9 +76,8 @@ export function parentsOf(node, flat) {
 
 /**
  * computes the right most grand child of expanded nodes
- * @param {ILabelNode} node
  */
-function rightMost(node) {
+function rightMost(node: ILabelNode): ILabelNode {
   if (!node.expand || node.children.length === 0) {
     return node;
   }
@@ -85,10 +86,8 @@ function rightMost(node) {
 
 /**
  * based on the visibility of the nodes computes the last node in the same level that is visible also considering expanded children
- * @param {ILabelNode} node
- * @param {ILabelNode[]} flat flatArray for lookup
  */
-export function lastOfLevel(node, flat) {
+export function lastOfLevel(node: ILabelNode, flat: ILabelNodes) {
   if (node.parent > -1) {
     const parent = flat[node.parent];
     return rightMost(parent.children[parent.children.length - 1]);
@@ -97,16 +96,16 @@ export function lastOfLevel(node, flat) {
   const sibling = flat
     .slice()
     .reverse()
-    .find((d) => d.parent === -1);
+    .find((d) => d.parent === -1)!;
   return rightMost(sibling);
 }
 
 /**
  * traverses the tree in pre order logic
  * @param {ILabelNode} node
- * @param {(node: ILabelNode) => void | false} visit return false to skip the traversal of children
+ * @param {} visit return false to skip the traversal of children
  */
-export function preOrderTraversal(node, visit) {
+export function preOrderTraversal(node: ILabelNode, visit: (node: ILabelNode) => void | boolean) {
   const goDeep = visit(node);
   if (goDeep !== false) {
     for (const child of node.children) {
@@ -118,23 +117,21 @@ export function preOrderTraversal(node, visit) {
 /**
  * resolves for the given label node its value node
  */
-export function resolve(label: ILabelNode, flat: ILabelNodes, dataTree: (IValueNode | any)[]) {
+export function resolve(label: ILabelNode, flat: ILabelNodes, dataTree: (IValueNode | number)[]) {
   const parents = parentsOf(label, flat);
 
-  let dataItem = {
+  let dataItem: IValueNode | number = {
     children: dataTree,
+    value: Number.NaN,
   };
   const dataParents = parents.map((p) => {
-    dataItem =
-      dataItem && !(typeof dataItem === 'number' && isNaN(dataItem)) && dataItem.children
-        ? dataItem.children[p.relIndex]
-        : NaN;
+    dataItem = dataItem && isValueNode(dataItem) ? dataItem.children[p.relIndex] : Number.NaN;
     return dataItem;
   });
 
   const value = dataParents[dataParents.length - 1];
   // convert to value
-  if (typeof value !== 'number' && value.hasOwnProperty('value')) {
+  if (isValueNode(value)) {
     return value.value;
   }
   return value;
@@ -181,13 +178,23 @@ export function determineVisible(flat: ILabelNodes) {
   return flat.filter((d) => !d.hidden);
 }
 
+export interface ISpanLogicResult {
+  hasCollapseBox: boolean;
+  hasFocusBox: boolean;
+  leftVisible: ILabelNode;
+  rightVisible: ILabelNode;
+  groupLabelCenter: number;
+  leftFirstVisible: boolean;
+  rightLastVisible: boolean;
+}
+
 /**
- *
- * @param {ILabelNode} node
- * @param {ILabelNode[]} flat
- * @param {Set<ILabelNode>} visibles
  */
-export function spanLogic(node: ILabelNode, flat: ILabelNodes, visibles: Set<ILabelNode>) {
+export function spanLogic(
+  node: ILabelNode,
+  flat: ILabelNodes,
+  visibleNodes: Set<ILabelNode>
+): false | ISpanLogicResult {
   if (node.children.length === 0 || !node.expand) {
     return false;
   }
@@ -195,11 +202,11 @@ export function spanLogic(node: ILabelNode, flat: ILabelNodes, visibles: Set<ILa
   const lastChild = node.children[node.children.length - 1];
   const flatSubTree = flatChildren(node, flat);
 
-  const leftVisible = flatSubTree.find((d) => visibles.has(d));
+  const leftVisible = flatSubTree.find((d) => visibleNodes.has(d));
   const rightVisible = flatSubTree
     .slice()
     .reverse()
-    .find((d) => visibles.has(d));
+    .find((d) => visibleNodes.has(d));
 
   if (!leftVisible || !rightVisible) {
     return false;
@@ -215,7 +222,7 @@ export function spanLogic(node: ILabelNode, flat: ILabelNodes, visibles: Set<ILa
   const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
   const hasFocusBox = leftFirstVisible && rightLastVisible && node.children.length > 1;
   // the next visible after the left one
-  const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibles.has(d));
+  const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibleNodes.has(d));
   const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
 
   return {

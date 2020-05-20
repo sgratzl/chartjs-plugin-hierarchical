@@ -1,31 +1,25 @@
-
-import {toNodes, parentsOf, lastOfLevel, countExpanded} from '../src/utils';
+import { toNodes, parentsOf, lastOfLevel, countExpanded } from '../src/utils';
 
 describe('bug_#7', () => {
   let nodes;
   test('setup', () => {
-    nodes = toNodes([{
-      label: '0',
-      expand: true, // 'focus', // expand level
-      children: [
-        {
-          label: '00',
-          expand: true, // 'focus', // expand level
-          children: [
-            '000',
-            '001',
-          ]
-        },
-        {
-          label: '01',
-          children: [
-            '010',
-            '011',
-          ]
-        }
-      ]
+    nodes = toNodes([
+      {
+        label: '0',
+        expand: true, // 'focus', // expand level
+        children: [
+          {
+            label: '00',
+            expand: true, // 'focus', // expand level
+            children: ['000', '001'],
+          },
+          {
+            label: '01',
+            children: ['010', '011'],
+          },
+        ],
       },
-      '1'
+      '1',
     ]);
 
     expect(nodes.length).toBe(8);
