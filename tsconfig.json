@@ -25,6 +25,9 @@
     "outDir": "./dist",
     "declarationDir": "./dist",
     "declarationMap": true,
+    "typeRoots": [
+      "src/types"
+    ],
     "paths": {
       "@": ["./src"],
       "*": ["*", "node_modules/*"]

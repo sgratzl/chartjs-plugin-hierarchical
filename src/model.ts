@@ -1,3 +1,5 @@
+import { CoreChart, IChartDataSet, IChartData } from './chart';
+
 export interface ILabelNode {
   label: string;
   expand: boolean | 'focus';
@@ -14,6 +16,8 @@ export interface ILabelNode {
 
   index: number;
   relIndex: number;
+
+  value?: string;
 }
 
 export interface IRawLabelNode {
@@ -32,4 +36,18 @@ export interface IValueNode {
 
 export function isValueNode(node: IValueNode | any): node is IValueNode {
   return node != null && Array.isArray(node.children);
+}
+
+export interface IEnhancedChartDataSet extends IChartDataSet {
+  tree: IValueNode[];
+}
+
+export interface IEnhancedChart extends CoreChart {
+  data: IChartData & {
+    flatLabels?: ILabelNodes;
+    _verify?: string;
+    rootNodes?: ILabelNodes;
+
+    datasets: IEnhancedChartDataSet[];
+  };
 }

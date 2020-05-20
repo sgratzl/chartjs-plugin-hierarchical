@@ -1,9 +1,66 @@
-import { registerScale, merge, CategoryScale } from '../chart';
+import { registerScale, merge, CategoryScale, IMapping } from '../chart';
 import { parentsOf } from '../utils';
-import { HierarchicalPlugin } from '../plugin';
-import { ILabelNodes } from '../model';
+import { registerHierarchicalPlugin } from '../plugin';
+import { ILabelNodes, IEnhancedChart, ILabelNode } from '../model';
 
-const defaultConfig = {
+export interface IHierarchicalScaleOptions {
+  /**
+   * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
+   * @default 0.75
+   */
+  levelPercentage: number;
+  /**
+   * padding of the first collapse to the start of the x-axis
+   * @default 25
+   */
+  padding: number;
+  /**
+   * position of the hierarchy label in expanded levels, null to disable
+   * @default 'below'
+   */
+  hierarchyLabelPosition: 'below' | 'above' | null;
+
+  /**
+   * size of the box to draw
+   */
+  hierarchyBoxSize: number;
+  /**
+   * distance between two hierarchy indicators
+   */
+  hierarchyBoxLineHeight: number;
+  /**
+   * color of the line indicator hierarchy children
+   */
+  hierarchySpanColor: string;
+  /**
+   * stroke width of the line
+   */
+  hierarchySpanWidth: number;
+  /**
+   * color of the box to toggle collapse/expand
+   */
+  hierarchyBoxColor: string;
+  /**
+   * stroke width of the toggle box
+   */
+  hierarchyBoxWidth: number;
+
+  /**
+   * object of attributes that should be managed and extracted from the tree
+   * data structures such as `backgroundColor` for coloring individual bars
+   * the object contains the key and default value
+   * @default {}
+   */
+  attributes: { [attribute: string]: any };
+
+  offset: true;
+
+  scaleLabel?: {
+    fontColor: string;
+  };
+}
+
+const defaultConfig: IMapping & IHierarchicalScaleOptions = {
   // offset settings, for centering the categorical axis in the bar chart case
   offset: true,
 
@@ -25,7 +82,7 @@ const defaultConfig = {
    * position of the hierarchy label
    * possible values: 'below', 'above', null to disable
    */
-  hierarchyLabelPosition: 'below',
+  hierarchyLabelPosition: 'below' as 'below' | 'above' | null,
   /**
    * size of the box to draw
    */
@@ -54,9 +111,7 @@ const defaultConfig = {
   attributes: {},
 };
 
-declare type HierarchicalScaleOptions = typeof defaultConfig;
-
-export class HierarchicalScale extends CategoryScale<HierarchicalScaleOptions> {
+export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> {
   private _nodes: ILabelNodes = [];
 
   determineDataLimits() {
@@ -68,11 +123,11 @@ export class HierarchicalScale extends CategoryScale<HierarchicalScaleOptions> {
     super.determineDataLimits();
   }
 
-  buildTicks() {
+  buildTicks(): ILabelNode[] {
     const hor = this.isHorizontal();
     const total = hor ? this.width : this.height;
     const nodes = this._nodes.slice(this.min, this.max + 1);
-    const flat = this.chart.data.flatLabels;
+    const flat = (this.chart as IEnhancedChart).data.flatLabels!;
 
     this._numLabels = nodes.length;
     this._valueRange = Math.max(nodes.length, 1);
@@ -161,9 +216,11 @@ export class HierarchicalScale extends CategoryScale<HierarchicalScaleOptions> {
   }
 
   static id = 'hierarchical';
-  static defaults = merge({}, [CategoryScale.defaults, defaultConfig]);
-  static register() {
-    HierarchicalPlugin.register();
+
+  static defaults: IHierarchicalScaleOptions & IMapping = merge({}, [CategoryScale.defaults, defaultConfig]);
+
+  static register(): typeof HierarchicalScale {
+    registerHierarchicalPlugin();
     return registerScale(HierarchicalScale);
   }
 }

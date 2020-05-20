@@ -16,8 +16,9 @@
     "type": "git",
     "url": "https://github.com/sgratzl/chartjs-plugin-hierarchical.git"
   },
-  "module": "dist/model.esm.js",
-  "main": "dist/index.js",
+  "module": "dist/charthierarchical.esm.js",
+  "main": "dist/charthierarchical.umd.development.js",
+  "unpkg": "dist/charthierarchical.umd.production.min.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "files": [
@@ -53,8 +54,8 @@
   },
   "scripts": {
     "compile": "tsc -p tsconfig.json --noEmit",
-    "start": "tsdx watch --noClean",
-    "build": "tsdx build",
+    "start": "tsdx watch --noClean --name ChartHierarchical --format esm,umd",
+    "build": "tsdx build --name ChartHierarchical --format esm,umd",
     "test": "tsdx test --passWithNoTests",
     "test:watch": "tsdx test --passWithNoTests --watch",
     "test:coverage": "tsdx test --passWithNoTests --coverage",
@@ -73,8 +74,5 @@
     "chart.js": {
       "unplugged": true
     }
-  },
-  "dependencies": {
-    "@types/chart.js": "^2.9.21"
   }
 }

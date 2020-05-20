@@ -108,9 +108,7 @@ export function lastOfLevel(node: ILabelNode, flat: ILabelNodes) {
 export function preOrderTraversal(node: ILabelNode, visit: (node: ILabelNode) => void | boolean) {
   const goDeep = visit(node);
   if (goDeep !== false) {
-    for (const child of node.children) {
-      preOrderTraversal(child, visit);
-    }
+    node.children.forEach((child) => preOrderTraversal(child, visit));
   }
 }
 

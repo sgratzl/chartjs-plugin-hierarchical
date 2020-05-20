@@ -1586,15 +1586,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/chart.js@npm:^2.9.21":
-  version: 2.9.21
-  resolution: "@types/chart.js@npm:2.9.21"
-  dependencies:
-    moment: ^2.10.2
-  checksum: 3/f01751c9c084114683c712d1844e8567e8dd9babf09a3aa186982cd45abde80268727cab0fb10e1dd766e531e598a90fd514b42d3f964b0538dc1d2b992d3781
-  languageName: node
-  linkType: hard
-
 "@types/color-name@npm:^1.1.1":
   version: 1.1.1
   resolution: "@types/color-name@npm:1.1.1"
@@ -2893,7 +2884,6 @@ __metadata:
   resolution: "chartjs-plugin-hierarchical@workspace:."
   dependencies:
     "@rollup/plugin-commonjs": ^11.1.0
-    "@types/chart.js": ^2.9.21
     "@types/jest": ^25.2.1
     "@typescript-eslint/eslint-plugin": ^2.30.0
     "@typescript-eslint/parser": ^2.30.0
@@ -6646,13 +6636,6 @@ fsevents@^1.2.7:
   bin:
     mkdirp: bin/cmd.js
   checksum: 3/9dd9792e891927b14ca02226dbe1daeb717b9517a001620d5e2658bbc72c5e4f06887b6cbcbb60595fa5a56e701073cf250f1ed69c1988a6b89faf9fd6a4d049
-  languageName: node
-  linkType: hard
-
-"moment@npm:^2.10.2":
-  version: 2.25.3
-  resolution: "moment@npm:2.25.3"
-  checksum: 3/416971ff3c663c850d56095cbfb01a2c153ecc7f3511772c1ff7e09a7be0105e135e8227aba0b82dd058efa8747271906cebe3f75cf4a1c4b17ed1b568003103
   languageName: node
   linkType: hard
 
