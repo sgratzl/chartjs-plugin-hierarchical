@@ -554,6 +554,9 @@ export function registerHierarchicalPlugin() {
       const clickEvent = event as { x: number; y: number };
 
       const scale = findScale(chart)!;
+      if (scale.options.static) {
+        return;
+      }
       const hor = scale.isHorizontal();
 
       const elem = resolveElement(clickEvent, scale);
