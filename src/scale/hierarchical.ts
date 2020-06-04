@@ -21,6 +21,12 @@ export interface IHierarchicalScaleOptions {
   hierarchyLabelPosition: 'below' | 'above' | null;
 
   /**
+   * position of the hierarchy group label relative to the its children
+   * @default between-first-and-second
+   */
+  hierarchyGroupLabelPosition: 'center' | 'first' | 'last' | 'between-first-and-second';
+
+  /**
    * whether interactive buttons should be shown or whether it should be static
    * @default false
    */
@@ -90,6 +96,8 @@ const defaultConfig: IMapping & IHierarchicalScaleOptions = {
    * possible values: 'below', 'above', null to disable
    */
   hierarchyLabelPosition: 'below' as 'below' | 'above' | null,
+
+  hierarchyGroupLabelPosition: 'between-first-and-second',
   /**
    * size of the box to draw
    */

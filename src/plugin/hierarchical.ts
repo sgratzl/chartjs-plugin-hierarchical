@@ -335,6 +335,7 @@ export function registerHierarchicalPlugin() {
       const boxSpanColor = scale.options.hierarchySpanColor;
       const boxSpanWidth = scale.options.hierarchySpanWidth;
       const renderLabel = scale.options.hierarchyLabelPosition;
+      const groupLabelPosition = scale.options.hierarchyGroupLabelPosition;
       const isStatic = scale.options.static;
 
       const scaleLabel = scale.options.scaleLabel!;
@@ -401,7 +402,7 @@ export function registerHierarchicalPlugin() {
           }
           return false;
         }
-        const r = spanLogic(node, flat, visibleNodes);
+        const r = spanLogic(node, flat, visibleNodes, groupLabelPosition);
         if (!r) {
           return false;
         }
@@ -473,7 +474,7 @@ export function registerHierarchicalPlugin() {
           }
           return false;
         }
-        const r = spanLogic(node, flat, visibleNodes);
+        const r = spanLogic(node, flat, visibleNodes, groupLabelPosition);
         if (!r) {
           return false;
         }

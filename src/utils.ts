@@ -191,7 +191,8 @@ export interface ISpanLogicResult {
 export function spanLogic(
   node: ILabelNode,
   flat: ILabelNodes,
-  visibleNodes: Set<ILabelNode>
+  visibleNodes: Set<ILabelNode>,
+  groupLabelPosition: 'first' | 'center' | 'last' | 'between-first-and-second' = 'between-first-and-second'
 ): false | ISpanLogicResult {
   if (node.children.length === 0 || !node.expand) {
     return false;
@@ -220,8 +221,24 @@ export function spanLogic(
   const hasCollapseBox = leftFirstVisible && node.expand !== 'focus';
   const hasFocusBox = leftFirstVisible && rightLastVisible && node.children.length > 1;
   // the next visible after the left one
-  const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibleNodes.has(d));
-  const groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
+  // based on
+  let groupLabelCenter = 0;
+  switch (groupLabelPosition) {
+    case 'between-first-and-second':
+      const nextVisible = flat.slice(leftVisible.index + 1, rightVisible.index + 1).find((d) => visibleNodes.has(d));
+      groupLabelCenter = !nextVisible ? leftVisible.center : (leftVisible.center + nextVisible.center) / 2;
+      break;
+    case 'center':
+      groupLabelCenter = (leftVisible.center + rightVisible.center) / 2;
+      break;
+    case 'last':
+      groupLabelCenter = rightVisible.center;
+      break;
+    case 'first':
+    default:
+      groupLabelCenter = leftVisible.center;
+      break;
+  }
 
   return {
     hasCollapseBox,
