@@ -1,7 +1,7 @@
 import { registerScale, merge, CategoryScale, IMapping } from '../chart';
 import { parentsOf } from '../utils';
 import { registerHierarchicalPlugin } from '../plugin';
-import { ILabelNodes, IEnhancedChart, ILabelNode } from '../model';
+import { ILabelNodes, IEnhancedChart } from '../model';
 
 export interface IHierarchicalScaleOptions {
   /**
@@ -20,6 +20,11 @@ export interface IHierarchicalScaleOptions {
    */
   hierarchyLabelPosition: 'below' | 'above' | null;
 
+  /**
+   * whether interactive buttons should be shown or whether it should be static
+   * @default false
+   */
+  static: boolean;
   /**
    * size of the box to draw
    */
@@ -68,6 +73,8 @@ const defaultConfig: IMapping & IHierarchicalScaleOptions = {
   gridLines: {
     offsetGridLines: true,
   },
+
+  static: false,
 
   /**
    * reduce the space between items at level X by this factor
@@ -123,19 +130,24 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     super.determineDataLimits();
   }
 
-  buildTicks(): ILabelNode[] {
-    const hor = this.isHorizontal();
-    const total = hor ? this.width : this.height;
+  buildTicks() {
     const nodes = this._nodes.slice(this.min, this.max + 1);
-    const flat = (this.chart as IEnhancedChart).data.flatLabels!;
 
     this._numLabels = nodes.length;
     this._valueRange = Math.max(nodes.length, 1);
     this._startValue = this.min - 0.5;
-
     if (nodes.length === 0) {
       return [];
     }
+
+    return nodes.map((d) => ({ label: d.label, value: d.label })); // copy since mutated during auto skip
+  }
+
+  configure() {
+    super.configure();
+    const nodes = this._nodes.slice(this.min, this.max + 1);
+    const flat = (this.chart as IEnhancedChart).data.flatLabels!;
+    const total = this._length;
 
     // optimize such that the distance between two points on the same level is same
     // creating a grouping effect of nodes
@@ -180,11 +192,8 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
       node.center = offset;
       offset += next;
 
-      node.value = node.label;
       node.width = Math.min(next, previous) / 2;
     });
-
-    return nodes.map((d) => Object.assign({}, d)); // copy since mutated during auto skip
   }
 
   getPixelForDecimal(value: number) {
@@ -199,7 +208,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
 
   _centerBase(index: number) {
     const centerTick = this.options.offset;
-    const base = this.isHorizontal() ? this.left : this.top;
+    const base = this._startPixel;
     const node = this._nodes[index];
 
     if (node == null) {

@@ -60,8 +60,11 @@ export declare class ScaleType<T> {
   height: number;
   min: number;
   max: number;
+  _startPixel: number;
+  _length: number;
 
-  buildTicks(): { label: string }[];
+  buildTicks(): { label: string; value: string }[];
+  configure(): void;
 
   options: T;
 

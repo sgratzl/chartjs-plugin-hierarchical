@@ -335,10 +335,53 @@ export function registerHierarchicalPlugin() {
       const boxSpanColor = scale.options.hierarchySpanColor;
       const boxSpanWidth = scale.options.hierarchySpanWidth;
       const renderLabel = scale.options.hierarchyLabelPosition;
+      const isStatic = scale.options.static;
 
       const scaleLabel = scale.options.scaleLabel!;
       const scaleLabelFontColor = valueOrDefault(scaleLabel.fontColor, defaults.fontColor);
       const scaleLabelFont = _parseFont(scaleLabel);
+
+      function renderButton(type: 'expand' | 'collapse' | 'focus', vert: boolean, x: number, y: number) {
+        if (isStatic) {
+          if (type === 'expand') {
+            return;
+          }
+          ctx.save();
+          ctx.strokeStyle = boxSpanColor;
+          ctx.lineWidth = boxSpanWidth;
+          ctx.beginPath();
+          if (vert) {
+            ctx.moveTo(x - boxSize01, y);
+            ctx.lineTo(x - boxSize05, y);
+          } else {
+            ctx.moveTo(x, y + boxSize01);
+            ctx.lineTo(x, y + boxSize05);
+            ctx.lineTo(x + (type === 'collapse' ? boxSize05 : -boxSize05), y + boxSize05);
+          }
+          ctx.stroke();
+          ctx.restore();
+          return;
+        }
+        const x0 = x - (vert ? boxSize : boxSize05);
+        const y0 = y - (vert ? boxSize05 : 0);
+
+        ctx.strokeRect(x0, y0, boxSize, boxSize);
+
+        switch (type) {
+          case 'expand':
+            // +
+            ctx.fillRect(x0 + 2, y0 + boxSize05 - 1, boxSize - 4, 2);
+            ctx.fillRect(x0 + boxSize05 - 1, y0 + 2, 2, boxSize - 4);
+            break;
+          case 'collapse':
+            // -
+            ctx.fillRect(x0 + 2, y0 + boxSize05 - 1, boxSize - 4, 2);
+            break;
+          case 'focus':
+            // .
+            ctx.fillRect(x0 + boxSize05 - 2, y0 + boxSize05 - 2, 4, 4);
+        }
+      }
 
       ctx.save();
       ctx.strokeStyle = boxColor;
@@ -354,10 +397,7 @@ export function registerHierarchicalPlugin() {
 
         if (!node.expand) {
           if (visibleNodes.has(node)) {
-            // expand button
-            ctx.strokeRect(node.center - boxSize05, offset + 0, boxSize, boxSize);
-            ctx.fillRect(node.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
-            ctx.fillRect(node.center - 1, offset + 2, 2, boxSize - 4);
+            renderButton('expand', false, node.center, offset);
           }
           return false;
         }
@@ -381,17 +421,11 @@ export function registerHierarchicalPlugin() {
         } else if (renderLabel === 'above') {
           ctx.fillText(node.label, groupLabelCenter, offset - boxSize);
         }
-
         if (hasCollapseBox) {
-          // collapse button
-          ctx.strokeRect(leftVisible.center - boxSize05, offset + 0, boxSize, boxSize);
-          ctx.fillRect(leftVisible.center - boxSize05 + 2, offset + boxSize05 - 1, boxSize - 4, 2);
+          renderButton('collapse', false, leftVisible.center, offset);
         }
-
         if (hasFocusBox) {
-          // focus button
-          ctx.strokeRect(rightVisible.center - boxSize05, offset + 0, boxSize, boxSize);
-          ctx.fillRect(rightVisible.center - 2, offset + boxSize05 - 2, 4, 4);
+          renderButton('focus', false, rightVisible.center, offset);
         }
 
         if (leftVisible !== rightVisible) {
@@ -435,9 +469,7 @@ export function registerHierarchicalPlugin() {
 
         if (!node.expand) {
           if (visibleNodes.has(node)) {
-            ctx.strokeRect(offset - boxSize, node.center - boxSize05, boxSize, boxSize);
-            ctx.fillRect(offset - boxSize + 2, node.center - 1, boxSize - 4, 2);
-            ctx.fillRect(offset - boxSize05 - 1, node.center - boxSize05 + 2, 2, boxSize - 4);
+            renderButton('expand', true, offset, node.center);
           }
           return false;
         }
@@ -459,15 +491,10 @@ export function registerHierarchicalPlugin() {
         ctx.fillText(node.label, offset - boxSize, groupLabelCenter);
 
         if (hasCollapseBox) {
-          // collapse button
-          ctx.strokeRect(offset - boxSize, leftVisible.center - boxSize05, boxSize, boxSize);
-          ctx.fillRect(offset - boxSize + 2, leftVisible.center - 1, boxSize - 4, 2);
+          renderButton('collapse', true, offset, leftVisible.center);
         }
-
         if (hasFocusBox) {
-          // focus
-          ctx.strokeRect(offset - boxSize, rightVisible.center - boxSize05, boxSize, boxSize);
-          ctx.fillRect(offset - boxSize05 - 2, rightVisible.center - 2, 4, 4);
+          renderButton('focus', true, offset, rightVisible.center);
         }
 
         if (leftVisible !== rightVisible) {
