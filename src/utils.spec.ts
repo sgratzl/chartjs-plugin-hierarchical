@@ -8,9 +8,15 @@ import {
   flatChildren,
   determineVisible,
   ISpanLogicResult,
-} from '../src/utils';
+} from './utils';
+// import 'jest';
+import { ILabelNode, IRawLabelNode } from './model';
 
-function nodeTest(n, label, options = {}) {
+function nodeTest(
+  n: ILabelNode,
+  label: string,
+  options: { childCount?: number; level?: number; hidden?: boolean } = {}
+) {
   const { childCount, level, hidden } = Object.assign(
     {
       childCount: 0,
@@ -30,14 +36,14 @@ function nodeTest(n, label, options = {}) {
   expect(n.major).toBe(level === 0);
 }
 
-function treeNodeTest(n, parent, relIndex, index) {
+function treeNodeTest(n: ILabelNode, parent: number, relIndex: number, index: number) {
   expect(n.relIndex).toBe(relIndex);
   expect(n.parent).toBe(parent);
   expect(n.index).toBe(index);
   expect(n.index).toBe(index);
 }
 
-function setupNodes(def) {
+function setupNodes(def: ReadonlyArray<string | IRawLabelNode>) {
   const flat = toNodes(def);
   const root = flat.filter((d) => d.parent === -1);
   const visible = new Set(determineVisible(flat));

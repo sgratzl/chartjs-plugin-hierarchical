@@ -127,6 +127,7 @@ HierarchicalScale.register();
 ```sh
 npm i -g yarn
 yarn set version 2
+cat .yarnrc_patch.yml >> .yarnrc.yml
 yarn
 yarn pnpify --sdk
 ```

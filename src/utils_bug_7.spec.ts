@@ -1,7 +1,8 @@
-import { toNodes, parentsOf, lastOfLevel, countExpanded } from '../src/utils';
+import { toNodes, parentsOf, lastOfLevel, countExpanded } from './utils';
+import { ILabelNodes, ILabelNode } from './model';
 
 describe('bug_#7', () => {
-  let nodes;
+  let nodes: ILabelNodes;
   test('setup', () => {
     nodes = toNodes([
       {
@@ -27,7 +28,8 @@ describe('bug_#7', () => {
   });
 
   test('parents', () => {
-    const parents = (node, ...arr) => expect(parentsOf(node, nodes).map((d) => d.label)).toEqual(arr);
+    const parents = (node: ILabelNode, ...arr: string[]) =>
+      expect(parentsOf(node, nodes).map((d) => d.label)).toEqual(arr);
     parents(nodes[0], '0');
     parents(nodes[1], '0', '00');
     parents(nodes[2], '0', '00', '000');
@@ -35,7 +37,7 @@ describe('bug_#7', () => {
   });
 
   test('lastOfLevel', () => {
-    const last = (node, label) => expect(lastOfLevel(node, nodes).label).toEqual(label);
+    const last = (node: ILabelNode, label: string) => expect(lastOfLevel(node, nodes).label).toEqual(label);
 
     last(nodes[0], '1');
     last(nodes[1], '01');
@@ -43,7 +45,7 @@ describe('bug_#7', () => {
   });
 
   test('countExpanded', () => {
-    const count = (node, c) => expect(countExpanded(node)).toBe(c);
+    const count = (node: ILabelNode, c: number) => expect(countExpanded(node)).toBe(c);
 
     count(nodes[0], 3);
     count(nodes[1], 2);

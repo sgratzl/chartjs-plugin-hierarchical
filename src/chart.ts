@@ -88,7 +88,6 @@ export interface CategoryScaleTypeConstructor {
 // export const Scale = ChartNS.Scale;
 // export const LinearScale = ChartNS.scaleService.getScaleConstructor('linear');
 // export const LogarithmicScale = ChartNS.scaleService.getScaleConstructor('logarithmic');
-/** @internal */
 export const CategoryScale = ChartNS.scaleService.getScaleConstructor('category') as CategoryScaleTypeConstructor;
 
 // export const DatasetController = ChartNS.DatasetController;
