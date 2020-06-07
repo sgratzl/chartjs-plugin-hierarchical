@@ -47,6 +47,18 @@ interface IHierarchicalScaleOptions {
   hierarchyLabelPosition: 'below' | 'above' | null;
 
   /**
+   * position of the hierarchy group label relative to the its children
+   * @default between-first-and-second
+   */
+  hierarchyGroupLabelPosition: 'center' | 'first' | 'last' | 'between-first-and-second';
+
+  /**
+   * whether interactive buttons should be shown or whether it should be static
+   * @default false
+   */
+  static: boolean;
+
+  /**
    * object of attributes that should be managed and extracted from the tree
    * data structures such as `backgroundColor` for coloring individual bars
    * the object contains the key and default value
@@ -115,15 +127,22 @@ HierarchicalScale.register();
 ```sh
 npm i -g yarn
 yarn set version 2
+cat .yarnrc_patch.yml >> .yarnrc.yml
 yarn
 yarn pnpify --sdk
 ```
 
-### Building
+### Common commands
 
 ```sh
-yarn install
+yarn compile
+yarn test
+yarn lint
+yarn fix
 yarn build
+yarn docs
+yarn release
+yarn release:pre
 ```
 
 ---

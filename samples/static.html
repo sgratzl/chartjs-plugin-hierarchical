@@ -3,7 +3,6 @@
   <head>
     <title>Hierarchical Bar Chart</title>
     <script src="https://unpkg.com/chart.js@3.0.0-alpha/dist/Chart.js"></script>
-    <script src="https://unpkg.com/d3"></script>
     <script src="../dist/charthierarchical.umd.development.js"></script>
     <style>
       canvas {
@@ -25,7 +24,7 @@
           'A',
           {
             label: 'B1',
-            expand: false, // 'focus', // expand level
+            expand: true, // 'focus', // expand level
             children: [
               'B1.1',
               {
@@ -67,9 +66,6 @@
           },
         ],
       };
-
-      const scale = d3.scaleSequential(d3.interpolateBlues).domain([0, 11]);
-
       window.onload = () => {
         const ctx = document.getElementById('canvas').getContext('2d');
         window.myBar = new Chart(ctx, {
@@ -90,13 +86,8 @@
             scales: {
               x: {
                 type: 'hierarchical',
-
-                attributes: {
-                  backgroundColor: (ctx) => {
-                    const v = ctx.dataset.data[ctx.dataIndex];
-                    return scale(v);
-                  },
-                },
+                static: true,
+                hierarchyGroupLabelPosition: 'center',
               },
             },
           },

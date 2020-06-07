@@ -1,12 +1,30 @@
+import {
+  asNode,
+  toNodes,
+  parentsOf,
+  lastOfLevel,
+  countExpanded,
+  spanLogic,
+  flatChildren,
+  determineVisible,
+  ISpanLogicResult,
+} from './utils';
+// import 'jest';
+import { ILabelNode, IRawLabelNode } from './model';
 
-import {asNode, toNodes, parentsOf, lastOfLevel, countExpanded, spanLogic, flatChildren, determineVisible} from '../src/utils';
-
-function nodeTest(n, label, options = {}) {
-  const {childCount, level, hidden} = Object.assign({
-    childCount: 0,
-    level: 0,
-    hidden: false
-  }, options)
+function nodeTest(
+  n: ILabelNode,
+  label: string,
+  options: { childCount?: number; level?: number; hidden?: boolean } = {}
+) {
+  const { childCount, level, hidden } = Object.assign(
+    {
+      childCount: 0,
+      level: 0,
+      hidden: false,
+    },
+    options
+  );
   expect(n).toBeDefined();
   expect(n.label).toBe(label);
   expect(n.children.length).toBe(childCount);
@@ -18,18 +36,18 @@ function nodeTest(n, label, options = {}) {
   expect(n.major).toBe(level === 0);
 }
 
-function treeNodeTest(n, parent, relIndex, index) {
+function treeNodeTest(n: ILabelNode, parent: number, relIndex: number, index: number) {
   expect(n.relIndex).toBe(relIndex);
   expect(n.parent).toBe(parent);
   expect(n.index).toBe(index);
   expect(n.index).toBe(index);
 }
 
-function setupNodes(def) {
+function setupNodes(def: ReadonlyArray<string | IRawLabelNode>) {
   const flat = toNodes(def);
   const root = flat.filter((d) => d.parent === -1);
   const visible = new Set(determineVisible(flat));
-  return {flat, root, visible};
+  return { flat, root, visible };
 }
 
 describe('asNode', () => {
@@ -40,36 +58,38 @@ describe('asNode', () => {
 
   test('object', () => {
     const n = asNode({
-      label: 'test2'
+      label: 'test2',
     });
     nodeTest(n, 'test2');
-  })
+  });
 
   test('object with children', () => {
     const n = asNode({
       label: 'test3',
-      children: ['abc', 'def']
+      children: ['abc', 'def'],
     });
-    nodeTest(n, 'test3', {childCount: 2});
-    nodeTest(n.children[0], 'abc', {level: 1});
-    nodeTest(n.children[1], 'def', {level: 1});
-  })
+    nodeTest(n, 'test3', { childCount: 2 });
+    nodeTest(n.children[0], 'abc', { level: 1 });
+    nodeTest(n.children[1], 'def', { level: 1 });
+  });
 
   test('object with children complex', () => {
     const n = asNode({
       label: 'test3',
-      children: [{
-        label: 'test4',
-        children: ['abc']
-      }, 'def']
+      children: [
+        {
+          label: 'test4',
+          children: ['abc'],
+        },
+        'def',
+      ],
     });
-    nodeTest(n, 'test3', {childCount: 2});
-    nodeTest(n.children[0], 'test4', {childCount: 1, level: 1});
-    nodeTest(n.children[0].children[0], 'abc', {level: 2});
-    nodeTest(n.children[1], 'def', {level: 1});
-  })
+    nodeTest(n, 'test3', { childCount: 2 });
+    nodeTest(n.children[0], 'test4', { childCount: 1, level: 1 });
+    nodeTest(n.children[0].children[0], 'abc', { level: 2 });
+    nodeTest(n.children[1], 'def', { level: 1 });
+  });
 });
-
 
 describe('toNodes', () => {
   test('simple', () => {
@@ -86,11 +106,11 @@ describe('toNodes', () => {
   test('hierarchy', () => {
     const nodes = toNodes([{ label: 'a', children: ['aa', 'ab'] }, 'b']);
     expect(nodes.length).toBe(4);
-    nodeTest(nodes[0], 'a', {childCount: 2});
+    nodeTest(nodes[0], 'a', { childCount: 2 });
     treeNodeTest(nodes[0], -1, 0, 0);
-    nodeTest(nodes[1], 'aa', {level: 1, hidden: true});
+    nodeTest(nodes[1], 'aa', { level: 1, hidden: true });
     treeNodeTest(nodes[1], 0, 0, 1);
-    nodeTest(nodes[2], 'ab', {level: 1, hidden: true});
+    nodeTest(nodes[2], 'ab', { level: 1, hidden: true });
     treeNodeTest(nodes[2], 0, 1, 2);
     nodeTest(nodes[3], 'b');
     treeNodeTest(nodes[3], -1, 1, 3);
@@ -110,7 +130,6 @@ describe('parentsOf', () => {
   });
 });
 
-
 describe('lastOfLevel', () => {
   test('simple', () => {
     const nodes = toNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
@@ -122,7 +141,7 @@ describe('lastOfLevel', () => {
 
 describe('flatChildren', () => {
   test('a(aa)', () => {
-    const {flat, root} = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
+    const { flat, root } = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
 
     const a = root[0];
     const children = flatChildren(a, flat);
@@ -130,7 +149,7 @@ describe('flatChildren', () => {
   });
 
   test('b', () => {
-    const {flat, root} = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
+    const { flat, root } = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
 
     const b = root[1];
     const children = flatChildren(b, flat);
@@ -138,16 +157,19 @@ describe('flatChildren', () => {
   });
 
   test('c', () => {
-    const {flat, root} = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
+    const { flat, root } = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
 
     const c = root[2];
     const children = flatChildren(c, flat);
     expect(children).toEqual([]);
   });
 
-
   test('a nested', () => {
-    const {flat, root} = setupNodes([{ label: 'a', children: ['aa', { label: 'ab', children: ['aba', 'abb']}] }, 'b', 'c']);
+    const { flat, root } = setupNodes([
+      { label: 'a', children: ['aa', { label: 'ab', children: ['aba', 'abb'] }] },
+      'b',
+      'c',
+    ]);
 
     const a = root[0];
     const children = flatChildren(a, flat);
@@ -155,7 +177,11 @@ describe('flatChildren', () => {
   });
 
   test('ab nested', () => {
-    const {flat, root} = setupNodes([{ label: 'a', children: ['aa', { label: 'ab', children: ['aba', 'abb']}] }, 'b', 'c']);
+    const { flat, root } = setupNodes([
+      { label: 'a', children: ['aa', { label: 'ab', children: ['aba', 'abb'] }] },
+      'b',
+      'c',
+    ]);
 
     const ab = root[0].children[1];
     const children = flatChildren(ab, flat);
@@ -179,20 +205,21 @@ describe('countExpanded', () => {
   });
 
   test('simple3', () => {
-    const nodes = toNodes([{ label: 'a', children: ['aa', { expand: true, label: 'bb', children: ['bba', 'bbb']}], expand: true }, 'b', 'c']);
+    const nodes = toNodes([
+      { label: 'a', children: ['aa', { expand: true, label: 'bb', children: ['bba', 'bbb'] }], expand: true },
+      'b',
+      'c',
+    ]);
 
     const count = countExpanded(nodes[0]);
     expect(count).toBe(3);
   });
 });
 
-
 describe('spanLogic', () => {
-
-
   test('root level visible a', () => {
     // a b c
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa']}, 'b', 'c']);
+    const { flat, root, visible } = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
 
     const a = root[0];
 
@@ -202,7 +229,7 @@ describe('spanLogic', () => {
 
   test('root level visible b', () => {
     // a b c
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa']}, 'b', 'c']);
+    const { flat, root, visible } = setupNodes([{ label: 'a', children: ['aa'] }, 'b', 'c']);
 
     const b = root[1];
 
@@ -212,15 +239,24 @@ describe('spanLogic', () => {
 
   test('root level visible a (aa) expanded', () => {
     // aa b c
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa'], expand: true}, 'b', 'c']);
+    const { flat, root, visible } = setupNodes([{ label: 'a', children: ['aa'], expand: true }, 'b', 'c']);
 
     const a = root[0];
     const aa = a.children[0];
 
-    const r = spanLogic(a, flat, visible);
+    const r = spanLogic(a, flat, visible) as ISpanLogicResult;
     expect(r).not.toBe(false);
+    console.assert(typeof r !== 'boolean');
 
-    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    const {
+      hasCollapseBox,
+      hasFocusBox,
+      leftVisible,
+      rightVisible,
+      groupLabelCenter,
+      leftFirstVisible,
+      rightLastVisible,
+    } = r;
     expect(leftVisible).toBe(aa);
     expect(rightVisible).toBe(aa);
 
@@ -234,16 +270,24 @@ describe('spanLogic', () => {
 
   test('root level visible a (aa,ab) expanded', () => {
     // aa ab b c
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab'], expand: true}, 'b', 'c']);
+    const { flat, root, visible } = setupNodes([{ label: 'a', children: ['aa', 'ab'], expand: true }, 'b', 'c']);
 
     const a = root[0];
     const aa = a.children[0];
     const ab = a.children[1];
 
-    const r = spanLogic(a, flat, visible);
+    const r = spanLogic(a, flat, visible) as ISpanLogicResult;
     expect(r).not.toBe(false);
 
-    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    const {
+      hasCollapseBox,
+      hasFocusBox,
+      leftVisible,
+      rightVisible,
+      groupLabelCenter,
+      leftFirstVisible,
+      rightLastVisible,
+    } = r;
     expect(leftVisible).toBe(aa);
     expect(rightVisible).toBe(ab);
 
@@ -256,17 +300,25 @@ describe('spanLogic', () => {
 
   test('root level visible a (aa,ab,ac) expanded', () => {
     // aa ab ac b c
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', 'ac'], expand: true}, 'b', 'c']);
+    const { flat, root, visible } = setupNodes([{ label: 'a', children: ['aa', 'ab', 'ac'], expand: true }, 'b', 'c']);
 
     const a = root[0];
     const aa = a.children[0];
     const ab = a.children[1];
     const ac = a.children[2];
 
-    const r = spanLogic(a, flat, visible);
+    const r = spanLogic(a, flat, visible) as ISpanLogicResult;
     expect(r).not.toBe(false);
 
-    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    const {
+      hasCollapseBox,
+      hasFocusBox,
+      leftVisible,
+      rightVisible,
+      groupLabelCenter,
+      leftFirstVisible,
+      rightLastVisible,
+    } = r;
     expect(leftVisible).toBe(aa);
     expect(rightVisible).toBe(ac);
 
@@ -279,17 +331,29 @@ describe('spanLogic', () => {
 
   test('root level visible a (aa,ab,ac) focus', () => {
     // aa ab ac
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', 'ac'], expand: 'focus'}, 'b', 'c']);
+    const { flat, root, visible } = setupNodes([
+      { label: 'a', children: ['aa', 'ab', 'ac'], expand: 'focus' },
+      'b',
+      'c',
+    ]);
 
     const a = root[0];
     const aa = a.children[0];
     const ab = a.children[1];
     const ac = a.children[2];
 
-    const r = spanLogic(a, flat, visible);
+    const r = spanLogic(a, flat, visible) as ISpanLogicResult;
     expect(r).not.toBe(false);
 
-    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    const {
+      hasCollapseBox,
+      hasFocusBox,
+      leftVisible,
+      rightVisible,
+      groupLabelCenter,
+      leftFirstVisible,
+      rightLastVisible,
+    } = r;
     expect(leftVisible).toBe(aa);
     expect(rightVisible).toBe(ac);
 
@@ -302,7 +366,11 @@ describe('spanLogic', () => {
 
   test('root level visible ac (aa,ab,(aca, acb)) focus', () => {
     // aca acb
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', {label: 'ac', children: ['aca', 'acb'], expand: 'focus'}], expand: true}, 'b', 'c']);
+    const { flat, root, visible } = setupNodes([
+      { label: 'a', children: ['aa', 'ab', { label: 'ac', children: ['aca', 'acb'], expand: 'focus' }], expand: true },
+      'b',
+      'c',
+    ]);
 
     const a = root[0];
     const aa = a.children[0];
@@ -311,10 +379,18 @@ describe('spanLogic', () => {
     const aca = ac.children[0];
     const acb = ac.children[1];
 
-    const r = spanLogic(a, flat, visible);
+    const r = spanLogic(a, flat, visible) as ISpanLogicResult;
     expect(r).not.toBe(false);
 
-    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    const {
+      hasCollapseBox,
+      hasFocusBox,
+      leftVisible,
+      rightVisible,
+      groupLabelCenter,
+      leftFirstVisible,
+      rightLastVisible,
+    } = r;
     expect(leftVisible).toBe(aca);
     expect(rightVisible).toBe(acb);
 
@@ -327,16 +403,28 @@ describe('spanLogic', () => {
 
   test('root level visible c (ca,cb) expand', () => {
     // aa ab ac b c
-    const {flat, root, visible} = setupNodes([{label: 'a', children: ['aa', 'ab', 'ac']}, 'b', {label: 'c', children: ['ca', 'cb'], expand: true}]);
+    const { flat, root, visible } = setupNodes([
+      { label: 'a', children: ['aa', 'ab', 'ac'] },
+      'b',
+      { label: 'c', children: ['ca', 'cb'], expand: true },
+    ]);
 
     const c = root[2];
     const ca = c.children[0];
     const cb = c.children[1];
 
-    const r = spanLogic(c, flat, visible);
+    const r = spanLogic(c, flat, visible) as ISpanLogicResult;
     expect(r).not.toBe(false);
 
-    const {hasCollapseBox, hasFocusBox, leftVisible, rightVisible, groupLabelCenter, leftFirstVisible, rightLastVisible} = r;
+    const {
+      hasCollapseBox,
+      hasFocusBox,
+      leftVisible,
+      rightVisible,
+      groupLabelCenter,
+      leftFirstVisible,
+      rightLastVisible,
+    } = r;
     expect(leftVisible).toBe(ca);
     expect(rightVisible).toBe(cb);
 

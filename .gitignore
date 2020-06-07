@@ -11,7 +11,9 @@ npm-debug.log*
 /.pnp.js
 
 # Build files
-/build
+/.tmp
+/dist
 
 *.tgz
-/.vscode
+/.vscode/pnpify
+/docs

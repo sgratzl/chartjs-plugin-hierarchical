@@ -1,8 +1,77 @@
-import { registerScale, merge, CategoryScale } from '../chart';
+import { registerScale, merge, CategoryScale, IMapping } from '../chart';
 import { parentsOf } from '../utils';
-import { HierarchicalPlugin } from '../plugin';
+import { registerHierarchicalPlugin } from '../plugin';
+import { ILabelNodes, IEnhancedChart } from '../model';
 
-const defaultConfig = {
+export interface IHierarchicalScaleOptions {
+  /**
+   * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
+   * @default 0.75
+   */
+  levelPercentage: number;
+  /**
+   * padding of the first collapse to the start of the x-axis
+   * @default 25
+   */
+  padding: number;
+  /**
+   * position of the hierarchy label in expanded levels, null to disable
+   * @default 'below'
+   */
+  hierarchyLabelPosition: 'below' | 'above' | null;
+
+  /**
+   * position of the hierarchy group label relative to the its children
+   * @default between-first-and-second
+   */
+  hierarchyGroupLabelPosition: 'center' | 'first' | 'last' | 'between-first-and-second';
+
+  /**
+   * whether interactive buttons should be shown or whether it should be static
+   * @default false
+   */
+  static: boolean;
+  /**
+   * size of the box to draw
+   */
+  hierarchyBoxSize: number;
+  /**
+   * distance between two hierarchy indicators
+   */
+  hierarchyBoxLineHeight: number;
+  /**
+   * color of the line indicator hierarchy children
+   */
+  hierarchySpanColor: string;
+  /**
+   * stroke width of the line
+   */
+  hierarchySpanWidth: number;
+  /**
+   * color of the box to toggle collapse/expand
+   */
+  hierarchyBoxColor: string;
+  /**
+   * stroke width of the toggle box
+   */
+  hierarchyBoxWidth: number;
+
+  /**
+   * object of attributes that should be managed and extracted from the tree
+   * data structures such as `backgroundColor` for coloring individual bars
+   * the object contains the key and default value
+   * @default {}
+   */
+  attributes: { [attribute: string]: any };
+
+  offset: true;
+
+  scaleLabel?: {
+    fontColor: string;
+  };
+}
+
+const defaultConfig: IMapping & IHierarchicalScaleOptions = {
   // offset settings, for centering the categorical axis in the bar chart case
   offset: true,
 
@@ -10,6 +79,8 @@ const defaultConfig = {
   gridLines: {
     offsetGridLines: true,
   },
+
+  static: false,
 
   /**
    * reduce the space between items at level X by this factor
@@ -24,7 +95,9 @@ const defaultConfig = {
    * position of the hierarchy label
    * possible values: 'below', 'above', null to disable
    */
-  hierarchyLabelPosition: 'below',
+  hierarchyLabelPosition: 'below' as 'below' | 'above' | null,
+
+  hierarchyGroupLabelPosition: 'between-first-and-second',
   /**
    * size of the box to draw
    */
@@ -53,7 +126,9 @@ const defaultConfig = {
   attributes: {},
 };
 
-export class HierarchicalScale extends CategoryScale {
+export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> {
+  private _nodes: ILabelNodes = [];
+
   determineDataLimits() {
     const labels = this.getLabels();
 
@@ -64,18 +139,23 @@ export class HierarchicalScale extends CategoryScale {
   }
 
   buildTicks() {
-    const hor = this.isHorizontal();
-    const total = hor ? this.width : this.height;
     const nodes = this._nodes.slice(this.min, this.max + 1);
-    const flat = this.chart.data.flatLabels;
 
     this._numLabels = nodes.length;
     this._valueRange = Math.max(nodes.length, 1);
     this._startValue = this.min - 0.5;
-
     if (nodes.length === 0) {
       return [];
     }
+
+    return nodes.map((d) => ({ label: d.label, value: d.label })); // copy since mutated during auto skip
+  }
+
+  configure() {
+    super.configure();
+    const nodes = this._nodes.slice(this.min, this.max + 1);
+    const flat = (this.chart as IEnhancedChart).data.flatLabels!;
+    const total = this._length;
 
     // optimize such that the distance between two points on the same level is same
     // creating a grouping effect of nodes
@@ -84,7 +164,7 @@ export class HierarchicalScale extends CategoryScale {
     // max 5 levels for now
     const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4)];
 
-    const distances = [];
+    const distances: number[] = [];
 
     let prev = nodes[0];
     let prevParents = parentsOf(prev, flat);
@@ -120,14 +200,11 @@ export class HierarchicalScale extends CategoryScale {
       node.center = offset;
       offset += next;
 
-      node.value = node.label;
       node.width = Math.min(next, previous) / 2;
     });
-
-    return nodes.map((d) => Object.assign({}, d)); // copy since mutated during auto skip
   }
 
-  getPixelForDecimal(value) {
+  getPixelForDecimal(value: number) {
     const index = Math.min(Math.floor(value * this._nodes.length), this._nodes.length - 1);
 
     if (index === 1 && this._nodes.length === 1) {
@@ -137,9 +214,9 @@ export class HierarchicalScale extends CategoryScale {
     return this._centerBase(index);
   }
 
-  _centerBase(index) {
+  _centerBase(index: number) {
     const centerTick = this.options.offset;
-    const base = this.isHorizontal() ? this.left : this.top;
+    const base = this._startPixel;
     const node = this._nodes[index];
 
     if (node == null) {
@@ -151,14 +228,16 @@ export class HierarchicalScale extends CategoryScale {
     return base + nodeCenter - (centerTick ? 0 : nodeWidth / 2);
   }
 
-  getValueForPixel(pixel) {
+  getValueForPixel(pixel: number) {
     return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
   }
-}
 
-HierarchicalScale.id = 'hierarchical';
-HierarchicalScale.defaults = merge({}, [CategoryScale.defaults, defaultConfig]);
-HierarchicalScale.register = () => {
-  HierarchicalPlugin.register();
-  return registerScale(HierarchicalScale);
-};
+  static id = 'hierarchical';
+
+  static defaults: IHierarchicalScaleOptions & IMapping = merge({}, [CategoryScale.defaults, defaultConfig]);
+
+  static register(): typeof HierarchicalScale {
+    registerHierarchicalPlugin();
+    return registerScale(HierarchicalScale);
+  }
+}
