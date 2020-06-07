@@ -132,11 +132,17 @@ yarn
 yarn pnpify --sdk
 ```
 
-### Building
+### Common commands
 
 ```sh
-yarn install
+yarn compile
+yarn test
+yarn lint
+yarn fix
 yarn build
+yarn docs
+yarn release
+yarn release:pre
 ```
 
 ---

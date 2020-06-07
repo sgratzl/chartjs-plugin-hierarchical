@@ -12,6 +12,11 @@
   "bugs": {
     "url": "https://github.com/sgratzl/chartjs-plugin-hierarchical/issues"
   },
+  "keywords": [
+    "chart.js",
+    "hierarchical",
+    "grouping"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/sgratzl/chartjs-plugin-hierarchical.git"
@@ -19,11 +24,17 @@
   "module": "dist/charthierarchical.esm.js",
   "main": "dist/charthierarchical.umd.development.js",
   "unpkg": "dist/charthierarchical.umd.production.min.js",
+  "jsdelivr": "dist/charthierarchical.umd.production.min.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "files": [
     "dist",
     "src/**/*.js"
+  ],
+  "browserslist": [
+    "Firefox ESR",
+    "last 2 Chrome versions",
+    "last 2 Firefox versions"
   ],
   "peerDependencies": {
     "chart.js": "^3.0.0-alpha"
@@ -59,7 +70,8 @@
   "scripts": {
     "clean": "rimraf dist .tmp node_modules",
     "compile": "tsc -p tsconfig.json --noEmit",
-    "start": "tsdx watch --noClean --name ChartHierarchical --format esm,umd",
+    "start": "npm run watch",
+    "watch": "tsdx watch --noClean --name ChartHierarchical --format esm,umd",
     "build": "npm run clean && tsdx build --name ChartHierarchical --format esm,umd && npm run typings",
     "typings": "tsc -p tsconfig.dts.json && rollup -c rollup.dts.config.js",
     "test": "tsdx test --passWithNoTests",
@@ -73,7 +85,7 @@
     "eslint": "tsdx lint src --ext .ts,.tsx",
     "eslint:fix": "npm run eslint -- --fix",
     "docs": "typedoc",
-    "prepare": "tsdx build",
+    "prepare": "npm run build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next"
   },

@@ -1,4 +1,7 @@
 import dts from 'rollup-plugin-dts';
+import fs from 'fs';
+
+const pkg = JSON.parse(fs.readFileSync('./package.json'));
 
 export default {
   input: './.tmp/index.d.ts',
@@ -6,7 +9,7 @@ export default {
     file: 'dist/index.d.ts',
     format: 'es',
   },
-  external: ['chart.js'],
+  external: Object.keys(pkg.dependencies || {}).concat(Object.keys(pkg.peerDependencies || {})),
   plugins: [
     dts({
       respectExternal: true,
