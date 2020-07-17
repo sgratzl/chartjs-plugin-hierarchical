@@ -126,10 +126,10 @@ HierarchicalScale.register();
 
 ```sh
 npm i -g yarn
-yarn set version 2
+yarn set version 2.1.0
 cat .yarnrc_patch.yml >> .yarnrc.yml
 yarn
-yarn pnpify --sdk
+yarn pnpify --sdk vscode
 ```
 
 ### Common commands
