@@ -1,9 +1,9 @@
-import { registerScale, merge, CategoryScale, IMapping } from '../chart';
+import { merge, CategoryScale, CategoryScaleOptions, registry } from '@sgratzl/chartjs-esm-facade';
 import { parentsOf } from '../utils';
-import { registerHierarchicalPlugin } from '../plugin';
 import { ILabelNodes, IEnhancedChart } from '../model';
+import { hierarchicalPlugin } from '../plugin';
 
-export interface IHierarchicalScaleOptions {
+export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   /**
    * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
    * @default 0.75
@@ -67,11 +67,13 @@ export interface IHierarchicalScaleOptions {
   offset: true;
 
   scaleLabel?: {
-    fontColor: string;
+    font?: {
+      color: string;
+    };
   };
 }
 
-const defaultConfig: IMapping & IHierarchicalScaleOptions = {
+const defaultConfig: IHierarchicalScaleOptions = {
   // offset settings, for centering the categorical axis in the bar chart case
   offset: true,
 
@@ -126,11 +128,18 @@ const defaultConfig: IMapping & IHierarchicalScaleOptions = {
   attributes: {},
 };
 
+export interface IInternalScale {
+  _valueRange: number;
+  _startValue: number;
+  _startPixel: number;
+  _length: number;
+}
+
 export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> {
   private _nodes: ILabelNodes = [];
 
   determineDataLimits() {
-    const labels = this.getLabels();
+    const labels = (this.getLabels() as unknown) as ILabelNodes;
 
     // labels are already prepared by the plugin just use them as ticks
     this._nodes = labels.slice();
@@ -141,21 +150,21 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   buildTicks() {
     const nodes = this._nodes.slice(this.min, this.max + 1);
 
-    this._numLabels = nodes.length;
-    this._valueRange = Math.max(nodes.length, 1);
-    this._startValue = this.min - 0.5;
+    const me = (this as unknown) as IInternalScale;
+    me._valueRange = Math.max(nodes.length, 1);
+    me._startValue = this.min - 0.5;
     if (nodes.length === 0) {
       return [];
     }
 
-    return nodes.map((d) => ({ label: d.label, value: d.label })); // copy since mutated during auto skip
+    return nodes.map((d, i) => ({ label: d.label, value: i })); // copy since mutated during auto skip
   }
 
   configure() {
     super.configure();
     const nodes = this._nodes.slice(this.min, this.max + 1);
     const flat = (this.chart as IEnhancedChart).data.flatLabels!;
-    const total = this._length;
+    const total = ((this as unknown) as IInternalScale)._length;
 
     // optimize such that the distance between two points on the same level is same
     // creating a grouping effect of nodes
@@ -216,7 +225,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
 
   _centerBase(index: number) {
     const centerTick = this.options.offset;
-    const base = this._startPixel;
+    const base = ((this as unknown) as IInternalScale)._startPixel;
     const node = this._nodes[index];
 
     if (node == null) {
@@ -234,10 +243,9 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
 
   static id = 'hierarchical';
 
-  static defaults: IHierarchicalScaleOptions & IMapping = merge({}, [CategoryScale.defaults, defaultConfig]);
+  static defaults: IHierarchicalScaleOptions = /*__PURE__*/ merge({}, [CategoryScale.defaults, defaultConfig]);
 
-  static register(): typeof HierarchicalScale {
-    registerHierarchicalPlugin();
-    return registerScale(HierarchicalScale);
+  static afterRegister() {
+    registry.addPlugins(hierarchicalPlugin);
   }
 }

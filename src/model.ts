@@ -1,4 +1,4 @@
-import { CoreChart, IChartDataSet, IChartData } from './chart';
+import { Chart, ChartDataSets, ChartData } from '@sgratzl/chartjs-esm-facade';
 
 export interface ILabelNode {
   label: string;
@@ -38,13 +38,14 @@ export function isValueNode(node: IValueNode | any): node is IValueNode {
   return node != null && Array.isArray(node.children);
 }
 
-export interface IEnhancedChartDataSet extends IChartDataSet {
+export interface IEnhancedChartDataSet extends ChartDataSets {
   tree: IValueNode[];
 }
 
-export interface IEnhancedChart extends CoreChart {
-  data: IChartData & {
+export interface IEnhancedChart extends Chart {
+  data: ChartData & {
     flatLabels?: ILabelNodes;
+    labels: ILabelNode[];
     _verify?: string;
     rootNodes?: ILabelNodes;
 

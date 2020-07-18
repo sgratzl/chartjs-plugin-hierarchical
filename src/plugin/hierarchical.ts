@@ -1,4 +1,4 @@
-import { CoreChart, defaults, registerPlugin, _parseFont, valueOrDefault } from '../chart';
+import { defaults, toFont, valueOrDefault, IPlugin, Chart } from '@sgratzl/chartjs-esm-facade';
 import {
   toNodes,
   countExpanded,
@@ -30,7 +30,7 @@ function generateCode(labels: ReadonlyArray<ILabelNode | string>) {
   return code;
 }
 
-function isValidScaleType(chart: CoreChart, scale: string) {
+function isValidScaleType(chart: Chart, scale: string) {
   if (!chart.config.options?.scales?.hasOwnProperty(scale)) {
     return false;
   }
@@ -40,14 +40,15 @@ function isValidScaleType(chart: CoreChart, scale: string) {
 /**
  * checks whether this plugin needs to be enabled based on whether one is a hierarchical axis
  */
-function enabled(chart: CoreChart) {
+function enabled(chart: Chart) {
   if (!chart.config.options?.hasOwnProperty('scales')) {
     return null;
   }
-  if (isValidScaleType(chart, 'x') && chart.config.options!.scales!.x.type === 'hierarchical') {
+  const scales = chart.config.options!.scales! as any;
+  if (isValidScaleType(chart, 'x') && scales.x.type === 'hierarchical') {
     return 'x';
   }
-  if (isValidScaleType(chart, 'y') && chart.config.options!.scales!.y.type === 'hierarchical') {
+  if (isValidScaleType(chart, 'y') && scales.y.type === 'hierarchical') {
     return 'y';
   }
   return null;
@@ -65,15 +66,15 @@ function check(chart: IEnhancedChart) {
   const flat = (chart.data.flatLabels = toNodes(chart.data.labels));
   chart.data.rootNodes = flat.filter((d) => d.parent === -1);
 
-  const labels = (chart.data.labels = determineVisible(flat));
+  const labels = determineVisible(flat);
 
-  chart.data.labels = labels;
+  (chart.data.labels as any) = labels;
   updateVerifyCode(chart);
 
   // convert the data tree to the flat visible counterpart
   chart.data.datasets.forEach((dataset: IEnhancedChartDataSet) => {
     if (dataset.tree == null) {
-      dataset.tree = dataset.data.slice();
+      dataset.tree = (dataset.data as any[]).slice();
     }
     dataset.data = labels.map((l) => resolve(l, flat, dataset.tree));
   });
@@ -99,15 +100,15 @@ function updateAttributes(chart: IEnhancedChart) {
   }
   const attributes = scale.options.attributes;
 
-  const nodes = chart.data.labels;
+  const nodes = chart.data.labels as ILabelNodes;
   const flat = chart.data.flatLabels!;
 
   Object.keys(attributes).forEach((attr) => {
     chart.data.datasets.forEach((d) => {
-      const v = nodes.map((n) => {
+      const v = nodes.map((n: ILabelNode | null) => {
         while (n) {
           if (n.hasOwnProperty(attr)) {
-            return n[attr];
+            return (n as any)[attr];
           }
           // walk up the hierarchy
           n = n.parent >= 0 ? flat[n.parent] : null;
@@ -116,12 +117,12 @@ function updateAttributes(chart: IEnhancedChart) {
       });
 
       // check if all values are the same, if so replace with a single value
-      d[attr] = v.length >= 1 && v.every((vi) => vi === v[0]) ? v[0] : v;
+      (d as any)[attr] = v.length >= 1 && v.every((vi) => vi === v[0]) ? v[0] : v;
     });
   });
 }
 
-function findScale(chart: CoreChart) {
+function findScale(chart: Chart) {
   const scales = Object.keys(chart.scales).map((d) => chart.scales[d]);
   return scales.find((d) => d.type === 'hierarchical') as HierarchicalScale | undefined;
 }
@@ -151,7 +152,7 @@ function expandCollapse(chart: IEnhancedChart, index: number, count: number, toA
 
   data.forEach((dataset) => {
     const toAddData = toAdd.map((d) => resolve(d, flatLabels, dataset.tree));
-    dataset.data.splice(index, count, ...toAddData);
+    dataset.data!.splice(index, count, ...toAddData);
   });
 }
 
@@ -196,15 +197,15 @@ function zoomIn(chart: IEnhancedChart, lastIndex: number, parent: ILabelNode, fl
 
   const data = chart.data.datasets;
   data.forEach((dataset) => {
-    dataset.data.splice(lastIndex + 1, dataset.data.length);
-    dataset.data.splice(0, index);
+    dataset.data!.splice(lastIndex + 1, dataset.data!.length);
+    dataset.data!.splice(0, index);
   });
 
   postDataUpdate(chart);
 }
 
 function zoomOut(chart: IEnhancedChart, parent: ILabelNode) {
-  const labels = chart.data.labels;
+  const labels = chart.data.labels as ILabelNode[];
   const flatLabels = chart.data.flatLabels!;
 
   parent.expand = true;
@@ -222,8 +223,8 @@ function zoomOut(chart: IEnhancedChart, parent: ILabelNode) {
     const toAddBefore = nextLabels.slice(0, index).map((d) => resolve(d, flatLabels, dataset.tree));
     const toAddAfter = nextLabels.slice(index + count).map((d) => resolve(d, flatLabels, dataset.tree));
 
-    dataset.data.splice(dataset.data.length, 0, ...toAddAfter);
-    dataset.data.splice(0, 0, ...toAddBefore);
+    dataset.data!.splice(dataset.data!.length, 0, ...toAddAfter);
+    dataset.data!.splice(0, 0, ...toAddBefore);
   });
 
   postDataUpdate(chart);
@@ -243,7 +244,7 @@ function resolveElement(event: { x: number; y: number }, scale: HierarchicalScal
 }
 
 function handleClickEvents(
-  chart: CoreChart,
+  chart: Chart,
   _event: unknown,
   elem: { offset: number; index: number },
   offsetDelta: number,
@@ -254,7 +255,7 @@ function handleClickEvents(
 
   const index = elem.index;
   const flat = cc.data.flatLabels!;
-  const label = cc.data.labels[index];
+  const label = (cc.data.labels![index] as unknown) as ILabelNode;
   if (!label) {
     return;
   }
@@ -299,278 +300,276 @@ function handleClickEvents(
   }
 }
 
-export function registerHierarchicalPlugin() {
-  registerPlugin({
-    id: 'hierarchical',
+export const hierarchicalPlugin: IPlugin = {
+  id: 'hierarchical',
 
-    beforeUpdate(chart: CoreChart) {
-      if (!enabled(chart)) {
-        return;
-      }
-      check(chart as IEnhancedChart);
-    },
+  beforeUpdate(chart: Chart) {
+    if (!enabled(chart)) {
+      return;
+    }
+    check((chart as unknown) as IEnhancedChart);
+  },
 
-    /**
-     * draw the hierarchy indicators
-     */
-    beforeDatasetsDraw(chart: CoreChart) {
-      if (!enabled(chart)) {
-        return;
-      }
-      const cc = chart as IEnhancedChart;
-      const scale = findScale(chart)!;
-      const flat = cc.data.flatLabels!;
-      const visible = chart.data.labels as ILabelNodes;
-      const roots = cc.data.rootNodes!;
-      const visibleNodes = new Set(visible);
-      const ctx = chart.ctx!;
-      const hor = scale.isHorizontal();
+  /**
+   * draw the hierarchy indicators
+   */
+  beforeDatasetsDraw(chart: Chart) {
+    if (!enabled(chart)) {
+      return;
+    }
+    const cc = (chart as unknown) as IEnhancedChart;
+    const scale = findScale(chart)!;
+    const flat = cc.data.flatLabels!;
+    const visible = (chart.data.labels as unknown) as ILabelNodes;
+    const roots = cc.data.rootNodes!;
+    const visibleNodes = new Set(visible);
+    const ctx = chart.ctx!;
+    const hor = scale.isHorizontal();
 
-      const boxSize = scale.options.hierarchyBoxSize;
-      const boxSize05 = boxSize * 0.5;
-      const boxSize01 = boxSize * 0.1;
-      const boxRow = scale.options.hierarchyBoxLineHeight;
-      const boxColor = scale.options.hierarchyBoxColor;
-      const boxWidth = scale.options.hierarchyBoxWidth;
-      const boxSpanColor = scale.options.hierarchySpanColor;
-      const boxSpanWidth = scale.options.hierarchySpanWidth;
-      const renderLabel = scale.options.hierarchyLabelPosition;
-      const groupLabelPosition = scale.options.hierarchyGroupLabelPosition;
-      const isStatic = scale.options.static;
+    const boxSize = scale.options.hierarchyBoxSize;
+    const boxSize05 = boxSize * 0.5;
+    const boxSize01 = boxSize * 0.1;
+    const boxRow = scale.options.hierarchyBoxLineHeight;
+    const boxColor = scale.options.hierarchyBoxColor;
+    const boxWidth = scale.options.hierarchyBoxWidth;
+    const boxSpanColor = scale.options.hierarchySpanColor;
+    const boxSpanWidth = scale.options.hierarchySpanWidth;
+    const renderLabel = scale.options.hierarchyLabelPosition;
+    const groupLabelPosition = scale.options.hierarchyGroupLabelPosition;
+    const isStatic = scale.options.static;
 
-      const scaleLabel = scale.options.scaleLabel!;
-      const scaleLabelFontColor = valueOrDefault(scaleLabel.fontColor, defaults.fontColor);
-      const scaleLabelFont = _parseFont(scaleLabel);
+    const scaleLabel = scale.options.scaleLabel!;
+    const scaleLabelFontColor = valueOrDefault(scaleLabel.font?.color, defaults.font.color);
+    const scaleLabelFont = toFont(scaleLabel);
 
-      function renderButton(type: 'expand' | 'collapse' | 'focus', vert: boolean, x: number, y: number) {
-        if (isStatic) {
-          if (type === 'expand') {
-            return;
-          }
-          ctx.save();
-          ctx.strokeStyle = boxSpanColor;
-          ctx.lineWidth = boxSpanWidth;
-          ctx.beginPath();
-          if (vert) {
-            ctx.moveTo(x - boxSize01, y);
-            ctx.lineTo(x - boxSize05, y);
-          } else {
-            ctx.moveTo(x, y + boxSize01);
-            ctx.lineTo(x, y + boxSize05);
-            ctx.lineTo(x + (type === 'collapse' ? boxSize05 : -boxSize05), y + boxSize05);
-          }
-          ctx.stroke();
-          ctx.restore();
+    function renderButton(type: 'expand' | 'collapse' | 'focus', vert: boolean, x: number, y: number) {
+      if (isStatic) {
+        if (type === 'expand') {
           return;
         }
-        const x0 = x - (vert ? boxSize : boxSize05);
-        const y0 = y - (vert ? boxSize05 : 0);
-
-        ctx.strokeRect(x0, y0, boxSize, boxSize);
-
-        switch (type) {
-          case 'expand':
-            // +
-            ctx.fillRect(x0 + 2, y0 + boxSize05 - 1, boxSize - 4, 2);
-            ctx.fillRect(x0 + boxSize05 - 1, y0 + 2, 2, boxSize - 4);
-            break;
-          case 'collapse':
-            // -
-            ctx.fillRect(x0 + 2, y0 + boxSize05 - 1, boxSize - 4, 2);
-            break;
-          case 'focus':
-            // .
-            ctx.fillRect(x0 + boxSize05 - 2, y0 + boxSize05 - 2, 4, 4);
+        ctx.save();
+        ctx.strokeStyle = boxSpanColor;
+        ctx.lineWidth = boxSpanWidth;
+        ctx.beginPath();
+        if (vert) {
+          ctx.moveTo(x - boxSize01, y);
+          ctx.lineTo(x - boxSize05, y);
+        } else {
+          ctx.moveTo(x, y + boxSize01);
+          ctx.lineTo(x, y + boxSize05);
+          ctx.lineTo(x + (type === 'collapse' ? boxSize05 : -boxSize05), y + boxSize05);
         }
+        ctx.stroke();
+        ctx.restore();
+        return;
+      }
+      const x0 = x - (vert ? boxSize : boxSize05);
+      const y0 = y - (vert ? boxSize05 : 0);
+
+      ctx.strokeRect(x0, y0, boxSize, boxSize);
+
+      switch (type) {
+        case 'expand':
+          // +
+          ctx.fillRect(x0 + 2, y0 + boxSize05 - 1, boxSize - 4, 2);
+          ctx.fillRect(x0 + boxSize05 - 1, y0 + 2, 2, boxSize - 4);
+          break;
+        case 'collapse':
+          // -
+          ctx.fillRect(x0 + 2, y0 + boxSize05 - 1, boxSize - 4, 2);
+          break;
+        case 'focus':
+          // .
+          ctx.fillRect(x0 + boxSize05 - 2, y0 + boxSize05 - 2, 4, 4);
+      }
+    }
+
+    ctx.save();
+    ctx.strokeStyle = boxColor;
+    ctx.lineWidth = boxWidth;
+    ctx.fillStyle = scaleLabelFontColor; // render in correct color
+    ctx.font = scaleLabelFont.string;
+
+    const renderHorLevel = (node: ILabelNode) => {
+      if (node.children.length === 0) {
+        return false;
+      }
+      const offset = node.level * boxRow;
+
+      if (!node.expand) {
+        if (visibleNodes.has(node)) {
+          renderButton('expand', false, node.center, offset);
+        }
+        return false;
+      }
+      const r = spanLogic(node, flat, visibleNodes, groupLabelPosition);
+      if (!r) {
+        return false;
+      }
+      const {
+        hasFocusBox,
+        hasCollapseBox,
+        leftVisible,
+        rightVisible,
+        leftFirstVisible,
+        rightLastVisible,
+        groupLabelCenter,
+      } = r;
+
+      // render group label
+      if (renderLabel === 'below') {
+        ctx.fillText(node.label, groupLabelCenter, offset + boxSize);
+      } else if (renderLabel === 'above') {
+        ctx.fillText(node.label, groupLabelCenter, offset - boxSize);
+      }
+      if (hasCollapseBox) {
+        renderButton('collapse', false, leftVisible.center, offset);
+      }
+      if (hasFocusBox) {
+        renderButton('focus', false, rightVisible.center, offset);
       }
 
-      ctx.save();
-      ctx.strokeStyle = boxColor;
-      ctx.lineWidth = boxWidth;
-      ctx.fillStyle = scaleLabelFontColor; // render in correct color
-      ctx.font = scaleLabelFont.string;
-
-      const renderHorLevel = (node: ILabelNode) => {
-        if (node.children.length === 0) {
-          return false;
-        }
-        const offset = node.level * boxRow;
-
-        if (!node.expand) {
-          if (visibleNodes.has(node)) {
-            renderButton('expand', false, node.center, offset);
-          }
-          return false;
-        }
-        const r = spanLogic(node, flat, visibleNodes, groupLabelPosition);
-        if (!r) {
-          return false;
-        }
-        const {
-          hasFocusBox,
-          hasCollapseBox,
-          leftVisible,
-          rightVisible,
-          leftFirstVisible,
-          rightLastVisible,
-          groupLabelCenter,
-        } = r;
-
-        // render group label
-        if (renderLabel === 'below') {
-          ctx.fillText(node.label, groupLabelCenter, offset + boxSize);
-        } else if (renderLabel === 'above') {
-          ctx.fillText(node.label, groupLabelCenter, offset - boxSize);
-        }
+      if (leftVisible !== rightVisible) {
+        // helper span line
+        ctx.strokeStyle = boxSpanColor;
+        ctx.lineWidth = boxSpanWidth;
+        ctx.beginPath();
         if (hasCollapseBox) {
-          renderButton('collapse', false, leftVisible.center, offset);
+          // stitch to box
+          ctx.moveTo(leftVisible.center + boxSize05, offset + boxSize05);
+        } else if (leftFirstVisible) {
+          // add starting group hint
+          ctx.moveTo(leftVisible.center, offset + boxSize01);
+          ctx.lineTo(leftVisible.center, offset + boxSize05);
+        } else {
+          // just a line
+          ctx.moveTo(leftVisible.center, offset + boxSize05);
         }
+
         if (hasFocusBox) {
-          renderButton('focus', false, rightVisible.center, offset);
+          ctx.lineTo(rightVisible.center - boxSize05, offset + boxSize05);
+        } else if (rightLastVisible) {
+          ctx.lineTo(rightVisible.center, offset + boxSize05);
+          ctx.lineTo(rightVisible.center, offset + boxSize01);
+        } else {
+          ctx.lineTo(rightVisible.center, offset + boxSize05);
         }
+        ctx.stroke();
+        ctx.strokeStyle = boxColor;
+        ctx.lineWidth = boxWidth;
+      }
 
-        if (leftVisible !== rightVisible) {
-          // helper span line
-          ctx.strokeStyle = boxSpanColor;
-          ctx.lineWidth = boxSpanWidth;
-          ctx.beginPath();
-          if (hasCollapseBox) {
-            // stitch to box
-            ctx.moveTo(leftVisible.center + boxSize05, offset + boxSize05);
-          } else if (leftFirstVisible) {
-            // add starting group hint
-            ctx.moveTo(leftVisible.center, offset + boxSize01);
-            ctx.lineTo(leftVisible.center, offset + boxSize05);
-          } else {
-            // just a line
-            ctx.moveTo(leftVisible.center, offset + boxSize05);
-          }
+      return true;
+    };
 
-          if (hasFocusBox) {
-            ctx.lineTo(rightVisible.center - boxSize05, offset + boxSize05);
-          } else if (rightLastVisible) {
-            ctx.lineTo(rightVisible.center, offset + boxSize05);
-            ctx.lineTo(rightVisible.center, offset + boxSize01);
-          } else {
-            ctx.lineTo(rightVisible.center, offset + boxSize05);
-          }
-          ctx.stroke();
-          ctx.strokeStyle = boxColor;
-          ctx.lineWidth = boxWidth;
+    const renderVertLevel = (node: ILabelNode) => {
+      if (node.children.length === 0) {
+        return false;
+      }
+      const offset = node.level * boxRow * -1;
+
+      if (!node.expand) {
+        if (visibleNodes.has(node)) {
+          renderButton('expand', true, offset, node.center);
         }
+        return false;
+      }
+      const r = spanLogic(node, flat, visibleNodes, groupLabelPosition);
+      if (!r) {
+        return false;
+      }
+      const {
+        hasFocusBox,
+        hasCollapseBox,
+        leftVisible,
+        rightVisible,
+        leftFirstVisible,
+        rightLastVisible,
+        groupLabelCenter,
+      } = r;
 
-        return true;
-      };
+      // render group label
+      ctx.fillText(node.label, offset - boxSize, groupLabelCenter);
 
-      const renderVertLevel = (node: ILabelNode) => {
-        if (node.children.length === 0) {
-          return false;
-        }
-        const offset = node.level * boxRow * -1;
+      if (hasCollapseBox) {
+        renderButton('collapse', true, offset, leftVisible.center);
+      }
+      if (hasFocusBox) {
+        renderButton('focus', true, offset, rightVisible.center);
+      }
 
-        if (!node.expand) {
-          if (visibleNodes.has(node)) {
-            renderButton('expand', true, offset, node.center);
-          }
-          return false;
-        }
-        const r = spanLogic(node, flat, visibleNodes, groupLabelPosition);
-        if (!r) {
-          return false;
-        }
-        const {
-          hasFocusBox,
-          hasCollapseBox,
-          leftVisible,
-          rightVisible,
-          leftFirstVisible,
-          rightLastVisible,
-          groupLabelCenter,
-        } = r;
-
-        // render group label
-        ctx.fillText(node.label, offset - boxSize, groupLabelCenter);
-
+      if (leftVisible !== rightVisible) {
+        // helper span line
+        ctx.strokeStyle = boxSpanColor;
+        ctx.lineWidth = boxSpanWidth;
+        ctx.beginPath();
         if (hasCollapseBox) {
-          renderButton('collapse', true, offset, leftVisible.center);
+          // stitch to box
+          ctx.moveTo(offset - boxSize05, leftVisible.center + boxSize05);
+        } else if (leftFirstVisible) {
+          // add starting group hint
+          ctx.moveTo(offset - boxSize01, leftVisible.center);
+          ctx.lineTo(offset - boxSize05, leftVisible.center);
+        } else {
+          // just a line
+          ctx.lineTo(offset - boxSize05, leftVisible.center);
         }
+
         if (hasFocusBox) {
-          renderButton('focus', true, offset, rightVisible.center);
+          ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
+        } else if (rightLastVisible) {
+          ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
+          ctx.lineTo(offset - boxSize01, rightVisible.center - boxSize05);
+        } else {
+          ctx.lineTo(offset - boxSize05, rightVisible.center);
         }
-
-        if (leftVisible !== rightVisible) {
-          // helper span line
-          ctx.strokeStyle = boxSpanColor;
-          ctx.lineWidth = boxSpanWidth;
-          ctx.beginPath();
-          if (hasCollapseBox) {
-            // stitch to box
-            ctx.moveTo(offset - boxSize05, leftVisible.center + boxSize05);
-          } else if (leftFirstVisible) {
-            // add starting group hint
-            ctx.moveTo(offset - boxSize01, leftVisible.center);
-            ctx.lineTo(offset - boxSize05, leftVisible.center);
-          } else {
-            // just a line
-            ctx.lineTo(offset - boxSize05, leftVisible.center);
-          }
-
-          if (hasFocusBox) {
-            ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
-          } else if (rightLastVisible) {
-            ctx.lineTo(offset - boxSize05, rightVisible.center - boxSize05);
-            ctx.lineTo(offset - boxSize01, rightVisible.center - boxSize05);
-          } else {
-            ctx.lineTo(offset - boxSize05, rightVisible.center);
-          }
-          ctx.stroke();
-          ctx.strokeStyle = boxColor;
-          ctx.lineWidth = boxWidth;
-        }
-
-        return true;
-      };
-
-      if (hor) {
-        ctx.textAlign = 'center';
-        ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
-        ctx.translate(scale.left, scale.top + scale.options.padding);
-        roots.forEach((n) => preOrderTraversal(n, renderHorLevel));
-      } else {
-        ctx.textAlign = 'right';
-        ctx.textBaseline = 'middle';
-        ctx.translate(scale.left - scale.options.padding, scale.top);
-
-        roots.forEach((n) => preOrderTraversal(n, renderVertLevel));
+        ctx.stroke();
+        ctx.strokeStyle = boxColor;
+        ctx.lineWidth = boxWidth;
       }
 
-      ctx.restore();
-    },
+      return true;
+    };
 
-    beforeEvent(chart: CoreChart, event: { x?: number; y?: number; type: string }) {
-      if (event.type !== 'click' || !enabled(chart)) {
-        return;
-      }
-      const clickEvent = event as { x: number; y: number };
+    if (hor) {
+      ctx.textAlign = 'center';
+      ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
+      ctx.translate(scale.left, scale.top + scale.options.padding);
+      roots.forEach((n) => preOrderTraversal(n, renderHorLevel));
+    } else {
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.translate(scale.left - scale.options.padding, scale.top);
 
-      const scale = findScale(chart)!;
-      if (scale.options.static) {
-        return;
-      }
-      const hor = scale.isHorizontal();
+      roots.forEach((n) => preOrderTraversal(n, renderVertLevel));
+    }
 
-      const elem = resolveElement(clickEvent, scale);
-      if (!elem) {
-        return;
-      }
+    ctx.restore();
+  },
 
-      const boxRow = scale.options.hierarchyBoxLineHeight;
+  beforeEvent(chart: Chart, event: { x?: number; y?: number; type: string }) {
+    if (event.type !== 'click' || !enabled(chart)) {
+      return;
+    }
+    const clickEvent = event as { x: number; y: number };
 
-      const inRange = hor
-        ? (o: number) => clickEvent.y >= o && clickEvent.y <= o + boxRow
-        : (o: number) => clickEvent.x <= o && clickEvent.x >= o - boxRow;
-      const offsetDelta = hor ? boxRow : -boxRow;
-      handleClickEvents(chart, event, elem, offsetDelta, inRange);
-    },
-  });
-}
+    const scale = findScale(chart)!;
+    if (scale.options.static) {
+      return;
+    }
+    const hor = scale.isHorizontal();
+
+    const elem = resolveElement(clickEvent, scale);
+    if (!elem) {
+      return;
+    }
+
+    const boxRow = scale.options.hierarchyBoxLineHeight;
+
+    const inRange = hor
+      ? (o: number) => clickEvent.y >= o && clickEvent.y <= o + boxRow
+      : (o: number) => clickEvent.x <= o && clickEvent.x >= o - boxRow;
+    const offsetDelta = hor ? boxRow : -boxRow;
+    handleClickEvents(chart, event, elem, offsetDelta, inRange);
+  },
+};

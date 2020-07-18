@@ -17,5 +17,6 @@
   "prettier.prettierPath": ".yarn/sdks/prettier/index.js",
   "files.eol": "\n",
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
-  "typescript.enablePromptUseWorkspaceTsdk": true
+  "typescript.enablePromptUseWorkspaceTsdk": true,
+  "liveServer.settings.port": 5501
 }
