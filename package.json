@@ -1,7 +1,7 @@
 {
   "name": "chartjs-plugin-hierarchical",
   "description": "Chart.js module for hierarchical categories",
-  "version": "3.0.0-alpha.2",
+  "version": "3.0.0-alpha.19",
   "author": {
     "name": "Samuel Gratzl",
     "email": "sam@sgratzl.com",
@@ -37,12 +37,12 @@
     "last 2 Firefox versions"
   ],
   "peerDependencies": {
-    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.1",
+    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.2",
     "chart.js": "^3.0.0-alpha.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
-    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.1",
+    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.2",
     "@types/d3-selection": "^1.4.2",
     "@types/jest": "^26.0.5",
     "@types/jest-image-snapshot": "^3.1.0",
@@ -94,13 +94,5 @@
     "prepare": "npm run build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next"
-  },
-  "dependenciesMeta": {
-    "chart.js": {
-      "unplugged": true
-    }
-  },
-  "resolutions": {
-    "@sgratzl/chartjs-esm-facade": "portal:/D:/w/chartjs/chartjs-esm-facade"
   }
 }

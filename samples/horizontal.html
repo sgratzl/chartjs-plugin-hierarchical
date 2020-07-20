@@ -2,7 +2,8 @@
 <html>
   <head>
     <title>Hierarchical Horizontal Bar Chart</title>
-    <script src="https://unpkg.com/chart.js@3.0.0-alpha.2/dist/Chart.js"></script>
+    <script src="https://unpkg.com/chart.js@3.0.0-alpha.2/dist/chart.js"></script>
+    <script src="https://unpkg.com/@sgratzl/chartjs-esm-facade@3.0.0-alpha.2"></script>
     <script src="../dist/charthierarchical.umd.development.js"></script>
     <style>
       canvas {
@@ -67,9 +68,10 @@
       window.onload = () => {
         const ctx = document.getElementById('canvas').getContext('2d');
         window.myBar = new Chart(ctx, {
-          type: 'horizontalBar',
+          type: 'bar',
           data: data,
           options: {
+            indexAxis: 'y',
             responsive: true,
             title: {
               display: true,

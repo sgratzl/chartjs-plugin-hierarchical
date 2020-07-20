@@ -11,7 +11,7 @@ Chart.js module for adding a new categorical scale which mimics a hierarchical t
 ## Install
 
 ```bash
-npm install --save chart.js@next chartjs-plugin-hierarchical@next
+npm install --save chart.js@next @sgratzl/chartjs-esm-facade@next chartjs-plugin-hierarchical@next
 ```
 
 ## Usage
@@ -114,11 +114,11 @@ declare type ISubValueNode<T> = IValueNode<T> | T;
 The ESM build of the library supports tree shaking thus having no side effects. As a consequence the chart.js library won't be automatically manipulated nor new controllers automatically registered. One has to manually import and register them.
 
 ```js
-import Chart from 'chart.js';
+import { Chart } from 'chart.js';
 import { HierarchicalScale } from 'chartjs-plugin-hierarchical';
 
 // register scale in chart.js and ensure the defaults are set
-HierarchicalScale.register();
+Chart.register(HierarchicalScale);
 ...
 ```
 

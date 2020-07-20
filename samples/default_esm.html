@@ -11,14 +11,16 @@
     <script type="importmap-shim">
       {
         "imports": {
-          "chart.js": "https://unpkg.com/chart.js@3.0.0-alpha.2/dist/Chart.esm.js",
+          "@sgratzl/chartjs-esm-facade": "https://unpkg.com/@sgratzl/chartjs-esm-facade@3.0.0-alpha.2?module",
           "chartjs-plugin-hierarchical": "../dist/charthierarchical.esm.js"
         }
       }
     </script>
     <script type="module-shim">
-      import Chart from 'chart.js';
+      import { Chart, BarController, LinearScale, Rectangle } from '@sgratzl/chartjs-esm-facade';
       import { HierarchicalScale } from 'chartjs-plugin-hierarchical';
+
+      Chart.register(HierarchicalScale, BarController, Rectangle, LinearScale);
 
       const data = {
         // define label tree
@@ -85,7 +87,7 @@
           },
           scales: {
             x: {
-              type: HierarchicalScale.register().id,
+              type: HierarchicalScale.id,
             },
           },
         },

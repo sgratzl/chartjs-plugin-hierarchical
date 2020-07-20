@@ -166,6 +166,10 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     const flat = (this.chart as IEnhancedChart).data.flatLabels!;
     const total = ((this as unknown) as IInternalScale)._length;
 
+    if (nodes.length === 0) {
+      return;
+    }
+
     // optimize such that the distance between two points on the same level is same
     // creating a grouping effect of nodes
     const ratio = this.options.levelPercentage;
