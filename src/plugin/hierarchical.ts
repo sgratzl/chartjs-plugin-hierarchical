@@ -1,4 +1,4 @@
-import { defaults, toFont, valueOrDefault, IPlugin, Chart } from '@sgratzl/chartjs-esm-facade';
+import { defaults, toFont, valueOrDefault, IPlugin, Chart, IEvent } from '@sgratzl/chartjs-esm-facade';
 import {
   toNodes,
   countExpanded,
@@ -340,7 +340,7 @@ export const hierarchicalPlugin: IPlugin = {
 
     const scaleLabel = scale.options.scaleLabel!;
     const scaleLabelFontColor = valueOrDefault(scaleLabel.font?.color, defaults.font.color);
-    const scaleLabelFont = toFont(scaleLabel);
+    const scaleLabelFont = toFont(scaleLabel.font);
 
     function renderButton(type: 'expand' | 'collapse' | 'focus', vert: boolean, x: number, y: number) {
       if (isStatic) {
@@ -547,7 +547,7 @@ export const hierarchicalPlugin: IPlugin = {
     ctx.restore();
   },
 
-  beforeEvent(chart: Chart, event: { x?: number; y?: number; type: string }) {
+  beforeEvent(chart: Chart, event: IEvent) {
     if (event.type !== 'click' || !enabled(chart)) {
       return;
     }

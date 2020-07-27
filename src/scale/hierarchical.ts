@@ -1,9 +1,9 @@
-import { merge, CategoryScale, CategoryScaleOptions, registry } from '@sgratzl/chartjs-esm-facade';
+import { merge, CategoryScale, ICategoryScaleOptions, registry, DeepPartial } from '@sgratzl/chartjs-esm-facade';
 import { parentsOf } from '../utils';
 import { ILabelNodes, IEnhancedChart } from '../model';
 import { hierarchicalPlugin } from '../plugin';
 
-export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
+export interface IHierarchicalScaleOptions extends ICategoryScaleOptions {
   /**
    * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
    * @default 0.75
@@ -65,15 +65,9 @@ export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   attributes: { [attribute: string]: any };
 
   offset: true;
-
-  scaleLabel?: {
-    font?: {
-      color: string;
-    };
-  };
 }
 
-const defaultConfig: IHierarchicalScaleOptions = {
+const defaultConfig: DeepPartial<IHierarchicalScaleOptions> = {
   // offset settings, for centering the categorical axis in the bar chart case
   offset: true,
 
@@ -247,9 +241,13 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
 
   static id = 'hierarchical';
 
-  static defaults: IHierarchicalScaleOptions = /*__PURE__*/ merge({}, [CategoryScale.defaults, defaultConfig]);
+  static defaults = /*__PURE__*/ merge({}, [CategoryScale.defaults, defaultConfig]);
 
   static afterRegister() {
     registry.addPlugins(hierarchicalPlugin);
   }
+}
+
+export interface HierarchicalScaleType extends DeepPartial<IHierarchicalScaleOptions> {
+  type: 'hierarchical';
 }

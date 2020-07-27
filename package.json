@@ -37,12 +37,12 @@
     "last 2 Firefox versions"
   ],
   "peerDependencies": {
-    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.2",
+    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.20",
     "chart.js": "^3.0.0-alpha.2"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
-    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.2",
+    "@sgratzl/chartjs-esm-facade": "^3.0.0-alpha.20",
     "@types/d3-selection": "^1.4.2",
     "@types/jest": "^26.0.5",
     "@types/jest-image-snapshot": "^3.1.0",
@@ -94,5 +94,8 @@
     "prepare": "npm run build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next"
+  },
+  "resolutions": {
+    "@sgratzl/chartjs-esm-facade": "portal:/D:/w/chartjs/chartjs-esm-facade"
   }
 }
