@@ -94,8 +94,5 @@
     "prepare": "npm run build",
     "release": "release-it --disable-metrics --npm.skipChecks",
     "release:pre": "release-it --disable-metrics --npm.skipChecks --preRelease=alpha --npm.tag=next"
-  },
-  "resolutions": {
-    "@sgratzl/chartjs-esm-facade": "portal:/D:/w/chartjs/chartjs-esm-facade"
   }
 }

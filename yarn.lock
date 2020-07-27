@@ -1669,25 +1669,17 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@sgratzl/chartjs-esm-facade@portal:/D:/w/chartjs/chartjs-esm-facade::locator=chartjs-plugin-hierarchical%40workspace%3A.":
-  version: 0.0.0-use.local
-  resolution: "@sgratzl/chartjs-esm-facade@portal:/D:/w/chartjs/chartjs-esm-facade::locator=chartjs-plugin-hierarchical%40workspace%3A."
-  dependencies:
-    "@yarnpkg/pnpify": ^2.0.0-rc.22
-    chart.js: ^3.0.0-alpha.2
-    eslint: ^7.0.0
-    eslint-config-prettier: ^6.11.0
-    eslint-plugin-prettier: ^3.1.3
-    prettier: ^2.0.5
-    release-it: ^13.6.0
-    rimraf: ^3.0.2
+"@sgratzl/chartjs-esm-facade@npm:^3.0.0-alpha.20":
+  version: 3.0.0-alpha.20
+  resolution: "@sgratzl/chartjs-esm-facade@npm:3.0.0-alpha.20"
   peerDependencies:
     chart.js: ^3.0.0-alpha.2
   dependenciesMeta:
     chart.js:
       unplugged: true
+  checksum: cdfaeb27f65ebecf7cfa3c1de7429f2b05277311ce7ac94326109c5074233cb1da12599c9acf9197d6004f166928e980e41afb14d8ae111763f3db25178ae492
   languageName: node
-  linkType: soft
+  linkType: hard
 
 "@sindresorhus/is@npm:^0.14.0":
   version: 0.14.0
@@ -2274,7 +2266,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@yarnpkg/pnpify@npm:^2.0.0-rc.22, @yarnpkg/pnpify@npm:^2.1.0":
+"@yarnpkg/pnpify@npm:^2.1.0":
   version: 2.1.0
   resolution: "@yarnpkg/pnpify@npm:2.1.0"
   dependencies:
@@ -4404,7 +4396,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint-plugin-prettier@npm:^3.1.3, eslint-plugin-prettier@npm:^3.1.4":
+"eslint-plugin-prettier@npm:^3.1.4":
   version: 3.1.4
   resolution: "eslint-plugin-prettier@npm:3.1.4"
   dependencies:
@@ -4584,7 +4576,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^7.0.0, eslint@npm:^7.5.0":
+"eslint@npm:^7.5.0":
   version: 7.5.0
   resolution: "eslint@npm:7.5.0"
   dependencies:
@@ -8920,7 +8912,7 @@ fsevents@^1.2.7:
   languageName: node
   linkType: hard
 
-"release-it@npm:^13.6.0, release-it@npm:^13.6.5":
+"release-it@npm:^13.6.5":
   version: 13.6.5
   resolution: "release-it@npm:13.6.5"
   dependencies:
