@@ -1,4 +1,7 @@
-import { defaults, toFont, valueOrDefault, IPlugin, Chart, IEvent } from '@sgratzl/chartjs-esm-facade';
+/* eslint-disable no-prototype-builtins */
+import { defaults, IPlugin, Chart, IEvent } from 'chart.js';
+import { valueOrDefault } from '../../chartjs-helpers/core';
+import { toFont } from '../../chartjs-helpers/options';
 import {
   toNodes,
   countExpanded,
@@ -232,7 +235,7 @@ function zoomOut(chart: IEnhancedChart, parent: ILabelNode) {
 
 function resolveElement(event: { x: number; y: number }, scale: HierarchicalScale) {
   const hor = scale.isHorizontal();
-  let offset = hor ? scale.top + scale.options.padding : scale.left - scale.options.padding;
+  const offset = hor ? scale.top + scale.options.padding : scale.left - scale.options.padding;
   if ((hor && event.y <= offset) || (!hor && event.x > offset)) {
     return null;
   }

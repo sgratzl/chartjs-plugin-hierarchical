@@ -1,4 +1,5 @@
-import { merge, CategoryScale, ICategoryScaleOptions, registry, DeepPartial } from '@sgratzl/chartjs-esm-facade';
+import { CategoryScale, ICategoryScaleOptions, registry, DeepPartial } from 'chart.js';
+import { merge } from '../../chartjs-helpers/core';
 import { parentsOf } from '../utils';
 import { ILabelNodes, IEnhancedChart } from '../model';
 import { hierarchicalPlugin } from '../plugin';

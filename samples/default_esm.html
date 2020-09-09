@@ -4,20 +4,22 @@
     <title>Chart</title>
   </head>
   <body>
-    <div id="container" style="width: 75%;">
+    <div id="container" style="width: 75%">
       <canvas id="canvas"></canvas>
     </div>
     <script defer src="https://unpkg.com/es-module-shims"></script>
     <script type="importmap-shim">
       {
         "imports": {
-          "@sgratzl/chartjs-esm-facade": "https://unpkg.com/@sgratzl/chartjs-esm-facade@3.0.0-alpha.2?module",
-          "chartjs-plugin-hierarchical": "../dist/charthierarchical.esm.js"
+          "chart.js": "https://unpkg.com/chart.js@3.0.0-alpha.2?module",
+          "chart.js/helpers/core": "https://unpkg.com/chart.js@3.0.0-beta/helpers/core.js?module",
+          "chart.js/helpers/options": "https://unpkg.com/chart.js@3.0.0-beta/helpers/options.js?module",
+          "chartjs-plugin-hierarchical": "../build/index.esm.js"
         }
       }
     </script>
     <script type="module-shim">
-      import { Chart, BarController, LinearScale, Rectangle } from '@sgratzl/chartjs-esm-facade';
+      import { Chart, BarController, LinearScale, Rectangle } from 'chart.js';
       import { HierarchicalScale } from 'chartjs-plugin-hierarchical';
 
       Chart.register(HierarchicalScale, BarController, Rectangle, LinearScale);

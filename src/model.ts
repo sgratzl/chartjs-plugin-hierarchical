@@ -1,4 +1,4 @@
-import { Chart, IChartData, IChartDataset } from '@sgratzl/chartjs-esm-facade';
+import { Chart, IChartData, IChartDataset } from 'chart.js';
 
 export interface ILabelNode {
   label: string;

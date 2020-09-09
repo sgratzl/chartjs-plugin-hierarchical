@@ -1,5 +1,5 @@
 import { HierarchicalScale } from './scale';
-import { registry } from '@sgratzl/chartjs-esm-facade';
+import { registry } from 'chart.js';
 export * from '.';
 
 registry.addScales(HierarchicalScale);
