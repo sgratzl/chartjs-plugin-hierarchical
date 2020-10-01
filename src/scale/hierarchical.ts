@@ -1,5 +1,5 @@
 import { CategoryScale, ICategoryScaleOptions, registry, DeepPartial } from 'chart.js';
-import { merge } from '../../chartjs-helpers/core';
+import { merge } from 'chart.js/helpers';
 import { parentsOf } from '../utils';
 import { ILabelNodes, IEnhancedChart } from '../model';
 import { hierarchicalPlugin } from '../plugin';

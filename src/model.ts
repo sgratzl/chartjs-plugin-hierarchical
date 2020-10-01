@@ -38,7 +38,7 @@ export function isValueNode(node: IValueNode | any): node is IValueNode {
   return node != null && Array.isArray(node.children);
 }
 
-export interface IEnhancedChartDataSet extends IChartDataset {
+export interface IEnhancedChartDataSet extends IChartDataset<'bar'> {
   tree: IValueNode[];
 }
 

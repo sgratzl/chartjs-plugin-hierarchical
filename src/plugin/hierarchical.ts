@@ -1,7 +1,7 @@
 /* eslint-disable no-prototype-builtins */
 import { defaults, IPlugin, Chart, IEvent } from 'chart.js';
-import { valueOrDefault } from '../../chartjs-helpers/core';
-import { toFont } from '../../chartjs-helpers/options';
+import { valueOrDefault } from 'chart.js/helpers';
+import { toFont } from 'chart.js/helpers';
 import {
   toNodes,
   countExpanded,
