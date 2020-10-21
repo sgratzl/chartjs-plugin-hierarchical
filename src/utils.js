@@ -139,7 +139,7 @@ export function resolve(label, flat, dataTree) {
 
   const value = dataParents[dataParents.length - 1];
   // convert to value
-  if (typeof value !== 'number' && value.hasOwnProperty('value')) {
+  if (typeof value !== 'number' && Object.hasOwnProperty.call(value, 'value')) {
     return value.value;
   }
   return value;
