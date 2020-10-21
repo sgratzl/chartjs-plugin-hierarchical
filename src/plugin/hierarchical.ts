@@ -34,17 +34,19 @@ function generateCode(labels: ReadonlyArray<ILabelNode | string>) {
 }
 
 function isValidScaleType(chart: Chart, scale: string) {
-  if (!chart.config.options?.scales?.hasOwnProperty(scale)) {
+  const scales = chart.config.options!.scales! as any;
+  if (!scales || !Object.prototype.hasOwnProperty.call(scales, scale)) {
     return false;
   }
-  return (chart.config.options!.scales! as any)[scale].hasOwnProperty('type');
+  return Object.prototype.hasOwnProperty.call(scales[scale], 'type');
 }
 
 /**
  * checks whether this plugin needs to be enabled based on whether one is a hierarchical axis
  */
 function enabled(chart: Chart) {
-  if (!chart.config.options?.hasOwnProperty('scales')) {
+  const options = chart.config.options;
+  if (!options || !Object.prototype.hasOwnProperty.call(options, 'scales')) {
     return null;
   }
   const scales = chart.config.options!.scales! as any;
