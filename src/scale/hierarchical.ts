@@ -1,10 +1,10 @@
-import { CategoryScale, ICategoryScaleOptions, registry, DeepPartial } from 'chart.js';
+import { CategoryScale, CategoryScaleOptions, registry, DeepPartial } from 'chart.js';
 import { merge } from 'chart.js/helpers';
 import { parentsOf } from '../utils';
 import { ILabelNodes, IEnhancedChart } from '../model';
 import { hierarchicalPlugin } from '../plugin';
 
-export interface IHierarchicalScaleOptions extends ICategoryScaleOptions {
+export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   /**
    * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
    * @default 0.75
@@ -158,7 +158,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   configure() {
     super.configure();
     const nodes = this._nodes.slice(this.min, this.max + 1);
-    const flat = (this.chart as IEnhancedChart).data.flatLabels!;
+    const flat = ((this.chart as unknown) as IEnhancedChart).data.flatLabels!;
     const total = ((this as unknown) as IInternalScale)._length;
 
     if (nodes.length === 0) {

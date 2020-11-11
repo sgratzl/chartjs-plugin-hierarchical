@@ -1,5 +1,5 @@
 /* eslint-disable no-prototype-builtins */
-import { defaults, IPlugin, Chart, IEvent } from 'chart.js';
+import { defaults, Plugin, Chart, ChartEvent } from 'chart.js';
 import { valueOrDefault } from 'chart.js/helpers';
 import { toFont } from 'chart.js/helpers';
 import {
@@ -127,7 +127,7 @@ function updateAttributes(chart: IEnhancedChart) {
   });
 }
 
-function findScale(chart: Chart) {
+function findScale(chart: Chart<any, unknown[], unknown>) {
   const scales = Object.keys(chart.scales).map((d) => chart.scales[d]);
   return scales.find((d) => d.type === 'hierarchical') as HierarchicalScale | undefined;
 }
@@ -140,7 +140,7 @@ function postDataUpdate(chart: IEnhancedChart) {
 }
 
 function expandCollapse(chart: IEnhancedChart, index: number, count: number, toAdd: ILabelNodes) {
-  const labels = chart.data.labels;
+  const labels = chart.data.labels as ILabelNode[];
   const flatLabels = chart.data.flatLabels!;
   const data = chart.data.datasets as IEnhancedChartDataSet[];
 
@@ -255,7 +255,7 @@ function handleClickEvents(
   offsetDelta: number,
   inRange: (v: number) => boolean
 ) {
-  const cc = chart as IEnhancedChart;
+  const cc = (chart as unknown) as IEnhancedChart;
   let offset = elem.offset;
 
   const index = elem.index;
@@ -305,7 +305,7 @@ function handleClickEvents(
   }
 }
 
-export const hierarchicalPlugin: IPlugin = {
+export const hierarchicalPlugin: Plugin = {
   id: 'hierarchical',
 
   beforeUpdate(chart: Chart) {
@@ -552,7 +552,7 @@ export const hierarchicalPlugin: IPlugin = {
     ctx.restore();
   },
 
-  beforeEvent(chart: Chart, event: IEvent) {
+  beforeEvent(chart: Chart, event: ChartEvent) {
     if (event.type !== 'click' || !enabled(chart)) {
       return;
     }

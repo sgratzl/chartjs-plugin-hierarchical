@@ -1,4 +1,4 @@
-import { Chart, IChartData, IChartDataset } from 'chart.js';
+import { Chart, ChartData, ChartDataset } from 'chart.js';
 
 export interface ILabelNode {
   label: string;
@@ -38,12 +38,12 @@ export function isValueNode(node: IValueNode | any): node is IValueNode {
   return node != null && Array.isArray(node.children);
 }
 
-export interface IEnhancedChartDataSet extends IChartDataset<'bar'> {
+export interface IEnhancedChartDataSet extends ChartDataset<'bar'> {
   tree: IValueNode[];
 }
 
-export interface IEnhancedChart extends Chart {
-  data: IChartData & {
+export interface IEnhancedChart extends Chart<any, any, ILabelNode> {
+  data: ChartData & {
     flatLabels?: ILabelNodes;
     labels: ILabelNode[];
     _verify?: string;
