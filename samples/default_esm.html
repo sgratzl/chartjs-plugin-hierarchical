@@ -11,17 +11,17 @@
     <script type="importmap-shim">
       {
         "imports": {
-          "chart.js": "https://unpkg.com/chart.js@3.0.0-beta.6?module",
-          "chart.js/helpers": "https://unpkg.com/chart.js@3.0.0-beta.6/helpers/helpers.esm.js?module",
+          "chart.js": "https://unpkg.com/chart.js@3.0.0-beta.7?module",
+          "chart.js/helpers": "https://unpkg.com/chart.js@3.0.0-beta.7/helpers/helpers.esm.js?module",
           "chartjs-plugin-hierarchical": "../build/index.esm.js"
         }
       }
     </script>
     <script type="module-shim">
-      import { Chart, BarController, LinearScale, Rectangle } from 'chart.js';
+      import { Chart, BarController, LinearScale, BarElement } from 'chart.js';
       import { HierarchicalScale } from 'chartjs-plugin-hierarchical';
 
-      Chart.register(HierarchicalScale, BarController, Rectangle, LinearScale);
+      Chart.register(HierarchicalScale, BarController, BarElement, LinearScale);
 
       const data = {
         // define label tree

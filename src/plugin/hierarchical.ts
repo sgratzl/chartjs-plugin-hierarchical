@@ -1,5 +1,4 @@
-/* eslint-disable no-prototype-builtins */
-import { defaults, Plugin, Chart, ChartEvent } from 'chart.js';
+import { defaults, Plugin, Chart } from 'chart.js';
 import { valueOrDefault } from 'chart.js/helpers';
 import { toFont } from 'chart.js/helpers';
 import {
@@ -112,7 +111,7 @@ function updateAttributes(chart: IEnhancedChart) {
     chart.data.datasets.forEach((d) => {
       const v = nodes.map((n: ILabelNode | null) => {
         while (n) {
-          if (n.hasOwnProperty(attr)) {
+          if ((n as any)[attr] !== undefined) {
             return (n as any)[attr];
           }
           // walk up the hierarchy
@@ -552,7 +551,7 @@ export const hierarchicalPlugin: Plugin = {
     ctx.restore();
   },
 
-  beforeEvent(chart: Chart, event: ChartEvent) {
+  beforeEvent(chart: Chart, { event }) {
     if (event.type !== 'click' || !enabled(chart)) {
       return;
     }
