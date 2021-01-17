@@ -343,7 +343,7 @@ export const hierarchicalPlugin: Plugin = {
     const isStatic = scale.options.static;
 
     const scaleLabel = scale.options.scaleLabel!;
-    const scaleLabelFontColor = valueOrDefault(scaleLabel.font?.color, defaults.font.color);
+    const scaleLabelFontColor = valueOrDefault(scaleLabel.color, defaults.color);
     const scaleLabelFont = toFont(scaleLabel.font);
 
     function renderButton(type: 'expand' | 'collapse' | 'focus', vert: boolean, x: number, y: number) {
