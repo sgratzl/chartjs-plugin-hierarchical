@@ -18,5 +18,9 @@
   "files.eol": "\n",
   "typescript.tsdk": ".yarn/sdks/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "liveServer.settings.port": 5501
+  "liveServer.settings.port": 5501,
+  "search.exclude": {
+    "**/.yarn": true,
+    "**/.pnp.*": true
+  }
 }
