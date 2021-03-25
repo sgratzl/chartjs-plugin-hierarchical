@@ -1,5 +1,5 @@
 import { toNodes, parentsOf, lastOfLevel, countExpanded } from './utils';
-import { ILabelNodes, ILabelNode } from './model';
+import type { ILabelNodes, ILabelNode } from './model';
 
 describe('bug_#7', () => {
   let nodes: ILabelNodes;

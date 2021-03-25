@@ -1,8 +1,8 @@
-import { CategoryScale, CategoryScaleOptions, registry, DeepPartial } from 'chart.js';
+import { CategoryScale, CategoryScaleOptions, registry } from 'chart.js';
 import { merge } from 'chart.js/helpers';
+import hierarchicalPlugin from 'src/plugin';
 import { parentsOf } from '../utils';
-import { ILabelNodes, IEnhancedChart } from '../model';
-import { hierarchicalPlugin } from '../plugin';
+import type { ILabelNodes, IEnhancedChart } from '../model';
 
 export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   /**
@@ -68,13 +68,15 @@ export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   offset: true;
 }
 
-const defaultConfig: DeepPartial<IHierarchicalScaleOptions> = {
+const defaultConfig: Partial<Omit<IHierarchicalScaleOptions, 'grid'>> & {
+  grid: Partial<IHierarchicalScaleOptions['grid']>;
+} = {
   // offset settings, for centering the categorical axis in the bar chart case
   offset: true,
 
   // grid line settings
-  gridLines: {
-    offsetGridLines: true,
+  grid: {
+    offset: true,
   },
 
   static: false,
@@ -133,7 +135,7 @@ export interface IInternalScale {
 export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> {
   private _nodes: ILabelNodes = [];
 
-  determineDataLimits() {
+  determineDataLimits(): void {
     const labels = (this.getLabels() as unknown) as ILabelNodes;
 
     // labels are already prepared by the plugin just use them as ticks
@@ -142,7 +144,10 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     super.determineDataLimits();
   }
 
-  buildTicks() {
+  buildTicks(): {
+    label: string;
+    value: number;
+  }[] {
     const nodes = this._nodes.slice(this.min, this.max + 1);
 
     const me = (this as unknown) as IInternalScale;
@@ -155,10 +160,10 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     return nodes.map((d, i) => ({ label: d.label, value: i })); // copy since mutated during auto skip
   }
 
-  configure() {
+  configure(): void {
     super.configure();
     const nodes = this._nodes.slice(this.min, this.max + 1);
-    const flat = ((this.chart as unknown) as IEnhancedChart).data.flatLabels!;
+    const flat = ((this.chart as unknown) as IEnhancedChart).data.flatLabels ?? [];
     const total = ((this as unknown) as IInternalScale)._length;
 
     if (nodes.length === 0) {
@@ -178,7 +183,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     let prevParents = parentsOf(prev, flat);
     distances.push(0.5); // half top level distance before and after
 
-    for (let i = 1; i < nodes.length; ++i) {
+    for (let i = 1; i < nodes.length; i += 1) {
       const n = nodes[i];
       const parents = parentsOf(n, flat);
       if (prev.parent === n.parent) {
@@ -189,7 +194,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
         // find level of common parent
         let common = 0;
         while (parents[common] === prevParents[common]) {
-          common++;
+          common += 1;
         }
         distances.push(ratios[common]);
       }
@@ -205,14 +210,16 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     nodes.forEach((node, i) => {
       const previous = distances[i] * factor;
       const next = distances[i + 1] * factor;
+      // eslint-disable-next-line no-param-reassign
       node.center = offset;
       offset += next;
 
+      // eslint-disable-next-line no-param-reassign
       node.width = Math.min(next, previous) / 2;
     });
   }
 
-  getPixelForDecimal(value: number) {
+  getPixelForDecimal(value: number): number {
     const index = Math.min(Math.floor(value * this._nodes.length), this._nodes.length - 1);
 
     if (index === 1 && this._nodes.length === 1) {
@@ -222,7 +229,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     return this._centerBase(index);
   }
 
-  _centerBase(index: number) {
+  _centerBase(index: number): number {
     const centerTick = this.options.offset;
     const base = ((this as unknown) as IInternalScale)._startPixel;
     const node = this._nodes[index];
@@ -236,19 +243,19 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     return base + nodeCenter - (centerTick ? 0 : nodeWidth / 2);
   }
 
-  getValueForPixel(pixel: number) {
+  getValueForPixel(pixel: number): number {
     return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
   }
 
   static id = 'hierarchical';
 
-  static defaults = /*__PURE__*/ merge({}, [CategoryScale.defaults, defaultConfig]);
+  static defaults: any = /*! __PURE__ */ merge({}, [CategoryScale.defaults, defaultConfig]);
 
-  static afterRegister() {
+  static afterRegister(): void {
     registry.addPlugins(hierarchicalPlugin);
   }
 }
 
-export interface HierarchicalScaleType extends DeepPartial<IHierarchicalScaleOptions> {
+export interface HierarchicalScaleType extends Partial<IHierarchicalScaleOptions> {
   type: 'hierarchical';
 }

@@ -1,4 +1,4 @@
-import { Chart, ChartData, ChartDataset } from 'chart.js';
+import type { Chart, ChartData, ChartDataset } from 'chart.js';
 
 export interface ILabelNode {
   label: string;

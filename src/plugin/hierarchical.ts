@@ -1,6 +1,7 @@
+/* eslint-disable no-param-reassign */
 import { defaults, Plugin, Chart } from 'chart.js';
-import { valueOrDefault } from 'chart.js/helpers';
-import { toFont } from 'chart.js/helpers';
+import { valueOrDefault, toFont } from 'chart.js/helpers';
+
 import {
   toNodes,
   countExpanded,
@@ -12,8 +13,8 @@ import {
   determineVisible,
   flatChildren,
 } from '../utils';
-import { ILabelNodes, ILabelNode, IEnhancedChart, IEnhancedChartDataSet } from '../model';
-import { HierarchicalScale } from '../scale';
+import type { ILabelNodes, ILabelNode, IEnhancedChart, IEnhancedChartDataSet } from '../model';
+import type { HierarchicalScale } from '../scale';
 
 function generateCode(labels: ReadonlyArray<ILabelNode | string>) {
   // label, expand, children
@@ -33,7 +34,7 @@ function generateCode(labels: ReadonlyArray<ILabelNode | string>) {
 }
 
 function isValidScaleType(chart: Chart, scale: string) {
-  const scales = chart.config.options!.scales! as any;
+  const scales = chart.config.options?.scales as any;
   if (!scales || !Object.prototype.hasOwnProperty.call(scales, scale)) {
     return false;
   }
@@ -44,15 +45,15 @@ function isValidScaleType(chart: Chart, scale: string) {
  * checks whether this plugin needs to be enabled based on whether one is a hierarchical axis
  */
 function enabled(chart: Chart) {
-  const options = chart.config.options;
+  const { options } = chart.config;
   if (!options || !Object.prototype.hasOwnProperty.call(options, 'scales')) {
     return null;
   }
-  const scales = chart.config.options!.scales! as any;
-  if (isValidScaleType(chart, 'x') && scales.x.type === 'hierarchical') {
+  const scales = chart.config.options?.scales as any;
+  if (scales && isValidScaleType(chart, 'x') && scales.x.type === 'hierarchical') {
     return 'x';
   }
-  if (isValidScaleType(chart, 'y') && scales.y.type === 'hierarchical') {
+  if (scales && isValidScaleType(chart, 'y') && scales.y.type === 'hierarchical') {
     return 'y';
   }
   return null;
@@ -67,7 +68,8 @@ function check(chart: IEnhancedChart) {
   }
 
   // convert labels to nodes
-  const flat = (chart.data.flatLabels = toNodes(chart.data.labels));
+  const flat = toNodes(chart.data.labels);
+  chart.data.flatLabels = flat;
   chart.data.rootNodes = flat.filter((d) => d.parent === -1);
 
   const labels = determineVisible(flat);
@@ -102,10 +104,10 @@ function updateAttributes(chart: IEnhancedChart) {
   if (!scale) {
     return;
   }
-  const attributes = scale.options.attributes;
+  const { attributes } = scale.options;
 
   const nodes = chart.data.labels as ILabelNodes;
-  const flat = chart.data.flatLabels!;
+  const flat = chart.data.flatLabels ?? [];
 
   Object.keys(attributes).forEach((attr) => {
     chart.data.datasets.forEach((d) => {
@@ -140,7 +142,7 @@ function postDataUpdate(chart: IEnhancedChart) {
 
 function expandCollapse(chart: IEnhancedChart, index: number, count: number, toAdd: ILabelNodes) {
   const labels = chart.data.labels as ILabelNode[];
-  const flatLabels = chart.data.flatLabels!;
+  const flatLabels = chart.data.flatLabels ?? [];
   const data = chart.data.datasets as IEnhancedChartDataSet[];
 
   // use splice since Chart.js is tracking the array using this method to have a proper animation
@@ -152,11 +154,11 @@ function expandCollapse(chart: IEnhancedChart, index: number, count: number, toA
     d.hidden = false;
   });
   // update since line doesn't call it by itself
-  findScale(chart)!.determineDataLimits();
+  findScale(chart)?.determineDataLimits();
 
   data.forEach((dataset) => {
     const toAddData = toAdd.map((d) => resolve(d, flatLabels, dataset.tree));
-    dataset.data!.splice(index, count, ...toAddData);
+    dataset.data?.splice(index, count, ...toAddData);
   });
 }
 
@@ -193,16 +195,18 @@ function zoomIn(chart: IEnhancedChart, lastIndex: number, parent: ILabelNode, fl
 
   const index = lastIndex - count + 1;
 
-  const labels = chart.data.labels;
+  const { labels } = chart.data;
   labels.splice(lastIndex + 1, labels.length);
   labels.splice(0, index);
   // update since line doesn't call it by itself
-  findScale(chart)!.determineDataLimits();
+  findScale(chart)?.determineDataLimits();
 
   const data = chart.data.datasets;
   data.forEach((dataset) => {
-    dataset.data!.splice(lastIndex + 1, dataset.data!.length);
-    dataset.data!.splice(0, index);
+    if (dataset.data) {
+      dataset.data.splice(lastIndex + 1, dataset.data.length);
+      dataset.data.splice(0, index);
+    }
   });
 
   postDataUpdate(chart);
@@ -210,7 +214,7 @@ function zoomIn(chart: IEnhancedChart, lastIndex: number, parent: ILabelNode, fl
 
 function zoomOut(chart: IEnhancedChart, parent: ILabelNode) {
   const labels = chart.data.labels as ILabelNode[];
-  const flatLabels = chart.data.flatLabels!;
+  const flatLabels = chart.data.flatLabels ?? [];
 
   parent.expand = true;
   const nextLabels = flatLabels.filter((d) => !d.hidden);
@@ -220,15 +224,17 @@ function zoomOut(chart: IEnhancedChart, parent: ILabelNode) {
   labels.splice(labels.length, 0, ...nextLabels.slice(index + count));
   labels.splice(0, 0, ...nextLabels.slice(0, index));
   // update since line doesn't call it by itself
-  findScale(chart)!.determineDataLimits();
+  findScale(chart)?.determineDataLimits();
 
   const data = chart.data.datasets as IEnhancedChartDataSet[];
   data.forEach((dataset) => {
     const toAddBefore = nextLabels.slice(0, index).map((d) => resolve(d, flatLabels, dataset.tree));
     const toAddAfter = nextLabels.slice(index + count).map((d) => resolve(d, flatLabels, dataset.tree));
 
-    dataset.data!.splice(dataset.data!.length, 0, ...toAddAfter);
-    dataset.data!.splice(0, 0, ...toAddBefore);
+    if (dataset.data) {
+      dataset.data.splice(dataset.data.length, 0, ...toAddAfter);
+      dataset.data.splice(0, 0, ...toAddBefore);
+    }
   });
 
   postDataUpdate(chart);
@@ -255,18 +261,19 @@ function handleClickEvents(
   inRange: (v: number) => boolean
 ) {
   const cc = (chart as unknown) as IEnhancedChart;
-  let offset = elem.offset;
+  let { offset } = elem;
 
-  const index = elem.index;
-  const flat = cc.data.flatLabels!;
-  const label = (cc.data.labels![index] as unknown) as ILabelNode;
+  const { index } = elem;
+  const flat = cc.data.flatLabels ?? [];
+  const label = (cc.data.labels?.[index] as unknown) as ILabelNode;
   if (!label) {
     return;
   }
   const parents = parentsOf(label, flat);
 
-  for (let i = 1; i < parents.length; ++i, offset += offsetDelta) {
+  for (let i = 1; i < parents.length; i += 1, offset += offsetDelta) {
     if (!inRange(offset)) {
+      // eslint-disable-next-line no-continue
       continue;
     }
     const node = parents[i];
@@ -300,14 +307,13 @@ function handleClickEvents(
   if (label.children.length > 0 && inRange(offset)) {
     // expand
     expand(cc, index, label);
-    return;
   }
 }
 
-export const hierarchicalPlugin: Plugin = {
+const hierarchicalPlugin: Plugin = {
   id: 'hierarchical',
 
-  beforeUpdate(chart: Chart) {
+  beforeUpdate(chart: Chart): void {
     if (!enabled(chart)) {
       return;
     }
@@ -317,17 +323,20 @@ export const hierarchicalPlugin: Plugin = {
   /**
    * draw the hierarchy indicators
    */
-  beforeDatasetsDraw(chart: Chart) {
+  beforeDatasetsDraw(chart: Chart): void {
     if (!enabled(chart)) {
       return;
     }
     const cc = (chart as unknown) as IEnhancedChart;
-    const scale = findScale(chart)!;
-    const flat = cc.data.flatLabels!;
+    const scale = findScale(chart);
+    const { ctx } = chart;
+    if (!scale || !ctx) {
+      return;
+    }
+    const flat = cc.data.flatLabels ?? [];
     const visible = (chart.data.labels as unknown) as ILabelNodes;
-    const roots = cc.data.rootNodes!;
+    const roots = cc.data.rootNodes ?? [];
     const visibleNodes = new Set(visible);
-    const ctx = chart.ctx!;
     const hor = scale.isHorizontal();
 
     const boxSize = scale.options.hierarchyBoxSize;
@@ -342,7 +351,7 @@ export const hierarchicalPlugin: Plugin = {
     const groupLabelPosition = scale.options.hierarchyGroupLabelPosition;
     const isStatic = scale.options.static;
 
-    const scaleLabel = scale.options.scaleLabel!;
+    const scaleLabel = scale.options.title;
     const scaleLabelFontColor = valueOrDefault(scaleLabel.color, defaults.color);
     const scaleLabelFont = toFont(scaleLabel.font);
 
@@ -557,8 +566,8 @@ export const hierarchicalPlugin: Plugin = {
     }
     const clickEvent = event as { x: number; y: number };
 
-    const scale = findScale(chart)!;
-    if (scale.options.static) {
+    const scale = findScale(chart);
+    if (!scale || scale.options.static) {
       return;
     }
     const hor = scale.isHorizontal();
@@ -577,3 +586,5 @@ export const hierarchicalPlugin: Plugin = {
     handleClickEvents(chart, event, elem, offsetDelta, inRange);
   },
 };
+
+export default hierarchicalPlugin;

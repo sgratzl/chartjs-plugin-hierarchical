@@ -10,21 +10,19 @@ import {
   ISpanLogicResult,
 } from './utils';
 // import 'jest';
-import { ILabelNode, IRawLabelNode } from './model';
+import type { ILabelNode, IRawLabelNode } from './model';
 
 function nodeTest(
   n: ILabelNode,
   label: string,
   options: { childCount?: number; level?: number; hidden?: boolean } = {}
 ) {
-  const { childCount, level, hidden } = Object.assign(
-    {
-      childCount: 0,
-      level: 0,
-      hidden: false,
-    },
-    options
-  );
+  const { childCount, level, hidden } = {
+    childCount: 0,
+    level: 0,
+    hidden: false,
+    ...options,
+  };
   expect(n).toBeDefined();
   expect(n.label).toBe(label);
   expect(n.children.length).toBe(childCount);
@@ -246,7 +244,6 @@ describe('spanLogic', () => {
 
     const r = spanLogic(a, flat, visible) as ISpanLogicResult;
     expect(r).not.toBe(false);
-    console.assert(typeof r !== 'boolean');
 
     const {
       hasCollapseBox,

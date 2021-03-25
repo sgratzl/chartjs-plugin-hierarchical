@@ -1,3 +1,4 @@
+/* eslint-disable no-param-reassign */
 import { ILabelNode, ILabelNodes, IValueNode, isValueNode, IRawLabelNode } from './model';
 
 /**
@@ -5,32 +6,30 @@ import { ILabelNode, ILabelNodes, IValueNode, isValueNode, IRawLabelNode } from 
  * @returns the node itself
  */
 export function asNode(label: string | IRawLabelNode, parent?: ILabelNode): ILabelNode {
-  const node: ILabelNode = Object.assign(
-    {
-      label: '',
-      index: 0,
-      relIndex: 0,
-      children: [],
-      expand: false,
-      parent: parent ? parent.index : -1,
-      level: parent ? parent.level + 1 : 0,
-      center: Number.NaN,
-      width: 0,
-      hidden: false,
-      major: !parent, // for ticks,
-      toString() {
-        return this.label;
-      },
+  const node: ILabelNode = {
+    index: 0,
+    relIndex: 0,
+    label: '',
+    children: [],
+    expand: false,
+    parent: parent ? parent.index : -1,
+    level: parent ? parent.level + 1 : 0,
+    center: Number.NaN,
+    width: 0,
+    hidden: false,
+    major: !parent, // for ticks,
+    toString() {
+      return this.label;
     },
-    typeof label === 'string'
-      ? {
-          label,
-        }
-      : label
-  );
-
-  node.children = node.children.map((d) => asNode(d, node));
-
+  };
+  if (typeof label === 'string') {
+    node.label = label;
+  } else {
+    Object.assign(node, {
+      ...label,
+      children: (label.children ?? []).map((d) => asNode(d, node)),
+    });
+  }
   return node;
 }
 
@@ -52,7 +51,7 @@ function push(node: ILabelNode, i: number, flat: ILabelNode[], parent?: ILabelNo
 /**
  * converts the given labels to a flat array of linked nodes
  */
-export function toNodes(labels: ReadonlyArray<IRawLabelNode | string>) {
+export function toNodes(labels: readonly (IRawLabelNode | string)[]): ILabelNodes {
   const nodes = labels.map((d) => asNode(d));
 
   const flat: ILabelNode[] = [];
@@ -66,7 +65,7 @@ export function toNodes(labels: ReadonlyArray<IRawLabelNode | string>) {
  * @param {ILabelNode} node
  * @param {ILabelNode[]} flat flatArray for lookup
  */
-export function parentsOf(node: ILabelNode, flat: ILabelNodes) {
+export function parentsOf(node: ILabelNode, flat: ILabelNodes): ILabelNodes {
   const parents = [node];
   while (parents[0].parent >= 0) {
     parents.unshift(flat[parents[0].parent]);
@@ -87,16 +86,17 @@ function rightMost(node: ILabelNode): ILabelNode {
 /**
  * based on the visibility of the nodes computes the last node in the same level that is visible also considering expanded children
  */
-export function lastOfLevel(node: ILabelNode, flat: ILabelNodes) {
+export function lastOfLevel(node: ILabelNode, flat: ILabelNodes): ILabelNode {
   if (node.parent > -1) {
     const parent = flat[node.parent];
     return rightMost(parent.children[parent.children.length - 1]);
   }
   // top level search last top level sibling
-  const sibling = flat
-    .slice()
-    .reverse()
-    .find((d) => d.parent === -1)!;
+  const sibling =
+    flat
+      .slice()
+      .reverse()
+      .find((d) => d.parent === -1) ?? flat[0];
   return rightMost(sibling);
 }
 
@@ -105,7 +105,7 @@ export function lastOfLevel(node: ILabelNode, flat: ILabelNodes) {
  * @param {ILabelNode} node
  * @param {} visit return false to skip the traversal of children
  */
-export function preOrderTraversal(node: ILabelNode, visit: (node: ILabelNode) => void | boolean) {
+export function preOrderTraversal(node: ILabelNode, visit: (node: ILabelNode) => void | boolean): void {
   const goDeep = visit(node);
   if (goDeep !== false) {
     node.children.forEach((child) => preOrderTraversal(child, visit));
@@ -115,7 +115,7 @@ export function preOrderTraversal(node: ILabelNode, visit: (node: ILabelNode) =>
 /**
  * resolves for the given label node its value node
  */
-export function resolve(label: ILabelNode, flat: ILabelNodes, dataTree: (IValueNode | number)[]) {
+export function resolve(label: ILabelNode, flat: ILabelNodes, dataTree: (IValueNode | number)[]): number {
   const parents = parentsOf(label, flat);
 
   let dataItem: IValueNode | number = {
@@ -145,7 +145,7 @@ export function countExpanded(node: ILabelNode): number {
   return node.children.reduce((acc, d) => acc + countExpanded(d), 0);
 }
 
-export function flatChildren(node: ILabelNode, flat: ILabelNodes) {
+export function flatChildren(node: ILabelNode, flat: ILabelNodes): ILabelNodes {
   if (node.children.length === 0) {
     return [];
   }
@@ -166,7 +166,7 @@ export function flatChildren(node: ILabelNode, flat: ILabelNodes) {
   return flat.slice(firstChild.index);
 }
 
-export function determineVisible(flat: ILabelNodes) {
+export function determineVisible(flat: ILabelNodes): ILabelNodes {
   const focus = flat.find((d) => d.expand === 'focus');
 
   if (focus) {
