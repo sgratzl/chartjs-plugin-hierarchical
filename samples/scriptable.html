@@ -92,7 +92,7 @@
                 type: 'hierarchical',
 
                 attributes: {
-                  backgroundColor: (ctx) => {
+                  backgroundColor: () => (ctx) => {
                     const v = ctx.dataset.data[ctx.dataIndex];
                     return scale(v);
                   },

@@ -126,9 +126,9 @@ Chart.register(HierarchicalScale);
 
 ```sh
 npm i -g yarn
-yarn set version 2.1.0
+yarn set version berry
 cat .yarnrc_patch.yml >> .yarnrc.yml
-yarn
+yarn install
 yarn pnpify --sdk vscode
 ```
 

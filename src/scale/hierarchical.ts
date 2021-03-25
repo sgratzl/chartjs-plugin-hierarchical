@@ -259,3 +259,11 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
 export interface HierarchicalScaleType extends Partial<IHierarchicalScaleOptions> {
   type: 'hierarchical';
 }
+
+declare module 'chart.js' {
+  export interface CartesianScaleTypeRegistry {
+    hierarchical: {
+      options: IHierarchicalScaleOptions;
+    };
+  }
+}
