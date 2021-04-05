@@ -11,7 +11,7 @@ Chart.js module for adding a new categorical scale which mimics a hierarchical t
 ## Install
 
 ```bash
-npm install --save chart.js@next chartjs-plugin-hierarchical@next
+npm install --save chart.js chartjs-plugin-hierarchical
 ```
 
 ## Usage
