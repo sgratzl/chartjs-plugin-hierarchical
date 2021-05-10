@@ -136,7 +136,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   private _nodes: ILabelNodes = [];
 
   determineDataLimits(): void {
-    const labels = (this.getLabels() as unknown) as ILabelNodes;
+    const labels = this.getLabels() as unknown as ILabelNodes;
 
     // labels are already prepared by the plugin just use them as ticks
     this._nodes = labels.slice();
@@ -150,7 +150,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   }[] {
     const nodes = this._nodes.slice(this.min, this.max + 1);
 
-    const me = (this as unknown) as IInternalScale;
+    const me = this as unknown as IInternalScale;
     me._valueRange = Math.max(nodes.length, 1);
     me._startValue = this.min - 0.5;
     if (nodes.length === 0) {
@@ -163,8 +163,8 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   configure(): void {
     super.configure();
     const nodes = this._nodes.slice(this.min, this.max + 1);
-    const flat = ((this.chart as unknown) as IEnhancedChart).data.flatLabels ?? [];
-    const total = ((this as unknown) as IInternalScale)._length;
+    const flat = (this.chart as unknown as IEnhancedChart).data.flatLabels ?? [];
+    const total = (this as unknown as IInternalScale)._length;
 
     if (nodes.length === 0) {
       return;
@@ -231,7 +231,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
 
   _centerBase(index: number): number {
     const centerTick = this.options.offset;
-    const base = ((this as unknown) as IInternalScale)._startPixel;
+    const base = (this as unknown as IInternalScale)._startPixel;
     const node = this._nodes[index];
 
     if (node == null) {

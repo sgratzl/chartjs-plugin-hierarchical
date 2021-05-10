@@ -260,12 +260,12 @@ function handleClickEvents(
   offsetDelta: number,
   inRange: (v: number) => boolean
 ) {
-  const cc = (chart as unknown) as IEnhancedChart;
+  const cc = chart as unknown as IEnhancedChart;
   let { offset } = elem;
 
   const { index } = elem;
   const flat = cc.data.flatLabels ?? [];
-  const label = (cc.data.labels?.[index] as unknown) as ILabelNode;
+  const label = cc.data.labels?.[index] as unknown as ILabelNode;
   if (!label) {
     return;
   }
@@ -317,7 +317,7 @@ const hierarchicalPlugin: Plugin = {
     if (!enabled(chart)) {
       return;
     }
-    check((chart as unknown) as IEnhancedChart);
+    check(chart as unknown as IEnhancedChart);
   },
 
   /**
@@ -327,14 +327,14 @@ const hierarchicalPlugin: Plugin = {
     if (!enabled(chart)) {
       return;
     }
-    const cc = (chart as unknown) as IEnhancedChart;
+    const cc = chart as unknown as IEnhancedChart;
     const scale = findScale(chart);
     const { ctx } = chart;
     if (!scale || !ctx) {
       return;
     }
     const flat = cc.data.flatLabels ?? [];
-    const visible = (chart.data.labels as unknown) as ILabelNodes;
+    const visible = chart.data.labels as unknown as ILabelNodes;
     const roots = cc.data.rootNodes ?? [];
     const visibleNodes = new Set(visible);
     const hor = scale.isHorizontal();
