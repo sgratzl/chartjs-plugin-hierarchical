@@ -1,5 +1,5 @@
 /* eslint-disable no-param-reassign */
-import { defaults, Plugin, Chart } from 'chart.js';
+import { defaults, Plugin, Chart, Color } from 'chart.js';
 import { valueOrDefault, toFont } from 'chart.js/helpers';
 
 import {
@@ -352,7 +352,7 @@ const hierarchicalPlugin: Plugin = {
     const isStatic = scale.options.static;
 
     const scaleLabel = scale.options.title;
-    const scaleLabelFontColor = valueOrDefault(scaleLabel.color, defaults.color);
+    const scaleLabelFontColor = valueOrDefault(scaleLabel.color, defaults.color as Color);
     const scaleLabelFont = toFont(scaleLabel.font);
 
     function renderButton(type: 'expand' | 'collapse' | 'focus', vert: boolean, x: number, y: number) {
@@ -400,7 +400,7 @@ const hierarchicalPlugin: Plugin = {
     ctx.save();
     ctx.strokeStyle = boxColor;
     ctx.lineWidth = boxWidth;
-    ctx.fillStyle = scaleLabelFontColor; // render in correct color
+    ctx.fillStyle = scaleLabelFontColor!; // render in correct color
     ctx.font = scaleLabelFont.string;
 
     const renderHorLevel = (node: ILabelNode) => {
