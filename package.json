@@ -1,7 +1,7 @@
 {
   "name": "chartjs-plugin-hierarchical",
   "description": "Chart.js module for hierarchical categories",
-  "version": "3.8.0",
+  "version": "3.9.0",
   "author": {
     "name": "Samuel Gratzl",
     "email": "sam@sgratzl.com",
@@ -25,7 +25,6 @@
   "module": "build/index.js",
   "main": "build/index.cjs",
   "node": "build/index.cjs",
-
   "unpkg": "build/index.umd.min.js",
   "jsdelivr": "build/index.umd.min.js",
   "types": "build/index.d.ts",
