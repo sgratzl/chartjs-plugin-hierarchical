@@ -174,8 +174,9 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     // creating a grouping effect of nodes
     const ratio = this.options.levelPercentage;
 
-    // max 5 levels for now
-    const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4)];
+
+    // max 15 levels for now
+    const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4), Math.pow(ratio, 5), Math.pow(ratio, 6), Math.pow(ratio, 7), Math.pow(ratio, 8), Math.pow(ratio, 9),Math.pow(ratio, 10),Math.pow(ratio, 11),Math.pow(ratio, 12),Math.pow(ratio, 13),Math.pow(ratio, 14)];
 
     const distances: number[] = [];
 
