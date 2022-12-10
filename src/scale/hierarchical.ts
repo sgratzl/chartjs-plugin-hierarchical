@@ -174,9 +174,6 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     // creating a grouping effect of nodes
     const ratio = this.options.levelPercentage;
 
-    // max 5 levels for now
-    const ratios = [1, Math.pow(ratio, 1), Math.pow(ratio, 2), Math.pow(ratio, 3), Math.pow(ratio, 4)];
-
     const distances: number[] = [];
 
     let prev = nodes[0];
@@ -188,7 +185,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
       const parents = parentsOf(n, flat);
       if (prev.parent === n.parent) {
         // same parent -> can use the level distance
-        distances.push(ratios[n.level]);
+        distances.push(Math.pow(ratio, n.level));
       } else {
         // different level -> use the distance of the common parent
         // find level of common parent
@@ -196,7 +193,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
         while (parents[common] === prevParents[common]) {
           common += 1;
         }
-        distances.push(ratios[common]);
+        distances.push(Math.pow(ratio, common));
       }
       prev = n;
       prevParents = parents;
