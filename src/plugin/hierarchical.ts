@@ -242,7 +242,7 @@ function zoomOut(chart: IEnhancedChart, parent: ILabelNode) {
 
 function resolveElement(event: { x: number; y: number }, scale: HierarchicalScale) {
   const hor = scale.isHorizontal();
-  const offset = hor ? scale.top + scale.options.padding : scale.left - scale.options.padding;
+  const offset = hor ? scale.bottom + scale.options.padding : scale.left - scale.options.padding;
   if ((hor && event.y <= offset) || (!hor && event.x > offset)) {
     return null;
   }
@@ -547,7 +547,7 @@ const hierarchicalPlugin: Plugin = {
     if (hor) {
       ctx.textAlign = 'center';
       ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
-      ctx.translate(scale.left, scale.top + scale.options.padding);
+      ctx.translate(scale.left, scale.bottom + scale.options.padding);
       roots.forEach((n) => preOrderTraversal(n, renderHorLevel));
     } else {
       ctx.textAlign = 'right';
