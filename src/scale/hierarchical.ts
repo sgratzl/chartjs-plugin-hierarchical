@@ -12,7 +12,7 @@ export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   levelPercentage: number;
   /**
    * padding of the first collapse to the start of the x-axis
-   * @default 25
+   * @default 5
    */
   padding: number;
   /**
@@ -89,7 +89,7 @@ const defaultConfig: Partial<Omit<IHierarchicalScaleOptions, 'grid'>> & {
   /**
    * top/left padding for showing the hierarchy marker
    */
-  padding: 25,
+  padding: 5,
   /**
    * position of the hierarchy label
    * possible values: 'below', 'above', null to disable
