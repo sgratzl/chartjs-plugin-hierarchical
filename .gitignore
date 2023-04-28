@@ -25,3 +25,5 @@ npm-debug.log*
 __diff_output__
 
 /samples/type_test.js
+.idea
+.idea/*
