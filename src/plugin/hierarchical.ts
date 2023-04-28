@@ -12,6 +12,7 @@ import {
   spanLogic,
   determineVisible,
   flatChildren,
+  getMaxDepth,
 } from '../utils';
 import type { ILabelNodes, ILabelNode, IEnhancedChart, IEnhancedChartDataSet } from '../model';
 import type { HierarchicalScale } from '../scale';
@@ -258,7 +259,8 @@ function handleClickEvents(
   _event: unknown,
   elem: { offset: number; index: number },
   offsetDelta: number,
-  inRange: (v: number) => boolean
+  inRange: (v: number) => boolean,
+  reverse: boolean = false
 ) {
   const cc = chart as unknown as IEnhancedChart;
   let { offset } = elem;
@@ -270,8 +272,10 @@ function handleClickEvents(
     return;
   }
   const parents = parentsOf(label, flat);
+  const maxDepth = getMaxDepth((cc.data.rootNodes || []) as Array<ILabelNode>);
+  if (reverse) offset += maxDepth * offsetDelta;
 
-  for (let i = 1; i < parents.length; i += 1, offset += offsetDelta) {
+  for (let i = 1; i < parents.length; i += 1, reverse ? (offset -= offsetDelta) : (offset += offsetDelta)) {
     if (!inRange(offset)) {
       // eslint-disable-next-line no-continue
       continue;
@@ -352,6 +356,7 @@ const hierarchicalPlugin: Plugin = {
     const isStatic = scale.options.static;
 
     const scaleLabel = scale.options.title;
+    const scaleReverse = scale.options.reverseOrder;
     const scaleLabelFontColor = valueOrDefault(scaleLabel.color, defaults.color as Color);
     const scaleLabelFont = toFont(scaleLabel.font as Partial<FontSpec>);
 
@@ -403,11 +408,14 @@ const hierarchicalPlugin: Plugin = {
     ctx.fillStyle = scaleLabelFontColor!; // render in correct color
     ctx.font = scaleLabelFont.string;
 
-    const renderHorLevel = (node: ILabelNode) => {
+    const renderHorLevel = (node: ILabelNode, maxDepth: number = 0) => {
       if (node.children.length === 0) {
         return false;
       }
-      const offset = node.level * boxRow;
+      let offset = node.level * boxRow;
+      if (scaleReverse) {
+        offset = maxDepth * boxRow - node.level * boxRow;
+      }
 
       if (!node.expand) {
         if (visibleNodes.has(node)) {
@@ -475,11 +483,14 @@ const hierarchicalPlugin: Plugin = {
       return true;
     };
 
-    const renderVertLevel = (node: ILabelNode) => {
+    const renderVertLevel = (node: ILabelNode, maxDepth: number = 0) => {
       if (node.children.length === 0) {
         return false;
       }
-      const offset = node.level * boxRow * -1;
+      let offset = node.level * boxRow * -1;
+      if (scaleReverse) {
+        offset = (maxDepth * boxRow - node.level * boxRow) * -1;
+      }
 
       if (!node.expand) {
         if (visibleNodes.has(node)) {
@@ -544,17 +555,18 @@ const hierarchicalPlugin: Plugin = {
       return true;
     };
 
+    const maxLevel = getMaxDepth(roots as Array<ILabelNode>);
     if (hor) {
       ctx.textAlign = 'center';
       ctx.textBaseline = renderLabel === 'above' ? 'bottom' : 'top';
       ctx.translate(scale.left, scale.bottom + scale.options.padding);
-      roots.forEach((n) => preOrderTraversal(n, renderHorLevel));
+      roots.forEach((n) => preOrderTraversal(n, (m) => renderHorLevel(m, maxLevel)));
     } else {
       ctx.textAlign = 'right';
       ctx.textBaseline = 'middle';
       ctx.translate(scale.left - scale.options.padding, scale.top);
 
-      roots.forEach((n) => preOrderTraversal(n, renderVertLevel));
+      roots.forEach((k) => preOrderTraversal(k, (l) => renderVertLevel(l, maxLevel)));
     }
 
     ctx.restore();
@@ -578,12 +590,12 @@ const hierarchicalPlugin: Plugin = {
     }
 
     const boxRow = scale.options.hierarchyBoxLineHeight;
-
+    const reverse = scale.options.reverseOrder;
     const inRange = hor
       ? (o: number) => clickEvent.y >= o && clickEvent.y <= o + boxRow
       : (o: number) => clickEvent.x <= o && clickEvent.x >= o - boxRow;
     const offsetDelta = hor ? boxRow : -boxRow;
-    handleClickEvents(chart, event, elem, offsetDelta, inRange);
+    handleClickEvents(chart, event, elem, offsetDelta, inRange, reverse);
   },
 };
 

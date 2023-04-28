@@ -252,3 +252,13 @@ export function spanLogic(
     rightLastVisible,
   };
 }
+
+export function getMaxDepth(rootNodes: Array<ILabelNode>) {
+  let levels: number[] = [];
+  const addToArray = (node: ILabelNode) => {
+    levels.push(node.level);
+    return node.expand && node.children.length > 0;
+  };
+  rootNodes.forEach((n) => preOrderTraversal(n, addToArray));
+  return Math.max.apply(Math, levels);
+}

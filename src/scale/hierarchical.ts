@@ -12,7 +12,7 @@ export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   levelPercentage: number;
   /**
    * padding of the first collapse to the start of the x-axis
-   * @default 5
+   * @default 25
    */
   padding: number;
   /**
@@ -66,6 +66,11 @@ export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   attributes: { [attribute: string]: any };
 
   offset: true;
+  /**
+   * if reverseOrder is true the lowest hierarchy level is on axis level and the highest level is the one furthest from axis
+   * @default false
+   */
+  reverseOrder: boolean;
 }
 
 const defaultConfig: Partial<Omit<IHierarchicalScaleOptions, 'grid'>> & {
@@ -123,6 +128,11 @@ const defaultConfig: Partial<Omit<IHierarchicalScaleOptions, 'grid'>> & {
   hierarchyBoxWidth: 1,
 
   attributes: {},
+  /**
+   * if reverseOrder is true the lowest hierarchy level is on axis level and the highest level is the one furthest from axis
+   * @default false
+   */
+  reverseOrder: false,
 };
 
 export interface IInternalScale {
