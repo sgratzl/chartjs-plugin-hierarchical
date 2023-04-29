@@ -43,7 +43,7 @@ export interface IEnhancedChartDataSet extends ChartDataset<'bar'> {
 }
 
 export interface IEnhancedChart extends Chart<any, any, ILabelNode> {
-  data: ChartData & {
+  data: ChartData<any, any, ILabelNode> & {
     flatLabels?: ILabelNodes;
     labels: ILabelNode[];
     _verify?: string;
