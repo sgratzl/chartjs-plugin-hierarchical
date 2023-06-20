@@ -6,9 +6,7 @@
     <script src="../build/index.umd.js"></script>
     <style>
       canvas {
-        -moz-user-select: none;
-        -webkit-user-select: none;
-        -ms-user-select: none;
+        user-select: none;
       }
     </style>
   </head>
@@ -19,35 +17,28 @@
     </div>
     <script>
       const data = {
-        // define label tree
-        labels: [
-          'A',
-          {
-            label: 'B1',
-            expand: false, // 'focus', // expand level
-            children: ['B1.1'],
-          },
-          'C',
-        ],
+        labels: ['a', 'b', 'c', 'd'],
         datasets: [
           {
-            label: 'Test',
-            // store as the tree attribute for reference, the data attribute will be automatically managed
-            tree: [
-              1,
-              {
-                value: 2,
-                children: [2],
-              },
-              11,
+            label: 'Scatter Dataset',
+            data: [
+              { x: 'a', y: 0 },
+              { x: 'a', y: 6 },
+              { x: 'b', y: 5 },
+              { x: 'b', y: 5.5 },
+              { x: 'c', y: 10 },
+              { x: 'c', y: 5 },
+              { x: 'd', y: 5.5 },
+              { x: 'c', y: 8 },
             ],
+            backgroundColor: 'rgb(255, 99, 132)',
           },
         ],
       };
       window.onload = () => {
         const ctx = document.getElementById('canvas').getContext('2d');
         window.myBar = new Chart(ctx, {
-          type: 'bar',
+          type: 'scatter',
           data: data,
           options: {
             responsive: true,
