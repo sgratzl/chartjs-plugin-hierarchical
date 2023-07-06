@@ -23,13 +23,13 @@
             label: 'Scatter Dataset',
             data: [
               { x: 'a', y: 0 },
-              { x: 'a', y: 6 },
-              { x: 'b', y: 5 },
-              { x: 'b', y: 5.5 },
-              { x: 'c', y: 10 },
-              { x: 'c', y: 5 },
-              { x: 'd', y: 5.5 },
-              { x: 'c', y: 8 },
+              // { x: 'a', y: 6 },
+              // { x: 'b', y: 5 },
+              // { x: 'b', y: 5.5 },
+              // { x: 'c', y: 10 },
+              // { x: 'c', y: 5 },
+              // { x: 'c', y: 8 },
+              // { x: 'd', y: 5.5 },
             ],
             backgroundColor: 'rgb(255, 99, 132)',
           },
@@ -44,7 +44,7 @@
             responsive: true,
             title: {
               display: true,
-              text: 'Chart.js Hierarchical Bar Chart',
+              text: 'Chart.js Hierarchical Scatterplot Chart',
             },
             layout: {
               padding: {
@@ -54,7 +54,8 @@
             },
             scales: {
               x: {
-                type: 'hierarchical',
+                // type: 'hierarchical',
+                type: 'category',
               },
             },
           },

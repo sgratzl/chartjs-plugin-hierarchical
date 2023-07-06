@@ -26,7 +26,7 @@ npm install --save chart.js chartjs-plugin-hierarchical
 
 ## Usage
 
-see [Samples](https://github.com/sgratzl/chartjs-plugin-hierarchical/tree/main/samples) on Github
+see [Examples](https://www.sgratzl.com/chartjs-plugin-hierarchical/examples/)
 
 or at this [![Open in CodePen][codepen]](https://codepen.io/sgratzl/pen/KKdryvg)
 

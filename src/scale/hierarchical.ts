@@ -1,6 +1,6 @@
 import { CategoryScale, CategoryScaleOptions, registry } from 'chart.js';
 import { merge } from 'chart.js/helpers';
-import hierarchicalPlugin from 'src/plugin';
+import hierarchicalPlugin from '../plugin';
 import { parentsOf } from '../utils';
 import type { ILabelNodes, IEnhancedChart } from '../model';
 
@@ -143,8 +143,14 @@ export interface IInternalScale {
 }
 
 export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> {
+  /**
+   * @internal
+   */
   private _nodes: ILabelNodes = [];
 
+  /**
+   * @internal
+   */
   determineDataLimits(): void {
     const labels = this.getLabels() as unknown as ILabelNodes;
 
@@ -154,6 +160,9 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     super.determineDataLimits();
   }
 
+  /**
+   * @internal
+   */
   buildTicks(): {
     label: string;
     value: number;
@@ -170,6 +179,9 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     return nodes.map((d, i) => ({ label: d.label, value: i })); // copy since mutated during auto skip
   }
 
+  /**
+   * @internal
+   */
   configure(): void {
     super.configure();
     const nodes = this._nodes.slice(this.min, this.max + 1);
@@ -226,6 +238,9 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     });
   }
 
+  /**
+   * @internal
+   */
   getPixelForDecimal(value: number): number {
     const index = Math.min(Math.floor(value * this._nodes.length), this._nodes.length - 1);
 
@@ -236,6 +251,9 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     return this._centerBase(index);
   }
 
+  /**
+   * @internal
+   */
   _centerBase(index: number): number {
     const centerTick = this.options.offset;
     const base = (this as unknown as IInternalScale)._startPixel;
@@ -250,14 +268,26 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     return base + nodeCenter - (centerTick ? 0 : nodeWidth / 2);
   }
 
+  /**
+   * @internal
+   */
   getValueForPixel(pixel: number): number {
     return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
   }
 
+  /**
+   * @internal
+   */
   static id = 'hierarchical';
 
+  /**
+   * @internal
+   */
   static defaults: any = /*! __PURE__ */ merge({}, [CategoryScale.defaults, defaultConfig]);
 
+  /**
+   * @internal
+   */
   static afterRegister(): void {
     registry.addPlugins(hierarchicalPlugin);
   }
