@@ -17,7 +17,7 @@ import {
 import type { ILabelNodes, ILabelNode, IEnhancedChart, IEnhancedChartDataSet } from '../model';
 import type { HierarchicalScale } from '../scale';
 
-function generateCode(labels: ReadonlyArray<ILabelNode | string>) {
+function generateCode(labels: readonly (ILabelNode | string)[]) {
   // label, expand, children
   let code = '';
   const encode = (label: string | ILabelNode) => {
