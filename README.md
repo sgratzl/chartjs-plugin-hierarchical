@@ -44,7 +44,6 @@ see [IHierarchicalScaleOptions](https://www.sgratzl/com/chartjs-plugin-hierarchi
 
 see [ILabelNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.ILabelNode.html) and [IValueNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.IValueNode.html)
 
-
 ### ESM and Tree Shaking
 
 The ESM build of the library supports tree shaking thus having no side effects. As a consequence the chart.js library won't be automatically manipulated nor new controllers automatically registered. One has to manually import and register them.

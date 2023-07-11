@@ -27,4 +27,3 @@ see [ILabelNode](/api/interfaces/interface.ILabelNode.html) and [IValueNode](/ap
 ### Styling
 
 see [IHierarchicalScaleOptions](/api/interfaces/interface.IHierarchicalScaleOptions.html)
-
