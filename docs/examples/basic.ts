@@ -73,3 +73,27 @@ export const config: ChartConfiguration<'bar'> = {
   },
 };
 // #endregion config
+
+// #region nolabel
+export const nolabel: ChartConfiguration<'bar'> = {
+  type: 'bar',
+  data,
+  options: {
+    layout: {
+      padding: {
+        // add more space at the bottom for the hierarchy
+        bottom: 60,
+      },
+    },
+    scales: {
+      x: {
+        type: 'hierarchical',
+        hierarchyLabelPosition: 'none',
+        ticks: {
+          display: false,
+        },
+      },
+    },
+  },
+};
+// #endregion nolabel

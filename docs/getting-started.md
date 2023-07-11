@@ -22,6 +22,9 @@ and [CodePen](https://codepen.io/sgratzl/pen/KKdryvg)
 
 ### Data Structure
 
+see [ILabelNode](/api/interfaces/interface.ILabelNode.html) and [IValueNode](/api/interfaces/interface.IValueNode.html)
 
 ### Styling
+
+see [IHierarchicalScaleOptions](/api/interfaces/interface.IHierarchicalScaleOptions.html)
 

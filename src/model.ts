@@ -21,17 +21,36 @@ export interface ILabelNode {
 }
 
 export interface IRawLabelNode {
+  /**
+   * label
+   */
   label: string;
+  /**
+   * defines whether this node is collapsed (false) or expanded (true) or focussed ('focus')
+   * @default false
+   */
   expand?: boolean | 'focus';
+  /**
+   * hide this node
+   */
   hidden?: boolean;
+  /**
+   * list of children
+   */
   children?: (IRawLabelNode | string)[];
 }
 
 export declare type ILabelNodes = readonly ILabelNode[];
 
 export interface IValueNode {
-  children: readonly (IValueNode | number)[];
+  /**
+   * the actual value of this node
+   */
   value: number;
+  /**
+   * list of children
+   */
+  children: readonly (IValueNode | number)[];
 }
 
 export function isValueNode(node: IValueNode | any): node is IValueNode {

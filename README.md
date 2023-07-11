@@ -38,86 +38,12 @@ a new scale type `hierarchical`.
 
 The `hierarchical` axis scale has the following styling options
 
-```ts
-interface IHierarchicalScaleOptions {
-  /**
-   * ratio by which the distance between two elements shrinks the higher the level of the tree is. i.e. two two level bars have a distance of 1. two nested one just 0.75
-   * @default 0.75
-   */
-  levelPercentage: number;
-  /**
-   * padding of the first collapse to the start of the x-axis
-   * @default 25
-   */
-  padding: number;
-  /**
-   * position of the hierarchy label in expanded levels, 'none' to disable
-   * @default 'below'
-   */
-  hierarchyLabelPosition: 'below' | 'above' | 'none';
-
-  /**
-   * position of the hierarchy group label relative to the its children
-   * @default between-first-and-second
-   */
-  hierarchyGroupLabelPosition: 'center' | 'first' | 'last' | 'between-first-and-second';
-
-  /**
-   * whether interactive buttons should be shown or whether it should be static
-   * @default false
-   */
-  static: boolean;
-
-  /**
-   * object of attributes that should be managed and extracted from the tree
-   * data structures such as `backgroundColor` for coloring individual bars
-   * the object contains the key and default value
-   * @default {}
-   */
-  attributes: { [attribute: string]: any };
-}
-```
+see [IHierarchicalScaleOptions](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.IHierarchicalScaleOptions.html)
 
 ## Data structure
 
-```ts
-interface ILabelNode {
-  /**
-   * label
-   */
-  label: string;
-  /**
-   * defines whether this node is collapsed (false) or expanded (true) or focussed ('focus')
-   * @default false
-   */
-  expand?: boolean | 'focus';
-  /**
-   * list of children
-   */
-  children?: ISubLabelNode[];
-}
+see [ILabelNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.ILabelNode.html) and [IValueNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.IValueNode.html)
 
-/**
- * a label entry can be a single string or a complex ILabelNode
- */
-declare type ISubLabelNode = ILabelNode | string;
-
-interface IValueNode<T> {
-  /**
-   * the actual value of this node
-   */
-  value: T;
-  /**
-   * list of children
-   */
-  children?: ISubValueNode<T>[];
-}
-
-/**
- * a value entry can be a single value or a complex IValueNode
- */
-declare type ISubValueNode<T> = IValueNode<T> | T;
-```
 
 ### ESM and Tree Shaking
 

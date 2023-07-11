@@ -35,6 +35,7 @@ export default defineConfig({
           { text: 'Deep Hierarchy', link: '/examples/deep' },
           { text: 'Line Chart', link: '/examples/line' },
           { text: 'End Hierarchy', link: '/examples/endHierarchy' },
+          { text: 'No Label', link: '/examples/noLabel' },
           //
         ],
       },
