@@ -51,10 +51,10 @@ interface IHierarchicalScaleOptions {
    */
   padding: number;
   /**
-   * position of the hierarchy label in expanded levels, null to disable
+   * position of the hierarchy label in expanded levels, 'none' to disable
    * @default 'below'
    */
-  hierarchyLabelPosition: 'below' | 'above' | null;
+  hierarchyLabelPosition: 'below' | 'above' | 'none';
 
   /**
    * position of the hierarchy group label relative to the its children

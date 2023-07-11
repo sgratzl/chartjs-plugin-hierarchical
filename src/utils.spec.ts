@@ -41,7 +41,7 @@ function treeNodeTest(n: ILabelNode, parent: number, relIndex: number, index: nu
   expect(n.index).toBe(index);
 }
 
-function setupNodes(def: ReadonlyArray<string | IRawLabelNode>) {
+function setupNodes(def: readonly (string | IRawLabelNode)[]) {
   const flat = toNodes(def);
   const root = flat.filter((d) => d.parent === -1);
   const visible = new Set(determineVisible(flat));

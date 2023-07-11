@@ -4,36 +4,37 @@ import {} from '../../src';
 // #region data
 
 export const data: ChartConfiguration<'bar'>['data'] = {
+  // define label tree
   labels: [
-    'A',
     {
-      label: 'B1',
-      expand: false, // 'focus', // expand level
+      label: 'a consectetur adipiscing elit',
+      expand: true, // 'focus', // expand level
       children: [
-        'B1.1',
         {
-          label: 'B1.2',
-          children: ['B1.2.1', 'B1.2.2'],
+          label: 'aa consectetur adipiscing elit',
+          expand: true, // 'focus', // expand level
+          children: ['aaa ex ea commodo consequat', 'aab ex ea commodo consequat'],
         },
-        'B1.3',
+        {
+          label: 'ab consectetur adipiscing elit',
+          children: ['aba ex ea commodo consequat', 'abb ex ea commodo consequat'],
+        },
+        'ac ex ea commodo consequat',
       ],
     },
-    {
-      label: 'C1',
-      children: ['C1.1', 'C1.2', 'C1.3', 'C1.4'],
-    },
-    'D',
   ],
   datasets: [
     {
       label: 'Test',
       // store as the tree attribute for reference, the data attribute will be automatically managed
       tree: [
-        1,
         {
           value: 2,
           children: [
-            3,
+            {
+              value: 4,
+              children: [4.1, 4.2],
+            },
             {
               value: 4,
               children: [4.1, 4.2],
@@ -41,11 +42,6 @@ export const data: ChartConfiguration<'bar'>['data'] = {
             5,
           ],
         },
-        {
-          value: 6,
-          children: [7, 8, 9, 10],
-        },
-        11,
       ],
       data: [],
     },
@@ -68,6 +64,12 @@ export const config: ChartConfiguration<'bar'> = {
     scales: {
       x: {
         type: 'hierarchical',
+        padding: 10,
+        ticks: {
+          padding: 50,
+          minRotation: 90,
+          maxRotation: 90,
+        },
       },
     },
   },

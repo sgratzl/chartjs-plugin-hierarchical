@@ -68,6 +68,8 @@
     "canvas": "^2.11.2",
     "canvas-5-polyfill": "^0.1.5",
     "chart.js": "^4.3.0",
+    "d3-scale": "^4.0.2",
+    "d3-scale-chromatic": "^3.0.0",
     "eslint": "^8.44.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.8.0",

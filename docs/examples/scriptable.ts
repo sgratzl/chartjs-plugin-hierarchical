@@ -1,9 +1,11 @@
 import type { ChartConfiguration } from 'chart.js';
 import {} from '../../src';
-
+import { interpolateBlues } from 'd3-scale-chromatic';
+import { scaleSequential } from 'd3-scale';
 // #region data
 
 export const data: ChartConfiguration<'bar'>['data'] = {
+  // define label tree
   labels: [
     'A',
     {
@@ -55,6 +57,7 @@ export const data: ChartConfiguration<'bar'>['data'] = {
 // #endregion
 
 // #region config
+const scale = scaleSequential(interpolateBlues).domain([0, 11]);
 export const config: ChartConfiguration<'bar'> = {
   type: 'bar',
   data,
@@ -68,6 +71,12 @@ export const config: ChartConfiguration<'bar'> = {
     scales: {
       x: {
         type: 'hierarchical',
+        attributes: {
+          backgroundColor: () => (ctx) => {
+            const v = ctx.dataset.data[ctx.dataIndex];
+            return scale(v);
+          },
+        },
       },
     },
   },

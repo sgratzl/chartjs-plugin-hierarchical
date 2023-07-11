@@ -1,14 +1,14 @@
 import type { ChartConfiguration } from 'chart.js';
 import {} from '../../src';
-
 // #region data
 
 export const data: ChartConfiguration<'bar'>['data'] = {
+  // define label tree
   labels: [
     'A',
     {
       label: 'B1',
-      expand: false, // 'focus', // expand level
+      expand: true, // 'focus', // expand level
       children: [
         'B1.1',
         {
@@ -68,6 +68,8 @@ export const config: ChartConfiguration<'bar'> = {
     scales: {
       x: {
         type: 'hierarchical',
+        static: true,
+        hierarchyGroupLabelPosition: 'center',
       },
     },
   },

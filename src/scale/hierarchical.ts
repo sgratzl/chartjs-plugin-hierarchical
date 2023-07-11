@@ -299,7 +299,7 @@ export interface HierarchicalScaleType extends Partial<IHierarchicalScaleOptions
 
 declare module 'chart.js' {
   export interface ControllerDatasetOptions {
-    tree: IValueNode[];
+    tree?: (IValueNode | number)[];
   }
   export interface CartesianScaleTypeRegistry {
     hierarchical: {

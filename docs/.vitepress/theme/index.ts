@@ -10,6 +10,7 @@ import {
   LineController,
   Colors,
   LineElement,
+  PointElement,
 } from 'chart.js';
 import { HierarchicalScale } from '../../../src';
 
@@ -25,6 +26,7 @@ export default {
       BarElement,
       LineController,
       LineElement,
+      PointElement,
       Colors
     );
     app.component('Chart', Chart);

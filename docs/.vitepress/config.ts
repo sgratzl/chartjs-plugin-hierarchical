@@ -25,6 +25,16 @@ export default defineConfig({
         text: 'Examples',
         items: [
           { text: 'Basic', link: '/examples/' },
+          { text: 'Single Node', link: '/examples/single' },
+          { text: 'Attributes', link: '/examples/attributes' },
+          { text: 'Scriptable', link: '/examples/scriptable' },
+          { text: 'Static Expansion', link: '/examples/static' },
+          { text: 'Single Child', link: '/examples/singleChild' },
+          { text: 'Horizontal Scale', link: '/examples/horizontal' },
+          { text: 'Horizontal Scale (Reversed)', link: '/examples/horizontalReverse' },
+          { text: 'Deep Hierarchy', link: '/examples/deep' },
+          { text: 'Line Chart', link: '/examples/line' },
+          { text: 'End Hierarchy', link: '/examples/endHierarchy' },
           //
         ],
       },

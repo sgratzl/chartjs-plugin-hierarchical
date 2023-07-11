@@ -27,10 +27,10 @@ export interface IRawLabelNode {
   children?: (IRawLabelNode | string)[];
 }
 
-export declare type ILabelNodes = ReadonlyArray<ILabelNode>;
+export declare type ILabelNodes = readonly ILabelNode[];
 
 export interface IValueNode {
-  children: ReadonlyArray<IValueNode | number>;
+  children: readonly (IValueNode | number)[];
   value: number;
 }
 
@@ -39,7 +39,7 @@ export function isValueNode(node: IValueNode | any): node is IValueNode {
 }
 
 export interface IEnhancedChartDataSet extends ChartDataset<'bar'> {
-  tree: IValueNode[];
+  tree: (IValueNode | number)[];
 }
 
 export interface IEnhancedChart extends Chart<any, any, ILabelNode> {

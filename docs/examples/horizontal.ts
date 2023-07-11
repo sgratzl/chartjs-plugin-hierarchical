@@ -1,14 +1,14 @@
 import type { ChartConfiguration } from 'chart.js';
 import {} from '../../src';
-
 // #region data
 
 export const data: ChartConfiguration<'bar'>['data'] = {
+  // define label tree
   labels: [
     'A',
     {
       label: 'B1',
-      expand: false, // 'focus', // expand level
+      expand: true,
       children: [
         'B1.1',
         {
@@ -27,7 +27,6 @@ export const data: ChartConfiguration<'bar'>['data'] = {
   datasets: [
     {
       label: 'Test',
-      // store as the tree attribute for reference, the data attribute will be automatically managed
       tree: [
         1,
         {
@@ -59,17 +58,44 @@ export const config: ChartConfiguration<'bar'> = {
   type: 'bar',
   data,
   options: {
+    indexAxis: 'y',
     layout: {
       padding: {
-        // add more space at the bottom for the hierarchy
-        bottom: 60,
+        // add more space at the left side for the hierarchy
+        left: 50,
       },
     },
     scales: {
-      x: {
+      y: {
         type: 'hierarchical',
+        // tune padding setting
+        padding: 0,
       },
     },
   },
 };
 // #endregion config
+
+// #region reverse
+export const reverse: ChartConfiguration<'bar'> = {
+  type: 'bar',
+  data,
+  options: {
+    indexAxis: 'y',
+    layout: {
+      padding: {
+        // add more space at the left side for the hierarchy
+        left: 50,
+      },
+    },
+    scales: {
+      y: {
+        type: 'hierarchical',
+        // tune padding setting
+        padding: 0,
+        reverseOrder: true,
+      },
+    },
+  },
+};
+// #endregion reverse

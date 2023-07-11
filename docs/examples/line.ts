@@ -3,7 +3,8 @@ import {} from '../../src';
 
 // #region data
 
-export const data: ChartConfiguration<'bar'>['data'] = {
+export const data: ChartConfiguration<'line'>['data'] = {
+  // define label tree
   labels: [
     'A',
     {
@@ -55,8 +56,8 @@ export const data: ChartConfiguration<'bar'>['data'] = {
 // #endregion
 
 // #region config
-export const config: ChartConfiguration<'bar'> = {
-  type: 'bar',
+export const config: ChartConfiguration<'line'> = {
+  type: 'line',
   data,
   options: {
     layout: {
