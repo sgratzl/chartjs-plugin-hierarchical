@@ -2,7 +2,7 @@ import { CategoryScale, CategoryScaleOptions, registry } from 'chart.js';
 import { merge } from 'chart.js/helpers';
 import hierarchicalPlugin from '../plugin';
 import { parentsOf } from '../utils';
-import type { ILabelNodes, IEnhancedChart } from '../model';
+import type { ILabelNodes, IEnhancedChart, IValueNode } from '../model';
 
 export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
   /**
@@ -16,10 +16,10 @@ export interface IHierarchicalScaleOptions extends CategoryScaleOptions {
    */
   padding: number;
   /**
-   * position of the hierarchy label in expanded levels, null to disable
+   * position of the hierarchy label in expanded levels, 'none' to disable
    * @default 'below'
    */
-  hierarchyLabelPosition: 'below' | 'above' | null;
+  hierarchyLabelPosition: 'below' | 'above' | 'none' | null;
 
   /**
    * position of the hierarchy group label relative to the its children
@@ -97,9 +97,9 @@ const defaultConfig: Partial<Omit<IHierarchicalScaleOptions, 'grid'>> & {
   padding: 5,
   /**
    * position of the hierarchy label
-   * possible values: 'below', 'above', null to disable
+   * possible values: 'below', 'above', 'none' to disable
    */
-  hierarchyLabelPosition: 'below' as 'below' | 'above' | null,
+  hierarchyLabelPosition: 'below' as 'below' | 'above' | null | 'none',
 
   hierarchyGroupLabelPosition: 'between-first-and-second',
   /**
@@ -298,6 +298,9 @@ export interface HierarchicalScaleType extends Partial<IHierarchicalScaleOptions
 }
 
 declare module 'chart.js' {
+  export interface ControllerDatasetOptions {
+    tree: IValueNode[];
+  }
   export interface CartesianScaleTypeRegistry {
     hierarchical: {
       options: IHierarchicalScaleOptions;
