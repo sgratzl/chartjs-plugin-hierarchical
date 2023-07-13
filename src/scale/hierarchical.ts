@@ -144,12 +144,12 @@ export interface IInternalScale {
 
 export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> {
   /**
-   * @internal
+   * @hidden
    */
   private _nodes: ILabelNodes = [];
 
   /**
-   * @internal
+   * @hidden
    */
   determineDataLimits(): void {
     const labels = this.getLabels() as unknown as ILabelNodes;
@@ -161,7 +161,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   }
 
   /**
-   * @internal
+   * @hidden
    */
   buildTicks(): {
     label: string;
@@ -180,7 +180,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   }
 
   /**
-   * @internal
+   * @hidden
    */
   configure(): void {
     super.configure();
@@ -239,7 +239,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   }
 
   /**
-   * @internal
+   * @hidden
    */
   getPixelForDecimal(value: number): number {
     const index = Math.min(Math.floor(value * this._nodes.length), this._nodes.length - 1);
@@ -252,7 +252,7 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   }
 
   /**
-   * @internal
+   * @hidden
    */
   _centerBase(index: number): number {
     const centerTick = this.options.offset;
@@ -269,24 +269,24 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
   }
 
   /**
-   * @internal
+   * @hidden
    */
   getValueForPixel(pixel: number): number {
     return this._nodes.findIndex((d) => pixel >= d.center - d.width / 2 && pixel <= d.center + d.width / 2);
   }
 
   /**
-   * @internal
+   * @hidden
    */
   static id = 'hierarchical';
 
   /**
-   * @internal
+   * @hidden
    */
   static defaults: any = /*! __PURE__ */ merge({}, [CategoryScale.defaults, defaultConfig]);
 
   /**
-   * @internal
+   * @hidden
    */
   static afterRegister(): void {
     registry.addPlugins(hierarchicalPlugin);
