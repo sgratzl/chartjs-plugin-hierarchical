@@ -38,11 +38,11 @@ a new scale type `hierarchical`.
 
 The `hierarchical` axis scale has the following styling options
 
-see [IHierarchicalScaleOptions](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.IHierarchicalScaleOptions.html)
+see [IHierarchicalScaleOptions](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/IHierarchicalScaleOptions.html)
 
 ## Data structure
 
-see [ILabelNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.ILabelNode.html) and [IValueNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/interface.IValueNode.html)
+see [ILabelNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/ILabelNode.html) and [IValueNode](https://www.sgratzl/com/chartjs-plugin-hierarchical/api/interfaces/IValueNode.html)
 
 ### ESM and Tree Shaking
 
