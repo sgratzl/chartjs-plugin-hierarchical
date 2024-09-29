@@ -10,7 +10,7 @@ import {
   ISpanLogicResult,
 } from './utils';
 import type { ILabelNode, IRawLabelNode } from './model';
-import { describe, test } from 'vitest';
+import { describe, test, expect } from 'vitest';
 function nodeTest(
   n: ILabelNode,
   label: string,
