@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { ILabelNode, ILabelNodes, IValueNode, isValueNode, IRawLabelNode } from './model';
 
 /**
@@ -254,11 +253,11 @@ export function spanLogic(
 }
 
 export function getMaxDepth(rootNodes: Array<ILabelNode>) {
-  let levels: number[] = [];
+  const levels: number[] = [];
   const addToArray = (node: ILabelNode) => {
     levels.push(node.level);
     return node.expand && node.children.length > 0;
   };
   rootNodes.forEach((n) => preOrderTraversal(n, addToArray));
-  return Math.max.apply(Math, levels);
+  return Math.max(...levels);
 }
