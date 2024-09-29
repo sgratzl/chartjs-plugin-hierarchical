@@ -1,6 +1,6 @@
 import { toNodes, parentsOf, lastOfLevel, countExpanded } from './utils';
 import type { ILabelNodes, ILabelNode } from './model';
-
+import { describe, test } from 'vitest';
 describe('bug_#7', () => {
   let nodes: ILabelNodes;
   test('setup', () => {
