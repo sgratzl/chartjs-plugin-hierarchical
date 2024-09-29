@@ -1,4 +1,3 @@
-/* eslint-disable no-param-reassign */
 import { defaults, Plugin, Chart, Color, FontSpec } from 'chart.js';
 import { valueOrDefault, toFont } from 'chart.js/helpers';
 
@@ -277,7 +276,6 @@ function handleClickEvents(
 
   for (let i = 1; i < parents.length; i += 1, reverse ? (offset -= offsetDelta) : (offset += offsetDelta)) {
     if (!inRange(offset)) {
-      // eslint-disable-next-line no-continue
       continue;
     }
     const node = parents[i];

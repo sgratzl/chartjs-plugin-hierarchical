@@ -9,9 +9,8 @@ import {
   determineVisible,
   ISpanLogicResult,
 } from './utils';
-// import 'jest';
 import type { ILabelNode, IRawLabelNode } from './model';
-
+import { describe, test, expect } from 'vitest';
 function nodeTest(
   n: ILabelNode,
   label: string,
