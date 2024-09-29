@@ -229,11 +229,11 @@ export class HierarchicalScale extends CategoryScale<IHierarchicalScaleOptions> 
     nodes.forEach((node, i) => {
       const previous = distances[i] * factor;
       const next = distances[i + 1] * factor;
-      // eslint-disable-next-line no-param-reassign
+       
       node.center = offset;
       offset += next;
 
-      // eslint-disable-next-line no-param-reassign
+       
       node.width = Math.min(next, previous) / 2;
     });
   }
