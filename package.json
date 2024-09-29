@@ -116,7 +116,7 @@
     "fix": "yarn run eslint:fix && yarn run prettier:write",
     "prettier:write": "prettier \"*\" \"*/**\" --write",
     "prettier": "prettier \"*\" \"*/**\" --check",
-    "eslint": "eslint src --ext .ts,.tsx --cache",
+    "eslint": "eslint src --cache",
     "eslint:fix": "yarn run eslint --fix",
     "prepare": "yarn run build",
     "docs:api": "typedoc --options typedoc.json",
