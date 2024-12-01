@@ -1087,9 +1087,9 @@ __metadata:
   linkType: hard
 
 "@types/d3-scale-chromatic@npm:^3.0.3":
-  version: 3.0.3
-  resolution: "@types/d3-scale-chromatic@npm:3.0.3"
-  checksum: 10c0/2f48c6f370edba485b57b73573884ded71914222a4580140ff87ee96e1d55ccd05b1d457f726e234a31269b803270ac95d5554229ab6c43c7e4a9894e20dd490
+  version: 3.1.0
+  resolution: "@types/d3-scale-chromatic@npm:3.1.0"
+  checksum: 10c0/93c564e02d2e97a048e18fe8054e4a935335da6ab75a56c3df197beaa87e69122eef0dfbeb7794d4a444a00e52e3123514ee27cec084bd21f6425b7037828cc2
   languageName: node
   linkType: hard
 
